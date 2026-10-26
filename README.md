@@ -8,6 +8,7 @@ Liquid glass and image or video backgrounds for AI websites. Built for Firefox.
 
 - Glass transparency, light and dark themes, and bundled reading fonts
 - Image and video backgrounds, including files stored in your browser
+- Animated Space theme with a rotating starfield and shooting stars
 - Focus mode, cinema width, history blur, and sensitive text masking
 - Message queues and preferred models on supported chat pages
 - Separate controls for promotions, usage notices, and AI disclaimers
@@ -34,7 +35,5 @@ python scripts/build_xpi.py
 ```
 
 The package is written to `build/aurora-universal-1.0.0.xpi`. Standard Firefox requires a [Mozilla-signed package](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) for permanent installation. Unsigned development packages require a browser configured to accept them.
-
-[Migrating from Aurora for ChatGPT](release/MIGRATION.md).
 
 [Development](DEVELOPMENT.md) · [Privacy](PRIVACY.md) · [AGPLv3 license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

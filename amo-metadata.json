@@ -19,7 +19,7 @@
   "version": {
     "license": "AGPL-3.0-only",
     "release_notes": {
-      "en-US": "Liquid glass with adjustable transparency, image and video backgrounds, bundled fonts, focus mode, cinema width, history blur, and text masking. Includes message queues and preferred models where supported, plus separate controls for promotions, usage notices, and AI disclaimers."
+      "en-US": "Expands Aurora for ChatGPT to seven more websites.\n\n- Added support for Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face.\n- Added an animated Space theme with a rotating starfield, twinkling stars, and shooting stars.\n- Significantly improved performance in long chats and reduced background activity in inactive tabs.\n- Improved startup and background loading to reduce flicker.\n- Added individual website toggles and website-specific model preferences.\n- Extended message queues and privacy controls to supported chats on the new websites.\n- Bundled fonts locally instead of fetching them from Google Fonts.\n- Added independent controls for hiding AI disclaimers and ChatGPT sponsored placements.\n- Removed the token counter and bundled tokenizer to reduce package size."
     },
     "approval_notes": "AGPL-3.0-only extension with readable JavaScript and CSS. No build-time transpilation, analytics, or remote executable code. unlimitedStorage supports local user-selected backgrounds within a 15 MB file limit. Host access applies site-specific appearance and features. License and third-party notices are included. Gecko ID is aurora-universal@pigeonlabs. Remote wallpaper loads directly from its provider."
   }

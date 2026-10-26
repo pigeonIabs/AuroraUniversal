@@ -4,7 +4,7 @@ Aurora Universal 1.0.0 is the first Universal release. GitHub release files incl
 
 ## Firefox Add-ons
 
-Universal uses `aurora-universal@pigeonlabs` and a separate listing. [Migration details](MIGRATION.md).
+Universal uses the extension ID `aurora-universal@pigeonlabs`.
 
 The development XPI is unsigned. Standard Firefox requires a Mozilla-signed package for permanent installation. Store submission and approval are separate from publishing the GitHub release. [Mozilla signing requirements](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/).
 

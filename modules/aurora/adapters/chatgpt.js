@@ -4,6 +4,9 @@
   const A = window.AuroraExt;
   Object.assign(A.site, {
     appRoot: '#__next, #root',
+    selectors: {
+      history: ':is(#app-shell-sidebar, #stage-slideover-sidebar, [data-testid="sidebar"]) :is(a[href^="/c/"], a[href*="/project/"], a[href*="/projects/"], [data-testid="history-item"], [data-testid="conversation-title"])',
+    },
     config: {
       // Selectors
       SELECTORS: {

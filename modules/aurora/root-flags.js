@@ -48,6 +48,8 @@
     toggleClass(root, 'cgpt-blur-avatar', enabled('blurAvatar'));
     toggleClass(root, 'cgpt-hide-upgrade', enabled('hideUpgradeButtons'));
     toggleClass(root, 'cgpt-hide-rate-limits', enabled('hideRateLimitMessages'));
+    toggleClass(root, 'cgpt-hide-ai-warnings', enabled('hideAIWarnings'));
+    toggleClass(root, 'cgpt-block-ads', enabled('blockAds'));
 
     const storedGlassIntensity = Number(s.glassIntensity);
     const fallbackGlassIntensity = s.appearance === 'clear' ? 100 : 0;
@@ -62,7 +64,11 @@
       ? Math.max(0, Math.min(150, storedBackgroundBlur))
       : 60;
     const maxGlassBlur = s.appearance === 'clear' ? 24 : 14;
-    const glassBlur = Math.round(maxGlassBlur * Math.min(1, backgroundBlur / 60));
+    // Space is already a sharp procedural scene. Blurring its one-pixel stars
+    // erases them even through a fully transparent surface. Keep its material
+    // clear while text-frost still protects controls over scrolled page text.
+    const glassBlur = s.customBgUrl === '__space__' ? 0 :
+      Math.round(maxGlassBlur * Math.min(1, backgroundBlur / 60));
     setStyle(root, '--aurora-glass-blur', `${glassBlur}px`);
     setStyle(root, '--aurora-glass-backdrop', backgroundBlur === 0 ? 'none' : `blur(${glassBlur}px)`);
     setStyle(root, '--aurora-glass-saturate', '100%');
@@ -70,7 +76,7 @@
     setStyle(root, '--clear-blur', `${glassBlur}px`);
     setStyle(root, '--composer-blur', `${glassBlur}px`);
     setStyle(root, '--glass-blur', `${glassBlur}px`);
-    toggleAttribute(root, 'data-aurora-zero-blur', backgroundBlur === 0);
+    toggleAttribute(root, 'data-aurora-zero-blur', glassBlur === 0);
     toggleAttribute(root, 'data-aurora-codex', location.pathname.startsWith('/codex/cloud'));
     toggleAttribute(root, 'data-aurora-temporary-chat', new URLSearchParams(location.search).get('temporary-chat') === 'true');
     setAttribute(root, 'data-glass-intensity', String(glassIntensity));
@@ -102,6 +108,7 @@
 
     setAttribute(root, 'data-voice-color', s.voiceColor || 'default');
     A.embeddedGems?.sync?.();
+    A.textFrost?.schedule?.();
   }
 
   A.rootFlags.apply = A.rootFlags.apply || apply;

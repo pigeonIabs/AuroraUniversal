@@ -3,6 +3,10 @@
 .amo-upload-uuid
 build/
 work/
+output/
+node_modules/
+__pycache__/
+*.pyc
 
 
 # Local working instructions and project notes

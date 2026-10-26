@@ -1,5 +1,4 @@
-// popup.js - Zero-Latency Optimized (Instant Open)
-// Performance-first rewrite: cached settings, element caching, single-pass init
+// Toolbar settings. Render defaults, then hydrate from the background cache.
 
 // --- Constants & Defaults ---
 const LOCAL_BG_KEY = 'customBgData';
@@ -10,7 +9,7 @@ const PURE_BLACK_BACKGROUND = '__pure_black__';
 const DEFAULTS = window.AuroraExt.preferences.defaults;
 
 const TOGGLE_KEYS = [
-  'legacyComposer', 'hideUpgradeButtons', 'hideRateLimitMessages', 'disableAnimations',
+  'legacyComposer', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'disableAnimations',
   'focusMode', 'hideQuickSettings', 'queueWhileGenerating', 'blurChatHistory',
   'blurAvatar', 'soundEnabled', 'autoContrast', 'dataMaskingEnabled',
   'maskingRandomMode', 'cuteVoiceUI', 'cinemaMode', 'glassUserMessages'
@@ -28,7 +27,7 @@ let siteRequestRevision = 0;
 // --- Helpers ---
 const getMessage = (key, substitutions) => chrome?.i18n?.getMessage(key, substitutions) || key;
 
-// --- Main Initialization (Zero-Latency) ---
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
   // Keep <html lang="..."> in sync with the browser UI language (basic a11y).
   try {
@@ -38,20 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ignore
   }
 
-  // 1. Cache all DOM elements ONCE (eliminates repeated querySelectorAll)
   cacheElements();
 
-  // 2. Apply localization immediately (uses cached elements)
   applyLocalization();
   applySiteScope();
   
-  // 3. Setup static tabs
   setupTabs();
   
-  // 4. Render with defaults INSTANTLY (0ms blocking - UI appears immediately)
   renderUi(DEFAULTS, { detectedTheme: 'dark' });
   
-  // 5. Hydrate with real data via INSTANT message (cached in background.js)
   chrome.runtime.sendMessage({ type: 'GET_SETTINGS_FULL' }, (response) => {
     if (chrome.runtime.lastError) {
       // Fallback: direct storage access if message fails
@@ -677,7 +671,7 @@ function buildSearchableData() {
     const tabName = document.querySelector(`.tab-link[data-tab="${pane.id}"]`)?.textContent || '';
     pane.querySelectorAll('.row').forEach(row => {
       if (row.dataset.siteUnsupported === 'true') return;
-      const label = row.querySelector('.label')?.textContent || '';
+      const label = row.querySelector('.label')?.textContent || row.textContent || '';
       const keywords = (tabName + ' ' + label + ' ' + (row.querySelector('[title]')?.title || '')).toLowerCase();
       searchableData.push({ element: row, tabId: pane.id, keywords });
     });

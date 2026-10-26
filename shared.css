@@ -1,5 +1,250 @@
 /* Aurora shared theme tokens, backgrounds and quick settings. */
 
+/* Explicit selectors keep extension-injected paint scoped in LibreWolf.
+ * Native state controls and their descendants retain their original paint.
+ * Decorative scroll edges never own glass. Important layer rules take priority
+ * over native utility classes and Aurora's later surface rules. Keep masks and
+ * all layout geometry intact, and clear only the existing edge layer's paint.
+ * The main-content-top-fade host contains the transcript and composer, so its
+ * descendants must retain their own native surface material. */
+@property --aurora-scroll-edge { syntax: "*"; inherits: false; initial-value: 0; }
+@layer aurora-scroll-edges {
+  :is(html:root.cgpt-ambient-on :is(
+    .pointer-events-none, [aria-hidden="true"], div:empty, span:empty
+  ):is(.absolute, .fixed, .sticky):is(
+    [class*="top-"], [class*="bottom-"], [class*="inset-y-"],
+    [style*="top:"], [style*="bottom:"]
+  ):is(
+    [class*="backdrop-blur"], [class*="mask-image"],
+    [style*="backdrop-filter"], [style*="mask-image"]
+  ):not(:is(img, video, canvas, svg)):not(:has(img, video, canvas, svg)),
+  html:root.cgpt-ambient-on :is(
+    .df-header-backdrop, .df-header-backdrop *, .content-fade-top,
+    #thread-bottom-container, #thread-bottom-container .content-fade,
+    [class*="threadFooterContentFade"], [class*="threadFooterExtendedContentFade"],
+    [class*="threadFooterBelowComposerFade"],
+    [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+    [data-pip-obstacle="thread-footer"],
+    [data-cds-dock-host-fade], [data-cds-dock-masked], [data-cds="ChatComposerChin"],
+    .page-fade-b, .page-fade-b > .bg-page,
+    ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+    lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+    .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+    .smrm-card__scroll-up, .smrm-card__scroll-down,
+    [data-aurora-surface="toolbar"], [data-aurora-toolbar],
+    [data-app-shell-titlebar], header#page-header, [data-testid="chat-header"]
+  )):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+:is(html:root.cgpt-ambient-on :is(
+    .pointer-events-none, [aria-hidden="true"], div:empty, span:empty
+  ):is(.absolute, .fixed, .sticky):is(
+    [class*="top-"], [class*="bottom-"], [class*="inset-y-"],
+    [style*="top:"], [style*="bottom:"]
+  ):is(
+    [class*="backdrop-blur"], [class*="mask-image"],
+    [style*="backdrop-filter"], [style*="mask-image"]
+  ):not(:is(img, video, canvas, svg)):not(:has(img, video, canvas, svg)),
+  html:root.cgpt-ambient-on :is(
+    .df-header-backdrop, .df-header-backdrop *, .content-fade-top,
+    #thread-bottom-container, #thread-bottom-container .content-fade,
+    [class*="threadFooterContentFade"], [class*="threadFooterExtendedContentFade"],
+    [class*="threadFooterBelowComposerFade"],
+    [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+    [data-pip-obstacle="thread-footer"],
+    [data-cds-dock-host-fade], [data-cds-dock-masked], [data-cds="ChatComposerChin"],
+    .page-fade-b, .page-fade-b > .bg-page,
+    ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+    lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+    .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+    .smrm-card__scroll-up, .smrm-card__scroll-down,
+    [data-aurora-surface="toolbar"], [data-aurora-toolbar],
+    [data-app-shell-titlebar], header#page-header, [data-testid="chat-header"]
+  )):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *)::before,
+:is(html:root.cgpt-ambient-on :is(
+    .pointer-events-none, [aria-hidden="true"], div:empty, span:empty
+  ):is(.absolute, .fixed, .sticky):is(
+    [class*="top-"], [class*="bottom-"], [class*="inset-y-"],
+    [style*="top:"], [style*="bottom:"]
+  ):is(
+    [class*="backdrop-blur"], [class*="mask-image"],
+    [style*="backdrop-filter"], [style*="mask-image"]
+  ):not(:is(img, video, canvas, svg)):not(:has(img, video, canvas, svg)),
+  html:root.cgpt-ambient-on :is(
+    .df-header-backdrop, .df-header-backdrop *, .content-fade-top,
+    #thread-bottom-container, #thread-bottom-container .content-fade,
+    [class*="threadFooterContentFade"], [class*="threadFooterExtendedContentFade"],
+    [class*="threadFooterBelowComposerFade"],
+    [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+    [data-pip-obstacle="thread-footer"],
+    [data-cds-dock-host-fade], [data-cds-dock-masked], [data-cds="ChatComposerChin"],
+    .page-fade-b, .page-fade-b > .bg-page,
+    ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+    lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+    .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+    .smrm-card__scroll-up, .smrm-card__scroll-down,
+    [data-aurora-surface="toolbar"], [data-aurora-toolbar],
+    [data-app-shell-titlebar], header#page-header, [data-testid="chat-header"]
+  )):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *)::after {
+      --aurora-scroll-edge: 1 !important;
+      --aurora-text-backdrop: none !important;
+      --aurora-backdrop-source: initial !important;
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+}
+
+/* Composer rails are page layout, never a second glass pane behind the input.
+ * Clear their own material and pseudo layers from first paint. Non-inheriting
+ * edge markers keep both material engines from restoring frost on these rails
+ * while every nested native control keeps its own glass and geometry. */
+@layer aurora-scroll-edges {
+  :is(
+    html:root.cgpt-ambient-on [data-aurora-plane],
+    html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+      #thread-bottom-container, [data-thread-scroll-footer],
+      [data-pip-obstacle="thread-footer"], [data-cds-dock-host-fade],
+      [data-cds-dock-masked], [data-cds="ChatComposerChin"]
+    ),
+    html:root.cgpt-ambient-on[data-aurora-site="claude"] :is(
+      [data-cds="ChatComposer"], [data-composer-card-holder],
+      [data-testid="transcript-bottom-fade"], [data-testid="transcript-bottom-fade"] > div
+    ),
+    html:root.cgpt-ambient-on[data-aurora-site="gemini"] input-container,
+    html:root.cgpt-ambient-on[data-aurora-site="aistudio"] ms-chunk-editor footer,
+    html:root.cgpt-ambient-on[data-aurora-site="grok"] form:has(.query-bar):not(.query-bar),
+    html:root.cgpt-ambient-on[data-aurora-site="qwen"] .message-input-wrapper,
+    html:root.cgpt-ambient-on[data-aurora-site="deepseek"] #root :is(._871cbca, .d72636e2, ._0fcaa63),
+    html:root.cgpt-ambient-on[data-aurora-site="huggingface"] #app .page-fade-b
+  ) {
+    &, &::before, &::after {
+      --aurora-scroll-edge: 1 !important;
+      --aurora-text-backdrop: none !important;
+      --aurora-backdrop-source: initial !important;
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+}
+
+/* Frost belongs to one existing painted layer, including native pseudo layers.
+ * Non-inheritance keeps a menu's material out of its children and wrappers.
+ * The omitted initial value makes var() fall back to each original material. */
+@property --aurora-text-backdrop { syntax: "*"; inherits: false; }
+@property --aurora-backdrop-source { syntax: "*"; inherits: false; }
+html.cgpt-ambient-on [data-aurora-text-frost="true"],
+html.cgpt-ambient-on [data-aurora-text-frost-before="true"]::before,
+html.cgpt-ambient-on [data-aurora-text-frost-after="true"]::after {
+  --aurora-text-backdrop: blur(48px) !important;
+}
+
+/* Release offscreen conversation filters on every provider. Only paint changes,
+ * so native dimensions, scrolling and selection remain authoritative. */
+@layer aurora-visibility {
+  html:root.cgpt-ambient-on [data-aurora-offscreen],
+  html:root.cgpt-ambient-on [data-aurora-offscreen] *,
+  html:root.cgpt-ambient-on [data-aurora-offscreen]::before,
+  html:root.cgpt-ambient-on [data-aurora-offscreen]::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    --aurora-text-backdrop: none !important;
+  }
+}
+
+/* Scroll-edge paint belongs to layout, not to the glass composer. Match page
+ * gradients only on decorative layers. Native media and text gradients keep
+ * their paint. CSS handles scroll-state changes without a scroll observer. */
+:is(html:root.cgpt-ambient-on :is(
+  .pointer-events-none,
+  [aria-hidden="true"],
+  :is(div, span):empty:is(.absolute, .fixed, .sticky)
+):is(
+  [class*="bg-gradient-to-"], [class*="bg-linear-to-"],
+  [class*="before:bg-gradient-to-"], [class*="after:bg-gradient-to-"],
+  [class*="before:bg-linear-to-"], [class*="after:bg-linear-to-"]
+):is(
+  [class*="from-bg-"], [class*="via-bg-"], [class*="to-bg-"],
+  [class*="from-page"], [class*="via-page"], [class*="to-page"],
+  [class*="from-background"], [class*="via-background"], [class*="to-background"],
+  [class*="from-surface"], [class*="via-surface"], [class*="to-surface"],
+  [class*="from-token-"], [class*="via-token-"], [class*="to-token-"]
+),
+html:root.cgpt-ambient-on :is(
+  .page-fade-b, .page-fade-b > .bg-page,
+  [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+  [data-cds-dock-host-fade], [data-cds-dock-masked],
+  [data-cds="ChatComposerChin"],
+  ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+  lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+  .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+  .smrm-card__scroll-up, .smrm-card__scroll-down
+),
+html:root.cgpt-ambient-on[data-aurora-site="huggingface"]
+  #app .pointer-events-none.absolute.bottom-0:is(.bg-linear-to-t, .bg-gradient-to-t)):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+:is(html:root.cgpt-ambient-on :is(
+  .pointer-events-none,
+  [aria-hidden="true"],
+  :is(div, span):empty:is(.absolute, .fixed, .sticky)
+):is(
+  [class*="bg-gradient-to-"], [class*="bg-linear-to-"],
+  [class*="before:bg-gradient-to-"], [class*="after:bg-gradient-to-"],
+  [class*="before:bg-linear-to-"], [class*="after:bg-linear-to-"]
+):is(
+  [class*="from-bg-"], [class*="via-bg-"], [class*="to-bg-"],
+  [class*="from-page"], [class*="via-page"], [class*="to-page"],
+  [class*="from-background"], [class*="via-background"], [class*="to-background"],
+  [class*="from-surface"], [class*="via-surface"], [class*="to-surface"],
+  [class*="from-token-"], [class*="via-token-"], [class*="to-token-"]
+),
+html:root.cgpt-ambient-on :is(
+  .page-fade-b, .page-fade-b > .bg-page,
+  [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+  [data-cds-dock-host-fade], [data-cds-dock-masked],
+  [data-cds="ChatComposerChin"],
+  ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+  lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+  .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+  .smrm-card__scroll-up, .smrm-card__scroll-down
+),
+html:root.cgpt-ambient-on[data-aurora-site="huggingface"]
+  #app .pointer-events-none.absolute.bottom-0:is(.bg-linear-to-t, .bg-gradient-to-t)):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *)::before,
+:is(html:root.cgpt-ambient-on :is(
+  .pointer-events-none,
+  [aria-hidden="true"],
+  :is(div, span):empty:is(.absolute, .fixed, .sticky)
+):is(
+  [class*="bg-gradient-to-"], [class*="bg-linear-to-"],
+  [class*="before:bg-gradient-to-"], [class*="after:bg-gradient-to-"],
+  [class*="before:bg-linear-to-"], [class*="after:bg-linear-to-"]
+):is(
+  [class*="from-bg-"], [class*="via-bg-"], [class*="to-bg-"],
+  [class*="from-page"], [class*="via-page"], [class*="to-page"],
+  [class*="from-background"], [class*="via-background"], [class*="to-background"],
+  [class*="from-surface"], [class*="via-surface"], [class*="to-surface"],
+  [class*="from-token-"], [class*="via-token-"], [class*="to-token-"]
+),
+html:root.cgpt-ambient-on :is(
+  .page-fade-b, .page-fade-b > .bg-page,
+  [data-thread-scroll-footer], [data-app-shell-main-content-top-fade],
+  [data-cds-dock-host-fade], [data-cds-dock-masked],
+  [data-cds="ChatComposerChin"],
+  ms-chat-bottom-overlay, ms-chat-bottom-overlay .bottom-overlay,
+  lx-overflow-carousel .carousel-scrim, input-container .autosuggest-scrim,
+  .cmrm-card__scroll-up, .cmrm-card__scroll-down,
+  .smrm-card__scroll-up, .smrm-card__scroll-down
+),
+html:root.cgpt-ambient-on[data-aurora-site="huggingface"]
+  #app .pointer-events-none.absolute.bottom-0:is(.bg-linear-to-t, .bg-gradient-to-t)):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *)::after {
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+    -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  }
+
 /* Flat native fills retain their flat edges. Material never invents a square
  * outline just because a layout box has a background. Each owner resets the
  * token so a rounded child keeps its own edge inside a flat painted parent. */
@@ -43,7 +288,7 @@ html.cgpt-ambient-on {
   --sidebar-gradient-overlay: linear-gradient( to bottom, rgba(255,255,255,0.015), rgba(0,0,0,0.015) );
   --sidebar-glass-radius: 16px;
 
-  /* --- THEME: CLEAR GLASS (LIQUID) --- */
+  /* --- THEME: CLEAR GLASS --- */
   --clear-blur: var(--aurora-glass-blur, 24px);
   --clear-saturate: 180%;
   --clear-shadow: 0 16px 50px rgba(0,0,0,0.4);
@@ -170,19 +415,36 @@ html.cgpt-ambient-on.cgpt-appearance-clear {
   --aurora-glass-fill: color-mix(in srgb, var(--aurora-glass-bg) var(--aurora-glass-fill-opacity), transparent);
 }
 
+/* Native header decoration can fade a solid fill with a mask rather than a
+ * background gradient. Clear only its paint, keeping controls and layout. */
+html.cgpt-ambient-on :is(
+  [data-aurora-surface="toolbar"], header#page-header, [data-app-shell-titlebar]
+) :is(div, span):is(
+  [class*="bg-gradient-to-b"], [class*="bg-linear-to-b"],
+  .pointer-events-none[class*="mask-image"], .pointer-events-none[style*="mask-image"]
+) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+}
+
 /* --- Background Container & Media --- */
-#cgpt-ambient-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--theme-bg-color); opacity: 0; transition: opacity 0.5s ease-in-out; contain: paint; overflow: hidden; }
+#cgpt-ambient-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--theme-bg-color); opacity: 1; contain: paint; overflow: hidden; }
 html.cgpt-bg-anim-disabled #cgpt-ambient-bg { transition: none; }
 #cgpt-ambient-bg.bg-visible { opacity: 1; }
-#cgpt-ambient-bg .media-layer { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 750ms ease-in-out; }
-#cgpt-ambient-bg .media-layer.active { opacity: 1; }
+/* Decoded layers swap together. Hidden media never participates in backdrop
+ * composition, and switching does not blend two full-screen filter trees. */
+#cgpt-ambient-bg .media-layer { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; }
+#cgpt-ambient-bg .media-layer.active { opacity: 1; visibility: visible; }
 #cgpt-ambient-bg .media-layer.pure-black-active { background: #000; }
 #cgpt-ambient-bg.pure-black-mode { background: #000; }
 #cgpt-ambient-bg.pure-black-mode :is(.haze, .overlay) { display: none !important; }
 #cgpt-ambient-bg.space-mode { background: #000; }
 #cgpt-ambient-bg.space-mode :is(.haze, .overlay) { display: none !important; }
 #cgpt-ambient-bg picture, #cgpt-ambient-bg img, #cgpt-ambient-bg video, #cgpt-ambient-bg .haze, #cgpt-ambient-bg .overlay, #cgpt-ambient-bg .animated-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
-#cgpt-ambient-bg img, #cgpt-ambient-bg video { filter: blur(var(--cgpt-bg-blur-radius, 60px)) var(--bg-filter); opacity: var(--bg-opacity); will-change: transform, filter, opacity; z-index: 0; transition: filter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+#cgpt-ambient-bg img, #cgpt-ambient-bg video { filter: blur(var(--cgpt-bg-blur-radius, 60px)) var(--bg-filter); opacity: var(--bg-opacity); z-index: 0; transition: opacity 160ms ease; }
 #cgpt-ambient-bg .haze { z-index: 2; background: var(--haze-gradient); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.6s ease; }
 #cgpt-ambient-bg .overlay { z-index: 1; background: var(--overlay-gradient) !important; transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.6s ease; }
 html.cgpt-appearance-clear #cgpt-ambient-bg .overlay { background: transparent !important; }
@@ -196,15 +458,23 @@ html.cgpt-appearance-clear.cgpt-light-mode #cgpt-ambient-bg img, html.cgpt-appea
 @keyframes move-blob-3 { 0% { transform: scale(1) translate(0px, 0px); } 33% { transform: scale(1.15) translate(20vw, 20vh); } 66% { transform: scale(0.85) translate(-30vw, -10vh); } 100% { transform: scale(1) translate(0px, 0px); } }
 #cgpt-ambient-bg .animated-bg { display: none; z-index: 0; overflow: hidden; position: relative; }
 #cgpt-ambient-bg .media-layer.gpt5-active .animated-bg { display: block; }
-.animated-bg .blob { position: absolute; border-radius: 50%; opacity: 0.45; filter: blur(100px); will-change: transform; }
-.animated-bg .blob:nth-child(1) { width: 60vmax; height: 60vmax; top: -30vmax; left: -20vmax; background: #ff99c8; animation: move-blob-1 45s infinite alternate ease-in-out; }
-.animated-bg .blob:nth-child(2) { width: 70vmax; height: 70vmax; bottom: -40vmax; right: -30vmax; background: #a9d6ff; animation: move-blob-2 60s infinite alternate ease-in-out; }
-.animated-bg .blob:nth-child(3) { width: 50vmax; height: 50vmax; bottom: -20vmax; left: 10vmax; background: #fcf6bd; animation: move-blob-3 75s infinite alternate ease-in-out; }
+/* Cached images retain the original solid-circle Gaussian blur and halo.
+ * Animation only moves the existing three background elements. */
+.animated-bg .blob { position: absolute; border-radius: 50%; opacity: 0.45; background: transparent; will-change: transform; }
+.animated-bg .blob::before { content: ""; position: absolute; inset: -300px; background-image: var(--aurora-gradient-texture); background-size: 100% 100%; background-repeat: no-repeat; }
+.animated-bg .blob:nth-child(1) { width: 60vmax; height: 60vmax; top: -30vmax; left: -20vmax; --blob-color: #ff99c8; animation: move-blob-1 45s infinite alternate ease-in-out; }
+.animated-bg .blob:nth-child(2) { width: 70vmax; height: 70vmax; bottom: -40vmax; right: -30vmax; --blob-color: #a9d6ff; animation: move-blob-2 60s infinite alternate ease-in-out; }
+.animated-bg .blob:nth-child(3) { width: 50vmax; height: 50vmax; bottom: -20vmax; left: 10vmax; --blob-color: #fcf6bd; animation: move-blob-3 75s infinite alternate ease-in-out; }
+#cgpt-ambient-bg .media-layer:not(.active) .animated-bg .blob,
 html.cgpt-tab-hidden .animated-bg .blob { animation-play-state: paused !important; }
+html.cgpt-animations-disabled .animated-bg .blob { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .animated-bg .blob { animation: none !important; }
+}
 html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob { opacity: 0.6 !important; }
-html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(1) { background: #ff78b4; }
-html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(2) { background: #77b5fe; }
-html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(3) { background: #fdd26e; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(1) { --blob-color: #ff78b4; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(2) { --blob-color: #77b5fe; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(3) { --blob-color: #fdd26e; }
 
 /* Space keeps its pinpoints sharp independently of the image/video blur slider. */
 #cgpt-ambient-bg .space-bg {
@@ -222,16 +492,13 @@ html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(3) { backgroun
   background-position: center;
   transform: translate(-50%, -50%) rotate(var(--space-angle));
   transform-origin: center;
-  animation: aurora-sidereal-drift 10800s linear infinite, aurora-sky-breathe 17s ease-in-out infinite;
+  will-change: transform;
+  /* Keep the baked dust steady. Only individual stars change brightness. */
+  animation: aurora-sidereal-drift 10800s linear infinite;
 }
 @keyframes aurora-sidereal-drift {
   from { transform: translate(-50%, -50%) rotate(var(--space-angle)); }
   to { transform: translate(-50%, -50%) rotate(calc(var(--space-angle) + 360deg)); }
-}
-@keyframes aurora-sky-breathe {
-  0%, 100% { opacity: 0.82; }
-  44% { opacity: 1; }
-  72% { opacity: 0.9; }
 }
 #cgpt-ambient-bg .space-twinkle {
   position: absolute;
@@ -240,6 +507,7 @@ html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(3) { backgroun
   background: #dbe5f4;
   box-shadow: 0 0 3px 1px rgba(179, 202, 237, 0.2);
   opacity: 0.35;
+  will-change: opacity;
   animation: aurora-star-flicker var(--twinkle-duration) var(--twinkle-delay) infinite ease-in-out;
 }
 @keyframes aurora-star-flicker {
@@ -288,8 +556,8 @@ html.cgpt-animations-disabled #cgpt-ambient-bg .space-meteor { display: none; }
   border-radius: 6px;
   background: rgba(30, 30, 30, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, blur(12px)); --aurora-backdrop-source: blur(12px);
+  backdrop-filter: var(--aurora-text-backdrop, blur(12px)); --aurora-backdrop-source: blur(12px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -357,8 +625,8 @@ html.cgpt-light-mode #cgpt-qs-btn svg { color: #000; }
   /* Dynamic Glass Style (Dimmed by default) */
   background: var(--aurora-glass-fill);
   border: 1px solid var(--aurora-glass-border);
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
-  backdrop-filter: var(--aurora-glass-backdrop, none);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   box-shadow: inset 0 0 2px 0 var(--aurora-glass-glow), var(--aurora-glass-shadow);
   /* End of New Style */
   border-radius: 14px;
@@ -452,8 +720,8 @@ html.cgpt-light-mode .qs-row .track { background: rgba(0,0,0,0.2); }
   border: 1px solid var(--switch-glider-border);
   border-radius: var(--aurora-ui-switch-glider-radius);
   box-shadow: var(--switch-glider-shadow);
-  -webkit-backdrop-filter: var(--switch-glider-blur);
-  backdrop-filter: var(--switch-glider-blur);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--switch-glider-blur)); --aurora-backdrop-source: var(--switch-glider-blur);
+  backdrop-filter: var(--aurora-text-backdrop, var(--switch-glider-blur)); --aurora-backdrop-source: var(--switch-glider-blur);
   z-index: 1;
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.4s ease, border-color 0.4s ease;
   pointer-events: none;
@@ -526,8 +794,8 @@ html.cgpt-animations-disabled #cgpt-qs-panel[data-state="closing"] { visibility:
   background: rgba(255, 255, 255, 0.06);
   color: inherit;
   cursor: pointer;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
-  backdrop-filter: var(--aurora-glass-backdrop, none);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
 
@@ -583,8 +851,8 @@ html.cgpt-light-mode .aurora-queue-btn:hover {
   font-size: 12px;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   pointer-events: none;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
-  backdrop-filter: var(--aurora-glass-backdrop, none);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
@@ -602,8 +870,8 @@ html.cgpt-light-mode .aurora-queue-btn:hover {
   padding: 10px;
   background: var(--aurora-glass-fill);
   border: 1px solid var(--aurora-glass-border);
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
-  backdrop-filter: var(--aurora-glass-backdrop, none);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   box-shadow: inset 0 0 2px 0 var(--aurora-glass-glow), var(--aurora-glass-shadow);
   color: #fff;
 }
@@ -741,7 +1009,7 @@ html.cgpt-ambient-on [data-aurora-sensitive-editor] { filter: blur(5px) !importa
 .aurora-queue-remove:disabled { opacity: .3; cursor: default; }
 html.cgpt-animations-disabled :is(#aurora-queue-panel, #aurora-queue-btn, #aurora-queue-toast),
 html.cgpt-animations-disabled #aurora-queue-panel * { transition: none !important; animation: none !important; }
-html.cgpt-ambient-on[data-aurora-zero-blur] :is(#cgpt-qs-btn, #cgpt-qs-panel, #aurora-queue-panel, #aurora-queue-btn, #aurora-queue-toast) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.cgpt-ambient-on[data-aurora-zero-blur] :is(#cgpt-qs-btn, #cgpt-qs-panel, #aurora-queue-panel, #aurora-queue-btn, #aurora-queue-toast) { backdrop-filter: var(--aurora-text-backdrop, none) !important; -webkit-backdrop-filter: var(--aurora-text-backdrop, none) !important; }
 @media (prefers-reduced-motion: reduce) {
   #aurora-queue-panel, #aurora-queue-panel *, #aurora-queue-btn, #aurora-queue-toast { transition: none !important; animation: none !important; }
 }

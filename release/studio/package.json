@@ -1,0 +1,12 @@
+{
+  "name": "aurora-release-studio",
+  "private": true,
+  "scripts": {
+    "capture": "node capture.cjs",
+    "preview": "node render.cjs --preview",
+    "render": "node render.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

@@ -24,16 +24,21 @@
   const tagged = '[data-aurora-upgrade], [data-aurora-rate-limit]';
   const leafNotice = ':is(p,span,div):not(:has(p,span,div,textarea,input,[contenteditable],pre,code))';
   const candidatesSelector = [controls, explicitUpgrade, explicitRate, notices, leafNotice, tagged, '[role="dialog"]'].join(',');
+  const ownerSelector = [controls, explicitUpgrade, explicitRate, notices, tagged].join(',');
+  const noticeSelector = [notices, explicitUpgrade, explicitRate, tagged].join(',');
+  const boundary = `${A.ownedUI}, ${content}`;
   const upgradeAction = /^(?:upgrade\b|(?:get|try|unlock|subscribe(?:\s+to)?|switch\s+to)\s+(?:a\s+paid\s+plan|pro\b|max\b|plus\b|premium\b|super\s?grok\b|chatgpt\s+(?:plus|pro|go|business)|claude\s+(?:pro|max)|gemini\s+advanced|google\s+(?:ai|one)\b|hugging\s?face\s+pro)|super\s?grok(?:\s+heavy)?\s*$|(?:view|compare|explore)\s+(?:plans|subscriptions)|mejorar(?:\s+plan)?\b|actualizar\s+(?:el\s+)?plan\b|pasar\s+a\s+(?:pro|plus)|(?:mettre\s+à\s+niveau|passer\s+à\s+(?:pro|plus)|améliorer\s+(?:le\s+)?forfait)|(?:улучшить|обновить|повысить)\s+(?:план|тариф)|(?:升级|升級|订阅|訂閱))/i;
   const upgradeCopy = /(?:upgrade\s+(?:your\s+)?(?:plan|to|for)|unlock\s+(?:more|higher|premium)|(?:get|try)\s+(?:super\s?grok|claude\s+(?:pro|max)|chatgpt\s+(?:plus|pro|go)|google\s+ai\s+(?:pro|ultra))|(?:passer\s+à|mejorar\s+(?:tu\s+)?plan|повысить\s+тариф|升级|升級))/i;
   const limitCopy = /(?:rate[ -]?limit(?:ed|ing)?|too\s+many\s+(?:requests|messages)|(?:usage|message|daily|weekly|monthly|free|token|generation|request|model)\s+(?:\w+\s+){0,2}limit\s+(?:reached|exceeded)|(?:reached|hit|exceeded)\s+(?:your\s+|the\s+|a\s+)?(?:\w+\s+){0,3}(?:limit|quota)|(?:out\s+of|run\s+out\s+of|used\s+(?:up\s+)?all)\s+(?:your\s+)?(?:free\s+)?(?:messages|requests|generations|credits)|quota\s+(?:exceeded|exhausted)|\d+\s+(?:messages|requests|generations)\s+(?:left|remaining)|(?:límite|limite)\s+(?:de\s+\w+\s+)?(?:alcanzado|excedido|atteinte?|dépassée?)|(?:лимит|квота).{0,35}(?:достигнут|исчерпан|превышен)|(?:已达|超出|超过|超過|达到上限|使用上限|请求过于频繁|請求過於頻繁|额度已用完|額度已用完|配额已用完))/i;
   const normalize = text => String(text || '').replace(/\s+/g, ' ').trim();
   const labels = node => [node.getAttribute('aria-label'), node.getAttribute('title'), node.textContent].map(normalize);
   const excluded = node => !node || !!node.closest(A.ownedUI) || !!node.closest(content);
+  const enabled = () => ['hideUpgradeButtons', 'hideRateLimitMessages'].some(key =>
+    A.getSettings()[key] && A.sites.supports(A.site, key));
 
   function changedOwner(node) {
-    if (!node?.closest || excluded(node)) return null;
-    return node.closest([controls, explicitUpgrade, explicitRate, notices, tagged].join(',')) || node.closest(leafNotice);
+    if (!enabled() || !node?.closest || excluded(node)) return null;
+    return node.closest(ownerSelector) || node.closest(leafNotice);
   }
 
   function classify(node) {
@@ -52,13 +57,13 @@
   }
 
   function tagElements(root = document) {
-    if (!A.isActive() || (root.nodeType === 1 && excluded(root))) return new Set();
-    const candidates = new Set(A.utils.matchingElements(root, candidatesSelector));
+    if (!A.isActive() || !enabled() || (root.nodeType === 1 && excluded(root))) return new Set();
+    const candidates = new Set(A.utils.matchingElementsOutside(root, candidatesSelector, boundary));
     const owner = changedOwner(root);
     if (owner) candidates.add(owner);
     for (let parent = root.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
       if (excluded(parent)) break;
-      if (parent.matches([notices, explicitUpgrade, explicitRate, tagged].join(','))) candidates.add(parent);
+      if (parent.matches(noticeSelector)) candidates.add(parent);
     }
     for (const node of candidates) {
       const { upgrade, rate } = classify(node);
@@ -84,7 +89,8 @@
     for (const [setting, className] of [['hideUpgradeButtons', 'cgpt-hide-upgrade'], ['hideRateLimitMessages', 'cgpt-hide-rate-limits']]) {
       A.utils.toggleClass(root, className, active && A.sites.supports(A.site, setting) && !!A.getSettings()[setting]);
     }
-    if (active) tagElements();
+    if (active && enabled()) tagElements();
+    else untag();
   }
 
   function untag() {

@@ -2,8 +2,10 @@
 (() => {
   'use strict';
   const A = window.AuroraExt;
-  const editor = '#root textarea.ds-scroll-area, textarea#chat-input';
-  const composer = '#root ._77cefa5:has(textarea.ds-scroll-area), div:has(> div > div > textarea.ds-scroll-area), .ds-input:has(#chat-input), .chat-input-container:has(#chat-input)';
+  const editor = '#root textarea.ds-scroll-area, textarea#chat-input, #root .ds-textarea.cc852ac5 textarea';
+  // Editing a sent message uses a separate design-system textarea shell.
+  // Its scroll-area class belongs to the shell rather than the textarea.
+  const composer = '#root ._77cefa5:has(textarea.ds-scroll-area), #root .ds-textarea.cc852ac5, div:has(> div > div > textarea.ds-scroll-area), .ds-input:has(#chat-input), .chat-input-container:has(#chat-input)';
   // Current chat turns paint the user bubble on this CSS-module element.
   // The outer message row only lays out the bubble and its action buttons.
   const userMessage = '#root .fbb737a4, [data-message-author-role="user"], [data-testid="user-message"]';
@@ -33,10 +35,13 @@
       avatar: '[data-testid="user-avatar"] img, .ds-avatar img, button[aria-label*="account" i] img',
       // The sticky composer includes a full-width fade and painted caveat.
       // They are layout paint, while the editor retains its own glass surface.
-      plane: '#root, #app, #root > div, #root > div > div:has(textarea.ds-scroll-area), #root > div > div > div:has(textarea.ds-scroll-area), #root :is(._871cbca, .d72636e2, ._0fcaa63), main, [data-testid="chat-container"]',
+      plane: '#root, #app, #root > div, #root > div > div:has(textarea.ds-scroll-area), #root > div > div > div:has(textarea.ds-scroll-area), #root :is(._871cbca, .d72636e2, ._0fcaa63), #root ._189b4a0 ._6ffc3c9, main, [data-testid="chat-container"]',
       toolbar: '.the-header, [data-testid="chat-header"], main > header',
       // The collapsed navigation groups its icons in one painted control.
       control: '#root ._5a20a69 .e5bf614e',
+      // The compact message markers sit directly on the page. Only the
+      // expanded hover list owns glass, following its native open class.
+      material: '#root ._189b4a0 ._4ce999d',
       content: '[data-testid="chat-messages"], [data-testid="conversation"]',
       code: '.ds-markdown-code-block, pre:not(.ds-markdown-code-block pre)',
       notice: '.ds-toast, .ds-toast__content, .ds-notification, .ds-message',

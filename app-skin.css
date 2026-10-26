@@ -7,6 +7,7 @@ html:root.cgpt-ambient-on {
   --aurora-ui-radius: 14px;
   --aurora-ui-switch-radius: 6px;
   --aurora-glass-saturate: 100%;
+  --aurora-storage-danger-fill: color-mix(in srgb, var(--aurora-glass-fill) 75%, rgb(190 35 35 / 0.36));
   --color-text: var(--theme-text-primary);
   --color-text-secondary: var(--theme-text-secondary);
   --color-text-tertiary: var(--theme-text-secondary);
@@ -16,11 +17,6 @@ html:root.cgpt-ambient-on {
   --darkreader-border--aurora-glass-border: var(--aurora-glass-border) !important;
   --darkreader-bg--aurora-glass-fill: var(--aurora-glass-fill) !important;
   --darkreader-bg--aurora-glass-shadow: var(--aurora-glass-shadow) !important;
-  --color-surface: transparent;
-  --color-surface-secondary: transparent;
-  --color-surface-tertiary: var(--aurora-glass-fill);
-  --color-surface-elevated: var(--aurora-glass-fill);
-  --color-surface-elevated-secondary: var(--aurora-glass-fill);
   /* Native hover classes own visible fills. Menu roles also cover clear hit areas. */
   --color-background-primary-ghost-hover: color-mix(in srgb, currentColor 9%, transparent);
 }
@@ -32,7 +28,7 @@ html:root.cgpt-ambient-on :is(#root .text-secondary, #root .text-tertiary, #root
   color: var(--theme-text-secondary) !important;
 }
 
-html:root.cgpt-ambient-on :is([class~="bg-surface"], [class~="bg-surface-secondary"], [class~="electron:bg-surface"], [class~="browser:bg-surface"]) {
+html:root.cgpt-ambient-on :is([class~="bg-surface"], [class~="bg-surface-secondary"], [class~="electron:bg-surface"], [class~="browser:bg-surface"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
 }
 
@@ -51,33 +47,62 @@ html:root.cgpt-ambient-on :is(
   .app-shell-left-panel [class~="bg-surface"],
   .app-shell-left-panel [class~="bg-surface-secondary"],
   [data-testid="desktop-app-shell"], [data-testid="mobile-app-shell-scroll-container"]
-) {
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   box-shadow: none !important;
 }
 
 /* Fades must reveal the wallpaper instead of painting a solid page over it. */
+html:root.cgpt-ambient-on [data-app-shell-main-content-top-fade],
 html:root.cgpt-ambient-on :is([data-thread-scroll-footer], [data-app-shell-main-content-top-fade])::before,
 html:root.cgpt-ambient-on :is([data-thread-scroll-footer], [data-app-shell-main-content-top-fade])::after,
 html:root.cgpt-ambient-on [data-request-input-activity-root] [aria-hidden="true"][class*="from-surface"],
 html:root.cgpt-ambient-on [data-request-input-activity-root] [aria-hidden="true"][class*="via-surface"] {
   background: transparent !important;
-  backdrop-filter: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 
 html:root.cgpt-ambient-on :is(
   [data-aurora-glass="true"]:not([data-composer-surface-variant]), [data-aurora-code-block="true"],
   [role="status"].group.isolate:is([class~="bg-surface/80"], .bg-warning-surface, .shadow-sidebar-footer),
   #cgpt-qs-panel, .aurora-queue-panel
-) {
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   background-image: none !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
   color: var(--theme-text-primary) !important;
 }
+/* Preserve the storage Delete action's danger tint in its existing glass fill.
+ * The generic owner rule supplies material only, including the native edge. */
+html:root.cgpt-ambient-on :is(
+  [data-testid="artifacts-surface-floating-selection-controls"],
+  [data-theme="dark"][class*="Container-"] > [role="toolbar"][class*="Toolbar-"]
+) button[data-aurora-glass="true"]:is(
+  .btn-danger, .btn-danger-outline, [data-color^="danger"],
+  .bg-danger-solid,
+  [class*="bg-token-interactive-bg-danger-"],
+  [class*="text-token-interactive-label-danger-"]
+) {
+  --aurora-glass-fill: var(--aurora-storage-danger-fill);
+}
+
+/* The Library header's native pseudo-element supplies all of its paint.
+ * Keep its collapsing geometry and the tabs' native selected state intact. */
+html:root.cgpt-ambient-on [data-aurora-library-header="true"]::before {
+  background: var(--aurora-glass-fill) !important;
+  background-image: none !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: var(--aurora-glass-shadow) !important;
+  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+}
+
 /* The native sidebar usage component explicitly owns a rounded filled surface.
  * Its status role also covers plain announcements elsewhere, so match its
  * component classes and reset the edge instead of inheriting sidebar paint. */
@@ -87,6 +112,20 @@ html:root.cgpt-ambient-on [role="status"].group.isolate:is(
   --aurora-surface-edge: var(--aurora-glass-border);
 }
 
+/* Work context rows reveal their section's glass backdrop. Native row fills,
+ * corners, separators and hit areas remain owned by ChatGPT. */
+html:root.cgpt-ambient-on [data-aurora-work-context="panel"] [data-aurora-work-context="row"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
+  background: color-mix(in srgb, var(--aurora-glass-fill) 55%, transparent) !important;
+  background-image: none !important;
+  border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+}
+html:root.cgpt-ambient-on [data-aurora-work-context="panel"] :is(button, [role="button"]):hover:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
+  background: var(--menu-item-hover) !important;
+}
+
 /* Profile paint lives on the empty showcase and each plugin's inner span.
  * The illustration uses SVG fills, including Dark Reader's inline fill token. */
 html:root.cgpt-ambient-on [class*="showcaseEmptyState-"] {
@@ -94,11 +133,11 @@ html:root.cgpt-ambient-on [class*="showcaseEmptyState-"] {
   --darkreader-bg--profile-illustration-surface: var(--aurora-glass-fill) !important;
 }
 
-html:root.cgpt-ambient-on :is(.app-shell-left-panel, [data-app-shell-titlebar]) {
+html:root.cgpt-ambient-on .app-shell-left-panel {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: none !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 html:root.cgpt-ambient-on .app-shell-left-panel { box-shadow: inset -1px 0 0 var(--aurora-glass-border) !important; }
 /* Native composer CSS paints the thread root and the home page's inner body.
@@ -119,17 +158,16 @@ html:root.cgpt-ambient-on [data-composer-overlay-floating-ui] {
 }
 html:root.cgpt-ambient-on [data-composer-overlay-floating-ui] [class*="--suggestion-menu-header-background"] {
   background: var(--aurora-glass-fill) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
-html:root.cgpt-ambient-on [data-markdown-copy="code-block"] :is(.cm-editor, .cm-content, [class*="bg-"], [data-markdown-copy="exclude"]) {
+html:root.cgpt-ambient-on [data-markdown-copy="code-block"] :is(.cm-editor, .cm-content, [class*="bg-"], [data-markdown-copy="exclude"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
 }
-html:root.cgpt-ambient-on [data-markdown-copy="code-block"] .cm-content { color: var(--theme-text-primary) !important; }
-/* Chat/Work paints a track and a moving indicator, rather than its buttons.
- * The mode variant also paints its selected button directly. Keep material on
- * those native owners across titlebar, home, mobile and selected-mode changes.
- * The track has tint only so the indicator samples a single glass backdrop. */
+html:root.cgpt-ambient-on [data-markdown-copy="code-block"] .cm-content:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) { color: var(--theme-text-primary) !important; }
+/* Chat/Work glass belongs to the native track and moving selection layer.
+ * Keep this material exception separate from protection for other controls.
+ * The track uses tint only so the selected layer owns one backdrop. */
 html:root.cgpt-ambient-on [role="group"]:has(> .bg-background-mode-toggle-track) {
   --color-background-mode-toggle-track: color-mix(in srgb, var(--aurora-glass-fill) 55%, transparent) !important;
   --color-background-mode-toggle-selected: var(--aurora-glass-fill) !important;
@@ -147,20 +185,21 @@ html:root.cgpt-ambient-on [role="group"] > .bg-background-mode-toggle-track {
 html:root.cgpt-ambient-on [role="group"]:has(> .bg-background-mode-toggle-track) > :is(
   [class*="indicator-"], .bg-background-mode-toggle-selected
 ) {
-  background: var(--aurora-glass-fill) !important;
+  background-color: var(--aurora-glass-fill) !important;
+  background-image: none !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: var(--shadow-mode-toggle-selected) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
-
 html:root.cgpt-ambient-on :is([role="menu"], [role="dialog"], dialog[open]) :is(
   [role="listbox"], [role="group"], [role="tabpanel"],
   [class~="bg-surface"], [class~="bg-surface-secondary"], [class~="bg-surface-tertiary"],
   [class~="bg-surface-elevated"], [class~="bg-surface-elevated-secondary"]
-) {
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
-  backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   box-shadow: none !important;
 }
 
@@ -169,12 +208,12 @@ html:root.cgpt-ambient-on :is([role="menu"], [role="dialog"], dialog[open]) :is(
  * shell owns the same fill through its sidebar background class. */
 html:root.cgpt-ambient-on :is(
   [data-side-pane-shell-rail], .bg-token-sidebar-surface-primary
-):has([data-testid="screen-threadFlyOut"]) {
+):has([data-testid="screen-threadFlyOut"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 html:root.cgpt-ambient-on [data-testid="screen-threadFlyOut"] {
   border-color: var(--aurora-glass-border) !important;
@@ -182,21 +221,21 @@ html:root.cgpt-ambient-on [data-testid="screen-threadFlyOut"] {
 /* Standalone screens use their already-painted content slot as the owner. */
 html:root.cgpt-ambient-on [data-testid="screen-threadFlyOut"]:not(
   [data-side-pane-shell-rail] *, .bg-token-sidebar-surface-primary *
-) > [slot="content"] {
+) > [slot="content"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   box-shadow: var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 /* Filled native headers retain their own scrolling surface. Transparent
  * product headers continue to use the backdrop of the sidebar beneath them. */
 html:root.cgpt-ambient-on [data-testid="screen-threadFlyOut"] [data-testid="bar-search-sources-header"]:is(
   .bg-token-main-surface-primary, [class~="bg-token-main-surface-primary!"]
-):not(.bg-transparent) {
+):not(.bg-transparent):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 
 /* Search and shopping details paint content again inside the native surface.
@@ -215,11 +254,11 @@ html:root.cgpt-ambient-on :is(
   [data-testid="bar-search-sources-header"] > div.bg-token-main-surface-primary,
   div.flex.w-full.flex-col:is(.bg-surface-primary, .bg-token-bg-primary),
   div.bg-inherit
-) {
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 
 html:root.cgpt-ambient-on :is([data-testid="chatgpt-writing-block"], [data-aurora-code-block="true"]) {
@@ -228,9 +267,9 @@ html:root.cgpt-ambient-on :is([data-testid="chatgpt-writing-block"], [data-auror
   --oai-wb-surface-primary: transparent !important;
   --oai-wb-surface-secondary: transparent !important;
 }
-html:root.cgpt-ambient-on :is([data-testid="chatgpt-writing-block"], [data-aurora-code-block="true"]) :is(pre, code, header, .writing-block-editor, [class*="bg-surface"], [class*="bg-token"], [class*="oai-wb-surface-primary"], [class*="oai-wb-surface-secondary"]) {
+html:root.cgpt-ambient-on :is([data-testid="chatgpt-writing-block"], [data-aurora-code-block="true"]) :is(pre, code, header, .writing-block-editor, [class*="bg-surface"], [class*="bg-token"], [class*="oai-wb-surface-primary"], [class*="oai-wb-surface-secondary"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
-  backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   box-shadow: none !important;
 }
 
@@ -238,7 +277,7 @@ html:root.cgpt-ambient-on.cgpt-glass-user-messages [data-user-message-bubble] {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--user-bubble-border) !important;
   box-shadow: inset 0 0 0 1px var(--user-bubble-border), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 /* Temporary chats already draw their own dashed message outline. */
 html:root.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-temporary-chat] [data-user-message-bubble] {
@@ -262,45 +301,45 @@ html:root.cgpt-ambient-on :is(
   box-shadow: none !important;
 }
 /* Composer-primary controls also cover voice actions outside the form. */
-html:root.cgpt-ambient-on [data-app-shell-focus-area="main"]:has(.health-zero-state-heart-outer) button.bg-primary-solid[data-aurora-glass="true"],
-html:root.cgpt-ambient-on button.bg-composer-primary[data-aurora-glass="true"],
+html:root.cgpt-ambient-on [data-app-shell-focus-area="main"]:has(.health-zero-state-heart-outer) button.bg-primary-solid[data-aurora-glass="true"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+html:root.cgpt-ambient-on button.bg-composer-primary[data-aurora-glass="true"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
 html:root.cgpt-ambient-on form[data-chatgpt-composer] button:is(
   [data-testid="send-button"], [data-testid="stop-button"], [data-testid*="stop-generating"],
   [aria-label="Start Voice" i], [aria-label="Send prompt" i],
   [aria-label="Send message" i], [aria-label="Send" i],
   [aria-label="Stop generating" i], [aria-label="Stop streaming" i],
   [aria-label="Stop response" i], [aria-label="Stop" i]
-)[data-aurora-glass="true"],
+)[data-aurora-glass="true"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
 html:root.cgpt-ambient-on :is(
   [data-chatgpt-search-unit-key$=":user"], [data-message-author-role="user"],
   [data-testid^="conversation-turn-"]
 ):has(:is(textarea, [contenteditable="true"])) button:is(
   .btn-primary, .bg-primary-solid, [type="submit"], [data-testid="send-button"],
   [data-color="primary"][data-variant="solid"]
-)[data-aurora-glass="true"] {
+)[data-aurora-glass="true"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   color: var(--theme-text-primary) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px 0 var(--aurora-glass-glow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
-html:root.cgpt-ambient-on [data-app-shell-focus-area="main"]:has(.health-zero-state-heart-outer) button.bg-primary-solid[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover,
-html:root.cgpt-ambient-on button.bg-composer-primary[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover,
+html:root.cgpt-ambient-on [data-app-shell-focus-area="main"]:has(.health-zero-state-heart-outer) button.bg-primary-solid[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+html:root.cgpt-ambient-on button.bg-composer-primary[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
 html:root.cgpt-ambient-on form[data-chatgpt-composer] button:is(
   [data-testid="send-button"], [data-testid="stop-button"], [data-testid*="stop-generating"],
   [aria-label="Start Voice" i], [aria-label="Send prompt" i],
   [aria-label="Send message" i], [aria-label="Send" i],
   [aria-label="Stop generating" i], [aria-label="Stop streaming" i],
   [aria-label="Stop response" i], [aria-label="Stop" i]
-)[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover,
+)[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
 html:root.cgpt-ambient-on :is(
   [data-chatgpt-search-unit-key$=":user"], [data-message-author-role="user"],
   [data-testid^="conversation-turn-"]
 ):has(:is(textarea, [contenteditable="true"])) button:is(
   .btn-primary, .bg-primary-solid, [type="submit"], [data-testid="send-button"],
   [data-color="primary"][data-variant="solid"]
-)[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover {
+)[data-aurora-glass="true"][data-aurora-surface-edge="true"]:hover:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   box-shadow: inset 0 0 0 1px var(--theme-text-secondary), inset 0 0 2px 0 var(--aurora-glass-glow) !important;
 }
 
@@ -315,8 +354,8 @@ html:root.cgpt-ambient-on [class*="artwork-"]:has(> img[src*="/health-zero-state
   pointer-events: none;
   background: var(--aurora-glass-fill);
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow);
-  backdrop-filter: var(--aurora-glass-backdrop, none);
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   mask: url("assets/health-zero-state-records-surface.svg") center / 100% 100% no-repeat;
   -webkit-mask: url("assets/health-zero-state-records-surface.svg") center / 100% 100% no-repeat;
 }
@@ -333,14 +372,14 @@ html:root.cgpt-ambient-on [data-aurora-image-viewer="glass"] {
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: inset 1px 0 0 var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 html:root.cgpt-ambient-on [data-aurora-image-viewer="clear"] {
   background: transparent !important;
   background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 
 /* The shell inserts its outer black pane separately from the image toolbar.
@@ -351,8 +390,8 @@ html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-pa
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: inset 1px 0 0 var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) :is(
   [class*="app-shell-panel-background"], [data-aurora-image-viewer],
@@ -361,22 +400,22 @@ html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-pa
   background: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 
 /* The shared shell titlebar sits above the image pane. Its full-width glass
  * surface would create a blur strip behind the viewer's individual controls. */
 html:root.cgpt-ambient-on:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) :is(
   [data-app-shell-titlebar], [data-testid="viewer-header"]
-) {
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
   filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html:root.cgpt-ambient-on:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-app-shell-titlebar]::before,
 html:root.cgpt-ambient-on:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-app-shell-titlebar]::after {
@@ -384,15 +423,15 @@ html:root.cgpt-ambient-on:has([data-app-shell-tab-panel-controller][data-tab-id^
 }
 
 /* Header wrappers and native decorative layers must share the viewer backdrop. */
-html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-testid="viewer-header"] :is(div, span),
-html:root.cgpt-ambient-on [data-aurora-image-control-group="clear"] {
+html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-testid="viewer-header"] :is(div, span):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+html:root.cgpt-ambient-on [data-aurora-image-control-group="clear"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
   filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html:root.cgpt-ambient-on [data-testid="viewer-header"]::before,
 html:root.cgpt-ambient-on [data-testid="viewer-header"]::after,
@@ -400,70 +439,70 @@ html:root.cgpt-ambient-on [data-testid="viewer-header"] :is(div, span, button)::
 html:root.cgpt-ambient-on [data-testid="viewer-header"] :is(div, span, button)::after {
   content: none !important;
 }
-html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-testid="viewer-header"] button[data-aurora-image-top-control="true"] {
+html:root.cgpt-ambient-on [data-app-shell-pane-frame]:has([data-app-shell-tab-panel-controller][data-tab-id^="image:"]) [data-testid="viewer-header"] button[data-aurora-image-top-control="true"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   background-image: none !important;
   color: var(--theme-text-primary) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 
-html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="glass"], [data-aurora-image-top-control="true"]) {
+html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="glass"], [data-aurora-image-top-control="true"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   background-image: none !important;
   color: var(--theme-text-primary) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
-html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"] {
+html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), var(--aurora-glass-shadow) !important;
 }
 html:root.cgpt-ambient-on [data-aurora-image-top-control="true"] {
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), 0 2px 8px rgba(0, 0, 0, 0.16) !important;
 }
-html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="clear"], [data-aurora-image-control-group="clear"]) {
+html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="clear"], [data-aurora-image-control-group="clear"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
-html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"] :is(button, [role="button"], a) {
+html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"] :is(button, [role="button"], a):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
-html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"] :is(button, [role="button"], a):is(:hover, [aria-pressed="true"], [data-state="open"]) {
+html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"] :is(button, [role="button"], a):is(:hover, [aria-pressed="true"], [data-state="open"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--menu-item-hover) !important;
 }
-html:root.cgpt-ambient-on :is([class~="group/settings"], [data-app-shell-main-surface]) :is(input:not([type="checkbox"]):not([type="range"]), select, textarea:not(#prompt-textarea)) {
+html:root.cgpt-ambient-on :is([class~="group/settings"], [data-app-shell-main-surface]) :is(input:not([type="checkbox"]):not([type="range"]), select, textarea:not(#prompt-textarea)):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background-color: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
 }
-html:root.cgpt-ambient-on [class~="group/settings"] > div {
+html:root.cgpt-ambient-on [class~="group/settings"] > div:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background-color: transparent !important;
 }
-html:root.cgpt-ambient-on [class~="group/settings"] [class~="border"][class~="border-default"] {
+html:root.cgpt-ambient-on [class~="group/settings"] [class~="border"][class~="border-default"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background-color: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 /* Settings titles share the page backdrop. Only controls own a glass surface. */
-html:root.cgpt-ambient-on:has([class~="group/settings"]) [data-app-shell-titlebar],
-html:root.cgpt-ambient-on [class~="group/settings"] :is(header, h1, h2, h3, [role="heading"]),
-html:root.cgpt-ambient-on [class~="group/settings"] header :is(div, span) {
+html:root.cgpt-ambient-on:has([class~="group/settings"]) [data-app-shell-titlebar]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+html:root.cgpt-ambient-on [class~="group/settings"] :is(header, h1, h2, h3, [role="heading"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
+html:root.cgpt-ambient-on [class~="group/settings"] header :is(div, span):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   background-image: none !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html:root.cgpt-ambient-on:has([class~="group/settings"]) [data-app-shell-titlebar]::before,
 html:root.cgpt-ambient-on:has([class~="group/settings"]) [data-app-shell-titlebar]::after,
@@ -477,13 +516,13 @@ html:root.cgpt-ambient-on input[placeholder="Search plugins" i] {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   color: var(--theme-text-primary) !important;
 }
 html:root.cgpt-ambient-on .aurora-switch-glider { border-radius: 4px !important; }
 
-html:root.cgpt-ambient-on[data-aurora-codex] :is([class~="bg-token-bg-primary"], [class~="bg-token-bg-secondary"], [class~="bg-token-bg-tertiary"]) {
+html:root.cgpt-ambient-on[data-aurora-codex] :is([class~="bg-token-bg-primary"], [class~="bg-token-bg-secondary"], [class~="bg-token-bg-tertiary"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background-color: transparent !important;
 }
 html:root.cgpt-ambient-on[data-aurora-codex] :is([role="tablist"], main#main > header) {
@@ -501,7 +540,7 @@ html:root.cgpt-ambient-on[data-aurora-zero-blur] :is(
   [data-testid="chatgpt-writing-block"], #cgpt-qs-panel, #cgpt-qs-btn,
   .aurora-switch-glider, .aurora-queue-panel, .aurora-queue-btn,
   .qs-select-options, #stage-slideover-sidebar
-) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) { backdrop-filter: var(--aurora-text-backdrop, none) !important; -webkit-backdrop-filter: var(--aurora-text-backdrop, none) !important; }
 html:root.cgpt-ambient-on[data-aurora-zero-blur] #cgpt-ambient-bg :is(img, video) { filter: none !important; }
 
 html:root.cgpt-ambient-on.cgpt-blur-chat-history :is(#app-shell-sidebar [data-thread-title], #app-shell-sidebar [data-marquee-text]) {
@@ -515,12 +554,16 @@ html:root.cgpt-ambient-on.cgpt-blur-avatar button[aria-label="Open profile menu"
 html:root.cgpt-ambient-on #cgpt-qs-panel .qs-row .track { border-radius: 6px !important; }
 html:root.cgpt-ambient-on #cgpt-qs-panel .qs-row .thumb { border-radius: 4px !important; }
 html:root.cgpt-ambient-on :is(.aurora-queue-count, .aurora-queue-btn) { border-radius: 5px !important; }
-/* Glass belongs to the track. Native thumb, fill, ticks, and motion stay native. */
-html:root.cgpt-ambient-on [data-model-picker-power-slider] :is([class^="Track-"], [class*=" Track-"]) {
-  background: var(--aurora-glass-fill) !important;
-  border-color: var(--aurora-glass-border) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-}
+/* Native reasoning slider tracks, fills and thumbs retain their own paint. */
 
+/* Keep native switch paint legible over Aurora's transparent setting surfaces.
+ * Dark Reader otherwise maps the site's white thumb and off track to black.
+ * Feed its native utility rules the site's existing tokens, not replacement
+ * colors or geometry. ChatGPT still owns state, motion, dimensions and shape. */
+html:root.cgpt-ambient-on [role="switch"],
+html:root.cgpt-ambient-on [role="switch"] * {
+  --darkreader-bg--color-chart-blue: var(--color-chart-blue) !important;
+  --darkreader-bg--color-control-thumb-on-accent: var(--color-control-thumb-on-accent) !important;
+  --darkreader-border--color-control-thumb-on-accent: var(--color-control-thumb-on-accent) !important;
+  --darkreader-bg--color-text: var(--color-text) !important;
+}

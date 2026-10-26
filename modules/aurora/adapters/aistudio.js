@@ -23,7 +23,7 @@
       editor: 'ms-prompt-box textarea, ms-prompt-input-wrapper textarea, .chat-input-field textarea, ms-prompt-input-wrapper [contenteditable="true"]',
       sidebar: 'ms-navbar-v2 .nav-content, mat-sidenav, mat-drawer, ms-side-nav, ms-sidenav, .left-nav',
       menu: '.nav-flyout-panel, .mat-mdc-menu-panel, .mat-mdc-select-panel, .mat-mdc-dialog-surface, .mat-mdc-tooltip-surface, .cdk-overlay-container :is([role="menu"], [role="listbox"], [role="dialog"])',
-      panel: 'ms-run-settings, .run-settings, .run-settings-menu, ms-sliding-right-panel, ms-documentation ms-callout, ms-global-banner .global-banner',
+      panel: 'ms-run-settings, .run-settings, .run-settings-menu, ms-sliding-right-panel, ms-documentation ms-callout, ms-global-banner .global-banner, ms-thought-chunk:not(ms-conversation-turn-execution-steps *) .compact-accordion > mat-expansion-panel',
       control: 'button.model-selector-card, button.system-instructions-card, button.category-card, ms-system-instructions .mat-mdc-text-field-wrapper, ms-system-instructions input[ms-input], ms-system-instructions textarea[ms-input], ms-dashboard-selector .mat-mdc-text-field-wrapper, ms-api-switcher .mat-mdc-text-field-wrapper, ms-nav-items-documentation .search-input, ms-documentation mat-card.docs-card',
       message: 'ms-chat-turn[data-role="user"] .chat-turn-container, ms-chat-turn.user .chat-turn-container',
       history: ':is(ms-navbar-v2, mat-sidenav, mat-drawer, ms-side-nav, ms-sidenav, .left-nav) a[href*="/prompts/"]',

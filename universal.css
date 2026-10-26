@@ -9,24 +9,35 @@ html.cgpt-ambient-on [data-aurora-plane] {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on [data-aurora-plane]::before,
 html.cgpt-ambient-on [data-aurora-plane]::after {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
-html.cgpt-ambient-on [data-aurora-surface] {
+/* Claude can replace its composer while editing. Bind the known native fill
+ * directly as well, so its material survives before incremental tagging runs. */
+html.cgpt-ambient-on [data-aurora-surface],
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root .ds-textarea.cc852ac5,
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._189b4a0 ._4ce999d._7ae8ea4,
+html.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-site="claude"] [class~="bg-[var(--cds-bg-user-message)]"],
+html.cgpt-ambient-on[data-aurora-site="claude"] [data-cds="ChatComposer"] > .rounded-composer {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
+}
+/* CDS paints this rounded message owner through a variable utility. Keep its
+ * edge visible even at fully transparent fill and before incremental tagging. */
+html.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-site="claude"] [class~="bg-[var(--cds-bg-user-message)]"] {
+  --aurora-surface-edge: var(--aurora-glass-border);
 }
 html.cgpt-ambient-on [data-aurora-surface="sidebar"] {
   background: var(--aurora-sidebar-glass-fill) !important;
@@ -38,17 +49,18 @@ html.cgpt-ambient-on [data-aurora-surface="toolbar"] {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on [data-aurora-surface="toolbar"]::before,
 html.cgpt-ambient-on [data-aurora-surface="toolbar"]::after {
   background: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
-html.cgpt-ambient-on [data-aurora-surface="composer"] :is(textarea, [contenteditable="true"]) {
+html.cgpt-ambient-on [data-aurora-surface="composer"] :is(textarea, [contenteditable="true"]),
+html.cgpt-ambient-on[data-aurora-site="claude"] [data-cds="ChatComposer"] > .rounded-composer :is(textarea, [contenteditable="true"]) {
   background: transparent !important;
   color: var(--theme-text-primary) !important;
   caret-color: currentColor;
@@ -61,8 +73,8 @@ html.cgpt-ambient-on:not([data-aurora-site="grok"]) [data-aurora-surface="compos
 }
 html.cgpt-ambient-on:not(.cgpt-glass-user-messages) [data-aurora-surface="message"] {
   background: var(--composer-bg) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   box-shadow: none !important;
 }
 html.cgpt-ambient-on.cgpt-blur-chat-history [data-aurora-history],
@@ -86,24 +98,39 @@ html.cgpt-ambient-on[data-aurora-site="claude"] body {
   --text-primary: var(--theme-text-primary);
   --text-secondary: var(--theme-text-secondary);
 }
-html.cgpt-ambient-on[data-aurora-site="claude"] [data-aurora-surface="composer"] :is(.bg-bg-000, .bg-bg-100, .bg-surface-1, .bg-surface-2) {
+html.cgpt-ambient-on[data-aurora-site="claude"] :is([data-aurora-surface="composer"], [data-cds="ChatComposer"] > .rounded-composer) :is(.bg-bg-000, .bg-bg-100, .bg-surface-1, .bg-surface-2) {
   background: transparent !important;
 }
-/* The model row is a sibling below the rounded composer. Its page-colored
- * 32px spread shadow reaches behind the editor and blocks the glass backdrop. */
-html.cgpt-ambient-on[data-aurora-site="claude"] [data-cds="ChatComposerChin"] {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-/* Claude also paints a noninteractive fade above the scrolling messages.
- * Clear that decoration while preserving the header's controls and layout. */
+/* Native dock wrappers and backing strips can change paint without being
+ * replaced. Clear that layout material directly, including before tagging.
+ * The rounded composer and each painted notice keep their own glass. */
 html.cgpt-ambient-on[data-aurora-site="claude"] :is(
-  [data-aurora-surface="toolbar"] :is(div, span)[class*="bg-gradient-to-b"],
-  [data-aurora-surface="toolbar"] :is(div, span)[class*="bg-linear-to-b"],
+  [data-cds="ChatComposer"],
+  [data-composer-card-holder],
+  [data-cds="ChatComposerChin"],
+  [data-testid="transcript-bottom-fade"],
+  [data-testid="transcript-bottom-fade"] > div,
+  .dframe-header [data-cds-part="toolbar-ground"],
+  .df-header-peek-cover
+) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  --aurora-backdrop-source: initial !important;
+}
+/* Header fades are decorative paint, including solid fills faded by a mask.
+ * Clear their material while keeping the native title and action geometry. */
+html.cgpt-ambient-on[data-aurora-site="claude"] :is(
+  .df-header-backdrop,
   main .pointer-events-none.top-0:is([class*="bg-gradient-to-b"], [class*="bg-linear-to-b"], [style*="linear-gradient"])
 ) {
   background: transparent !important;
+  border-color: transparent !important;
   box-shadow: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 /* Settings content has its own opaque paint inside the glass dialog.
  * Clear layout surfaces so the dialog owns the shared tint and blur. */
@@ -130,9 +157,19 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] body {
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] :is(
   .text-input-field, .text-input-field-main-area, .text-input-field_textarea-inner, .textarea-wrapper,
-  .sidenav-container, .sidenav-content, .input-area-container, .conversation-container
+  .sidenav-container, .sidenav-content, .input-area-container, .conversation-container,
+  input-container, input-container.input-gradient, input-container.input-gradient.input-gradient-overlay
 ) {
   background: transparent !important;
+}
+/* Clear the native footer fill from first paint, including conversation fades.
+ * The composer retains its own native shape and one glass backdrop. */
+html.cgpt-ambient-on[data-aurora-site="gemini"] input-area-v2 {
+  background: var(--aurora-glass-fill) !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] :is(input-container, chat-window)::before,
 html.cgpt-ambient-on[data-aurora-site="gemini"] :is(input-container, chat-window)::after {
@@ -143,8 +180,8 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] top-bar-actions {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] [data-aurora-surface="composer"] .gem-button {
   background: transparent !important;
@@ -199,8 +236,8 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] template-filter-chips .filter-ch
 html.cgpt-ambient-on[data-aurora-site="gemini"] your-day-viewer:is(.your-day-redesign-enabled) .your-day-item:is(:hover, :focus-within):not(:has(> .your-day-item-content > .your-day-item-actions > .your-day-buttons-container:is(:hover, :focus-within))),
 html.cgpt-ambient-on[data-aurora-site="gemini"] your-day-viewer .your-day-item.redesign-item:is(:hover, :focus-within):not(:has(> .your-day-item-content > .your-day-item-actions > .your-day-buttons-container:is(:hover, :focus-within))) {
   background: var(--aurora-glass-fill) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* Page-colored scroll fades belong to layout. Media thumbnail scrims retain
  * their native paint, and the existing caption strips receive their own glass. */
@@ -241,8 +278,8 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] elicitations .elicitations-conta
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 
 /* Spark's Remy components have their own material tokens and painted layers.
@@ -329,8 +366,8 @@ html.cgpt-ambient-on [data-aurora-surface="code"] {
 html.cgpt-ambient-on [data-aurora-surface="control"] {
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on [data-aurora-surface="code"] :is(pre, code) {
   background: transparent !important;
@@ -410,8 +447,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.sidebar, .setting-side-bar) {
   background: var(--aurora-sidebar-glass-fill) !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
   .sidebar-wrapper, .sidebar .sidebar-side, .sidebar .sidebar-hide-side,
@@ -423,8 +460,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 /* Current Qwen uses member-upgrade-button in the profile row. Consume glass
  * directly so its specific resting and hover rules cannot restore black. */
@@ -434,8 +471,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] .sidebar-user :is(
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   color: var(--theme-text-primary) !important;
 }
 /* Settings and their portaled menus use several independent native palettes.
@@ -462,8 +499,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
 }
 /* Text rows and nested layout layers reveal their containing glass. They keep
@@ -484,8 +521,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
 ) {
   background: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
   .setting-side-bar-group-content-item.selected,
@@ -504,6 +541,19 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
   box-shadow: none !important;
   color: var(--theme-text-primary) !important;
 }
+/* Response choices use a CSS-module surface outside the standard button set.
+ * Paint the native desktop item in every state, including before tagging. */
+html.cgpt-ambient-on[data-aurora-site="qwen"] [class*="index-module__custom-instr-respond-style-item___"] {
+  background: var(--aurora-glass-fill) !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+}
+html.cgpt-ambient-on[data-aurora-site="qwen"] [class*="index-module__custom-instr-respond-style-item___"]:is(:hover, [class*="index-module__custom-instr-respond-style-item-active___"]) {
+  background: var(--menu-item-hover) !important;
+}
 /* Library layout reveals the shared background. Glass follows only existing
  * filters, actions and painted preview overlays, preserving thumbnail artwork. */
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections-page) :is(
@@ -515,8 +565,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections-page)
   .qwen-chat-v2-tabs-button .qwen-chat-v2-tabs-tab-active {
   background: var(--aurora-glass-fill) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections-page) :is(
   .qwen-chat-v2-tabs-capsule .qwen-chat-v2-tabs-nav-list,
@@ -527,8 +577,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections
   border-color: var(--aurora-glass-border) !important;
   box-shadow: none !important;
   color: var(--theme-text-primary) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections-page) :is(
   .header-collections-button, .library-item-operation-icon, .play-pause-btn
@@ -540,8 +590,8 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(.library-content, .collections
   .item-card-img:is(.item-card-pdf, .item-card-web-dev, .item-card-ppt)::after {
   background: var(--aurora-glass-fill) !important;
   box-shadow: none !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* Mobile gallery menus paint their individual rows inside the native popup. */
 html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
@@ -589,6 +639,22 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] .nav-content[data-aurora-surfa
 html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-run-settings[data-aurora-surface="panel"] {
   box-shadow: none !important;
 }
+/* Thoughts and its footer are separate native expansion-panel surfaces.
+ * Clear their header paint so each panel keeps a single glass backdrop.
+ * In-flow thoughts have no exterior shadow to terminate at the scroll edge.
+ * Execution-step thoughts are transparent native layout, not painted panels. */
+html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-thought-chunk:not(ms-conversation-turn-execution-steps *) .compact-accordion > mat-expansion-panel {
+  background: var(--aurora-glass-fill) !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  --mat-expansion-header-hover-state-layer-color: var(--menu-item-hover);
+}
+html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-thought-chunk:not(ms-conversation-turn-execution-steps *) .compact-accordion > mat-expansion-panel > mat-expansion-panel-header {
+  background: transparent !important;
+}
 /* Navigation selection and hover own native fills independently of the rail.
  * Apply glass by state so hover and router class changes paint immediately. */
 html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-nav-items-v2 {
@@ -599,8 +665,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-nav-items-v2 [ms-button]:is
   background: var(--color-nav-item-hover) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
   transition: none !important;
 }
@@ -628,8 +694,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
   transition: none !important;
 }
@@ -650,8 +716,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(ms-system-instructions, ms-json-schema-editor) mat-form-field {
   --mat-form-field-outlined-outline-color: var(--aurora-glass-border);
@@ -683,8 +749,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: none !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
   ms-docs-tabs.code-tabs ms-code-block > .container,
@@ -693,8 +759,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
 ) {
   background: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(ms-dashboard-selector, ms-api-switcher) mat-form-field {
   --mat-form-field-outlined-outline-color: var(--aurora-glass-border);
@@ -708,8 +774,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] .ms-button-docs {
   color: var(--theme-text-primary) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* The form-field wrapper owns the select fill and rounded outline. */
 html.cgpt-ambient-on[data-aurora-site="aistudio"] ms-run-settings mat-form-field:has(mat-select:is(
@@ -757,8 +823,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] [ms-button]:is(
 ):not(.toggle-button, .ms-button-link, .ms-button-as, [aria-disabled="true"], :disabled):is(:hover, :focus-visible) {
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* Filled actions include Save. Filter chips include both editor modes and
  * model categories. Keep their native geometry and selected-dot image. */
@@ -768,8 +834,8 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] [ms-button]:is(
   background-color: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
   transition: none !important;
 }
@@ -812,7 +878,7 @@ html.cgpt-ambient-on[data-aurora-site="deepseek"] body {
   --dsr-border-1: var(--aurora-glass-border);
   --dsr-border-2: var(--aurora-glass-border);
 }
-html.cgpt-ambient-on[data-aurora-site="deepseek"] :is(textarea#chat-input, #root textarea.ds-scroll-area) {
+html.cgpt-ambient-on[data-aurora-site="deepseek"] :is(textarea#chat-input, #root textarea.ds-scroll-area, #root .ds-textarea.cc852ac5 textarea) {
   background: transparent !important;
   color: var(--theme-text-primary) !important;
 }
@@ -831,18 +897,18 @@ html.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-site="deepseek"] #root
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
 }
-/* Thinking and search groups paint their sticky title on ::after. Glass that
- * existing layer directly, keeping its native square shape and sticky bounds.
- * The spacer and trailing fade reveal the page around the title. */
-html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._245c867::after {
-  background: var(--aurora-glass-fill) !important;
-  box-shadow: var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-}
+/* The thinking title is text over the page. Clear its native sticky backing
+ * and fades without changing the title's bounds or expand/collapse action. */
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._245c867,
 html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._245c867::before,
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._245c867::after,
 html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._245c867 .c99b79f8 {
   background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  --aurora-backdrop-source: initial !important;
+  --aurora-text-backdrop: none !important;
 }
 /* DeepSeek's responsive shell contains a separately painted history panel.
  * Its sticky headings and bottom fade reuse the sidebar fill token. Keep those
@@ -872,6 +938,21 @@ html.cgpt-ambient-on[data-aurora-site="deepseek"] [data-aurora-surface="sidebar"
 html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._5a20a69 .e5bf614e {
   --dsw-alias-label-primary: var(--theme-text-primary);
 }
+/* The compact message rail reveals the page behind its markers. Only the
+ * expanded message list owns glass. Preserve the rail's existing hit area. */
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._189b4a0 ._6ffc3c9 {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* The message navigator's native open state owns the expanded glass fill.
+ * Its scroll fades reuse that tint without adding another backdrop layer. */
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._189b4a0 ._4ce999d::before,
+html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._189b4a0 ._4ce999d::after {
+  background: linear-gradient(180deg, var(--aurora-glass-fill) 20.19%, transparent 100%) !important;
+}
 
 /* Hub layout wrappers reveal the background. Existing repository panels,
  * actions, metadata labels and search controls own their glass. */
@@ -889,8 +970,8 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [dat
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh :is(button, a, label).btn[data-aurora-surface="control"]:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
@@ -907,8 +988,8 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"][data-aurora-hub-settings] b
   background-color: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* Native Tailwind ring tokens retain keyboard focus and the theme selection.
  * The existing ring geometry continues to come from Hugging Face. */
@@ -934,24 +1015,24 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"][data-aurora-hub-settings] b
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"][data-aurora-hub-settings] body > .flex.min-h-dvh main label > input.peer[type="radio"] + div.border {
   background: var(--aurora-glass-fill) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"][data-aurora-hub-settings] body > .flex.min-h-dvh main :is(.border-t, .border-b, .border-l, .border-r, .divide-y > *) {
   border-color: var(--aurora-glass-border) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"][data-aurora-hub-settings] body > .flex.min-h-dvh [data-aurora-surface="panel"] [data-aurora-surface="panel"] {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 /* Discussion filters change their native fill class in place. Follow that
  * class directly so the glass selection moves with the site's current tab. */
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [data-target="DiscussionList"] button.rounded-lg.bg-black {
   background: var(--aurora-glass-fill) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [data-target="DiscussionList"] button.rounded-lg:not(.bg-black):is(:hover, :focus-visible) {
@@ -963,8 +1044,8 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [dat
   background-color: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 /* The file list keeps its native rows and separators inside one glass surface. */
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [data-target="ViewerIndexTreeList"] > ul[data-aurora-surface="panel"] > li {
@@ -983,8 +1064,8 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [dat
   box-shadow: none !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [data-target="DiscussionEvents"] [data-aurora-surface="panel"] [data-aurora-surface="panel"] {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 /* The timeline connector runs behind comment bodies. Clear only its paint
  * so transparent comments retain their native layout without a crossing line. */
@@ -1028,8 +1109,8 @@ html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [dat
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
   box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
-  -webkit-backdrop-filter: var(--aurora-glass-backdrop, blur(14px)) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="huggingface"] body > .flex.min-h-dvh [data-target="InferenceWidget"] form :is(
   button[type="submit"].btn-widget, label.btn-widget:has(input[type="file"])
@@ -1118,8 +1199,8 @@ html.cgpt-ambient-on[data-aurora-site="grok"] [data-aurora-surface="overlay"] {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
+  -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 html.cgpt-ambient-on[data-aurora-site="grok"] [data-aurora-plane] { background-image: none !important; }
 html.cgpt-ambient-on.cgpt-animations-disabled [data-aurora-surface],
@@ -1133,7 +1214,7 @@ html.cgpt-ambient-on.cgpt-animations-disabled [data-aurora-surface] * {
 }
 
 html.cgpt-ambient-on [data-aurora-surface]:not([data-aurora-surface="overlay"]) [data-aurora-surface] {
-  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important; --aurora-backdrop-source: initial !important; -webkit-backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
 }
 
 /* CDS roots also occur inside the frame and portaled menus. */

@@ -3,7 +3,7 @@
     "message": "Aurora Universal"
   },
   "extensionDescription": {
-    "message": "为 ChatGPT、Claude、Gemini、Grok、Qwen、Google AI Studio、DeepSeek 和 HuggingChat 提供液态玻璃主题和自定义背景。"
+    "message": "为 ChatGPT、Claude、Gemini、Grok、Qwen、Google AI Studio、DeepSeek 和 HuggingChat 提供玻璃主题和自定义背景。"
   },
   "actionTitle": {
     "message": "Aurora Universal 设置"
@@ -117,13 +117,13 @@
     "message": "禁用菜单打开/关闭动画"
   },
   "labelGlassStyle": {
-    "message": "液态玻璃样式"
+    "message": "玻璃样式"
   },
   "labelGlassUserMessages": {
-    "message": "用户消息液态玻璃效果"
+    "message": "用户消息玻璃效果"
   },
   "tooltipGlassUserMessages": {
-    "message": "将当前液态玻璃样式应用到你的消息气泡"
+    "message": "将所选玻璃样式应用于你的消息"
   },
   "sectionInterface": {
     "message": "界面"
@@ -279,7 +279,7 @@
     "message": "语音颜色"
   },
   "quickSettingsLabelGlassStyle": {
-    "message": "液态玻璃样式"
+    "message": "玻璃样式"
   },
   "errorLoadingSettings": {
     "message": "错误：无法加载设置。请尝试重新加载页面。"
@@ -291,7 +291,7 @@
     "message": "Welcome to Aurora"
   },
   "welcomeDescription": {
-    "message": "Personalize ChatGPT with ambient backgrounds, liquid glass effects, privacy controls, and workflow upgrades."
+    "message": "Personalize ChatGPT with ambient backgrounds, glass effects, privacy controls, and workflow upgrades."
   },
   "welcomeBtnGetStarted": {
     "message": "开始使用"
@@ -318,7 +318,7 @@
     "message": "蓝色"
   },
   "welcomeLabelGlassStyle": {
-    "message": "液态玻璃样式"
+    "message": "玻璃样式"
   },
   "welcomeGlassClear": {
     "message": "透明"
@@ -468,7 +468,7 @@
     "message": "界面音效"
   },
   "tooltipHapticSound": {
-    "message": "交互时播放微妙的液态玻璃音效"
+    "message": "交互时播放轻柔音效"
   },
   "labelAutoContrast": {
     "message": "自动对比度（图片）"
@@ -537,6 +537,18 @@
     "message": "高"
   },
   "labelGlassTransparency": {
-    "message": "液态玻璃透明度"
+    "message": "透明度"
+  },
+  "labelHideAIWarnings": {
+    "message": "隐藏 AI 提示"
+  },
+  "labelBlockAds": {
+    "message": "屏蔽广告"
+  },
+  "tooltipBlockAds": {
+    "message": "在所有套餐中隐藏 ChatGPT 赞助广告和广告投放推广"
+  },
+  "tooltipHideAIWarnings": {
+    "message": "在所有支持的网站上隐藏 AI 准确性和生成内容提示"
   }
 }

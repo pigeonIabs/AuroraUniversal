@@ -76,6 +76,65 @@
         <button type="button" id="masterToggleBtn" class="master-toggle-btn" data-i18n="labelAuroraActivated">Aurora activated</button>
       </div>
 
+      <div class="section-header" data-i18n="sectionAppearance">Appearance</div>
+      <div class="row">
+	        <div class="label" data-i18n="labelGlassStyle">__MSG_labelGlassStyle__</div>
+	        <div class="custom-select-wrapper">
+	          <div class="custom-select" id="appearanceSelector">
+	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Glass style" data-i18n-aria-label="labelGlassStyle">
+	              <span class="select-label"></span>
+	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
+	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
+	              </svg>
+	            </button>
+	            <div class="select-options" role="listbox" aria-label="Glass style" data-i18n-aria-label="labelGlassStyle"></div>
+	          </div>
+	        </div>
+	      </div>
+      <div class="row glass-intensity-row">
+        <label class="label" for="glassIntensitySlider" data-i18n="labelGlassTransparency">Transparency</label>
+        <input type="range" id="glassIntensitySlider" min="0" max="100" step="1" value="100" aria-label="Transparency" data-i18n-aria-label="labelGlassTransparency">
+        <span class="glass-intensity-output"><span id="glassIntensityValue" class="range-value">100</span>%</span>
+      </div>
+      <div class="row">
+        <label class="label" for="glassUserMessages" data-i18n="labelGlassUserMessages">User message glass</label>
+        <label class="switch" title="Apply the selected glass style to your messages" data-i18n-title="tooltipGlassUserMessages">
+          <input type="checkbox" id="glassUserMessages" aria-label="User message glass" data-i18n-aria-label="labelGlassUserMessages">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+      <div class="row">
+	        <div class="label" data-i18n="labelTheme">__MSG_labelTheme__</div>
+	        <div class="custom-select-wrapper">
+	          <div class="custom-select" id="themeSelector">
+	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Theme" data-i18n-aria-label="labelTheme">
+	              <span class="select-label"></span>
+	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
+	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
+	              </svg>
+	            </button>
+	            <div class="select-options" role="listbox" aria-label="Theme" data-i18n-aria-label="labelTheme"></div>
+	          </div>
+	        </div>
+	      </div>
+      <div class="row">
+	        <div class="label" data-i18n="labelCustomFont">Custom Font</div>
+	        <div class="custom-select-wrapper">
+	          <div class="custom-select" id="fontSelector">
+	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Custom font" data-i18n-aria-label="labelCustomFont">
+	              <span class="select-label"></span>
+	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
+	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
+	              </svg>
+	            </button>
+	            <div class="select-options" role="listbox" aria-label="Custom font" data-i18n-aria-label="labelCustomFont"></div>
+	          </div>
+	        </div>
+      </div>
+
       <div class="section-header" data-i18n="sectionBackground">Background</div>
       <div class="row">
 	        <div class="label" data-i18n="labelPreset">__MSG_labelPreset__</div>
@@ -129,65 +188,6 @@
 	          </div>
 	        </div>
 	      </div>
-      <div class="section-header" data-i18n="sectionAppearance">Appearance</div>
-      <div class="row">
-	        <div class="label" data-i18n="labelTheme">__MSG_labelTheme__</div>
-	        <div class="custom-select-wrapper">
-	          <div class="custom-select" id="themeSelector">
-	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Theme" data-i18n-aria-label="labelTheme">
-	              <span class="select-label"></span>
-	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
-	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
-	              </svg>
-	            </button>
-	            <div class="select-options" role="listbox" aria-label="Theme" data-i18n-aria-label="labelTheme"></div>
-	          </div>
-	        </div>
-	      </div>
-      <div class="row">
-	        <div class="label" data-i18n="labelGlassStyle">__MSG_labelGlassStyle__</div>
-	        <div class="custom-select-wrapper">
-	          <div class="custom-select" id="appearanceSelector">
-	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Liquid glass style" data-i18n-aria-label="labelGlassStyle">
-	              <span class="select-label"></span>
-	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
-	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
-	              </svg>
-	            </button>
-	            <div class="select-options" role="listbox" aria-label="Liquid glass style" data-i18n-aria-label="labelGlassStyle"></div>
-	          </div>
-	        </div>
-	      </div>
-      <div class="row glass-intensity-row">
-        <div class="label" data-i18n="labelGlassTransparency">Liquid glass transparency</div>
-        <input type="range" id="glassIntensitySlider" min="0" max="100" step="1" value="100" aria-label="Liquid glass transparency" data-i18n-aria-label="labelGlassTransparency">
-        <span id="glassIntensityValue" class="range-value">100</span>%
-      </div>
-      <div class="row">
-        <div class="label" data-i18n="labelGlassUserMessages">Liquid glass user messages</div>
-        <label class="switch" title="Apply the active liquid glass style to your message bubbles" data-i18n-title="tooltipGlassUserMessages">
-          <input type="checkbox" id="glassUserMessages" aria-label="Liquid glass user messages" data-i18n-aria-label="labelGlassUserMessages">
-          <span class="track"><span class="thumb"></span></span>
-        </label>
-      </div>
-      <div class="row">
-	        <div class="label" data-i18n="labelCustomFont">Custom Font</div>
-	        <div class="custom-select-wrapper">
-	          <div class="custom-select" id="fontSelector">
-	            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Custom font" data-i18n-aria-label="labelCustomFont">
-	              <span class="select-label"></span>
-	              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"
-	                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-	                <polyline points="4.5 6.5 8 9.5 11.5 6.5"></polyline>
-	              </svg>
-	            </button>
-	            <div class="select-options" role="listbox" aria-label="Custom font" data-i18n-aria-label="labelCustomFont"></div>
-	          </div>
-	        </div>
-      </div>
-
       <div class="section-header" data-i18n="sectionAnimations">Animations</div>
 	      <div class="row">
 	        <div class="label" data-i18n="labelDisableAnimations">__MSG_labelDisableAnimations__</div>
@@ -199,7 +199,7 @@
       <div class="section-header" data-i18n="sectionAudio">Audio</div>
 	      <div class="row">
 	        <div class="label" data-i18n="labelHapticSound">UI Haptic Sound</div>
-	        <label class="switch" title="Play subtle liquid glass sounds on interaction" data-i18n-title="tooltipHapticSound">
+	        <label class="switch" title="Play subtle sounds on interaction" data-i18n-title="tooltipHapticSound">
 	          <input type="checkbox" id="soundEnabled" aria-label="UI Haptic Sound" data-i18n-aria-label="labelHapticSound">
 	          <span class="track"><span class="thumb"></span></span>
 	        </label>
@@ -322,6 +322,20 @@
         <label class="label" for="hideRateLimitMessages" data-i18n="labelHideRateLimitMessages">Hide rate limit notices</label>
         <label class="switch" data-i18n-title="tooltipHideRateLimitMessages">
           <input type="checkbox" id="hideRateLimitMessages" data-i18n-aria-label="labelHideRateLimitMessages">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+      <div class="row">
+        <label class="label" for="hideAIWarnings" data-i18n="labelHideAIWarnings">Hide AI warnings</label>
+        <label class="switch" data-i18n-title="tooltipHideAIWarnings">
+          <input type="checkbox" id="hideAIWarnings" aria-label="Hide AI warnings" data-i18n-aria-label="labelHideAIWarnings">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+      <div class="row">
+        <label class="label" for="blockAds" data-i18n="labelBlockAds">Block ads</label>
+        <label class="switch" data-i18n-title="tooltipBlockAds">
+          <input type="checkbox" id="blockAds" aria-label="Block ads" data-i18n-aria-label="labelBlockAds">
           <span class="track"><span class="thumb"></span></span>
         </label>
       </div>

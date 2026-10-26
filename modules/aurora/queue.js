@@ -11,12 +11,22 @@
   const getMessage = A.i18n?.getMessage || ((k) => k);
 
   let engine = null;
+  let loading = false;
 
   function ensureEngine() {
     if (engine) return engine;
-    if (!window.AuroraMessageQueueEngine) return null;
     const s = getSettings();
     if (!isExtensionEnabled() || !s.queueWhileGenerating || !A.sites.supports(A.site, 'queueWhileGenerating')) return null;
+    if (!window.AuroraMessageQueueEngine) {
+      if (!loading) {
+        loading = true;
+        A.utils.loadModule('modules/message-queue.js').then(() => {
+          loading = false;
+          pulse();
+        }).catch(error => { loading = false; console.error('Aurora queue could not load', error); });
+      }
+      return null;
+    }
     engine = new window.AuroraMessageQueueEngine({ getSettings, isExtensionEnabled, getMessage });
     return engine;
   }

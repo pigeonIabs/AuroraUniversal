@@ -49,7 +49,7 @@
     }
 
     observeTargets() {
-      this.observer.observe(document.documentElement, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['data-state', 'contenteditable', 'hidden', 'aria-hidden', 'disabled', 'aria-disabled', 'aria-busy', 'aria-expanded', 'aria-checked', 'aria-valuenow', 'data-selected-reasoning-effort', 'aria-label', 'title'] });
+      this.observer.observe(document.documentElement, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['data-state', 'contenteditable', 'hidden', 'aria-hidden', 'disabled', 'aria-disabled', 'aria-busy', 'aria-expanded', 'aria-checked', 'aria-valuenow', 'data-selected-reasoning-effort', 'aria-label', 'title', ...(A.site?.id === 'chatgpt' ? ['href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control'] : [])] });
       for (const { target, attributes } of this.attributeScopes.values()) {
         if (target.isConnected) this.observer.observe(target, { attributes: true, subtree: true, attributeFilter: attributes });
       }
@@ -90,10 +90,25 @@
       const relevant = [];
       const addedElements = new Set();
       const addedTexts = new Set();
+      const textParents = new Set();
+      const ownership = new Map();
+      const states = new Map();
+      let structuralChange = false;
 
       for (const m of mutations) {
         const target = m.target.nodeType === 1 ? m.target : m.target.parentElement;
-        if (target?.closest?.(ownUI)) continue;
+        if (!target) continue;
+        if (!ownership.has(target)) ownership.set(target, !!target.closest(ownUI));
+        if (ownership.get(target)) continue;
+        if (m.type === 'childList') {
+          const children = [...m.addedNodes, ...m.removedNodes];
+          // Ignore our UI writes, but let the orchestrator restore a background
+          // root removed by host hydration before the document is ready.
+          const lostBackground = [...m.removedNodes].some(node => node.id === A.config.ID) &&
+            !document.getElementById(A.config.ID) && A.isActive();
+          if (!lostBackground && children.length && children.every(node => node.nodeType === 1 &&
+              (node.matches(ownUI) || node.closest(ownUI)))) continue;
+        }
         if (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'style')) {
           let relevantScope = false;
           for (const scope of this.attributeScopes.values()) {
@@ -104,18 +119,38 @@
           }
           if (!relevantScope) continue;
         }
+        // Subscribers read the final DOM state. Repeated writes to one text
+        // node or attribute in a host commit need one notification each.
+        if (m.type !== 'childList') {
+          const key = m.type === 'attributes' ? m.attributeName : '#text';
+          let seen = states.get(m.target);
+          if (!seen) states.set(m.target, seen = new Set());
+          if (seen.has(key)) continue;
+          seen.add(key);
+        }
         relevant.push(m);
-        if (m.type === 'characterData' && m.target.nodeValue?.trim()) addedTexts.add(m.target);
-        if (m.type === 'attributes') addedElements.add(m.target);
+        if (m.type === 'characterData') {
+          textParents.add(target);
+          if (m.target.nodeValue?.trim()) addedTexts.add(m.target);
+        } else if (m.type === 'attributes' || [...m.addedNodes, ...m.removedNodes].some(node => node.nodeType === 1)) {
+          structuralChange = true;
+        }
+        if (m.type === 'childList' && m.removedNodes.length) textParents.add(target);
+        // State changes are delivered in mutations. They are not new branches
+        // and must not make subscribers walk an existing conversation again.
         for (const n of m.addedNodes) {
           if (n.nodeType === 1 && !n.matches(ownUI)) addedElements.add(n);
-          else if (n.nodeType === 3 && n.nodeValue?.trim()) addedTexts.add(n);
+          else if (n.nodeType === 3 && n.nodeValue?.trim()) {
+            addedTexts.add(n);
+            if (n.parentElement) textParents.add(n.parentElement);
+          }
         }
       }
 
       // Real removals still matter, but extension UI updates must never pulse themselves.
       if (!relevant.length) return;
-      const event = { mutations: relevant, addedElements: [...addedElements], addedTexts: [...addedTexts] };
+      const event = { mutations: relevant, addedElements: A.utils.minimalRoots(addedElements),
+        addedTexts: [...addedTexts], textParents, structuralChange };
       this.callbacks.forEach(cb => {
         try {
           cb(event);
@@ -128,11 +163,5 @@
 
   A.centralObserver ||= new AuroraCentralObserver();
 
-  // Auto-start on load
-  const startObserver = () => A.centralObserver.start();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startObserver, { once: true });
-  } else {
-    startObserver();
-  }
+  // The orchestrator starts observation at document_start and owns shutdown.
 })();

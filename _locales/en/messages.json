@@ -3,7 +3,7 @@
     "message": "Aurora Universal"
   },
   "extensionDescription": {
-    "message": "Liquid glass themes and backgrounds for ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face."
+    "message": "Glass themes and backgrounds for ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face."
   },
   "actionTitle": {
     "message": "Aurora Universal Settings"
@@ -117,13 +117,13 @@
     "message": "Disable menu open/close animations"
   },
   "labelGlassStyle": {
-    "message": "Liquid glass Style"
+    "message": "Glass style"
   },
   "labelGlassUserMessages": {
-    "message": "Liquid glass user messages"
+    "message": "User message glass"
   },
   "tooltipGlassUserMessages": {
-    "message": "Apply the active liquid glass style to your message bubbles"
+    "message": "Apply the selected glass style to your messages"
   },
   "sectionInterface": {
     "message": "Interface"
@@ -279,7 +279,7 @@
     "message": "Voice Color"
   },
   "quickSettingsLabelGlassStyle": {
-    "message": "Liquid glass Style"
+    "message": "Glass style"
   },
   "errorLoadingSettings": {
     "message": "Error: Could not load settings. Please try reloading the page."
@@ -291,7 +291,7 @@
     "message": "Welcome to Aurora"
   },
   "welcomeDescription": {
-    "message": "Personalize ChatGPT with ambient backgrounds, liquid glass effects, privacy controls, and workflow upgrades."
+    "message": "Personalize ChatGPT with ambient backgrounds, glass effects, privacy controls, and workflow upgrades."
   },
   "welcomeBtnGetStarted": {
     "message": "Get Started"
@@ -318,7 +318,7 @@
     "message": "Blue"
   },
   "welcomeLabelGlassStyle": {
-    "message": "Liquid glass Style"
+    "message": "Glass style"
   },
   "welcomeGlassClear": {
     "message": "Clear"
@@ -468,7 +468,7 @@
     "message": "UI Haptic Sound"
   },
   "tooltipHapticSound": {
-    "message": "Play subtle liquid glass sounds on interaction"
+    "message": "Play subtle sounds on interaction"
   },
   "labelAutoContrast": {
     "message": "Auto-Contrast (Images)"
@@ -582,6 +582,18 @@
     "message": "High"
   },
   "labelGlassTransparency": {
-    "message": "Liquid glass transparency"
+    "message": "Transparency"
+  },
+  "labelHideAIWarnings": {
+    "message": "Hide AI warnings"
+  },
+  "labelBlockAds": {
+    "message": "Block ads"
+  },
+  "tooltipBlockAds": {
+    "message": "Hide ChatGPT sponsored placements and ad buying promotions on every plan"
+  },
+  "tooltipHideAIWarnings": {
+    "message": "Hide AI accuracy and generated-content disclaimers on every supported website"
   }
 }

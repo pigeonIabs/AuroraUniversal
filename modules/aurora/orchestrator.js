@@ -24,13 +24,21 @@
       this.pendingSettings = {};
 
       this.appliedBody = null;
+      this.renderScheduled = false;
+      this.renderRevision = 0;
+      this.styleFrameId = null;
       this.renderFrameId = null;
+      this.startupReadConsumed = false;
       this.pendingNodes = new Set();
+      this.pendingTextParents = new Set();
+      this.pendingStateNodes = new Set();
+      this.needsReconcile = false;
       this.needsResumeScan = false;
 
     }
 
     init() {
+      A.startupTimings.modulesReady = performance.now();
       const extensionApi = globalThis.chrome;
       if (!extensionApi?.runtime?.sendMessage && !extensionApi?.storage?.sync?.get) return false;
 
@@ -48,9 +56,6 @@
       this.startObservers();
       A.centralObserver?.start?.();
       this.refreshSettingsAndApply();
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => this.reconcile(), { once: true });
-      }
 
       try {
         extensionApi.storage?.onChanged?.addListener((changes, area) => this.onStorageChanged(changes, area));
@@ -75,6 +80,7 @@
         this.pendingSettings = {};
         this.settingsReadPending = false;
         this.settingsLoaded = true;
+        A.startup?.release?.();
 
         this.applyAllSettings();
       };
@@ -92,6 +98,12 @@
           // Keep the page usable if the extension context has been invalidated.
         }
       };
+
+      if (A.startup?.ready && !this.startupReadConsumed) {
+        this.startupReadConsumed = true;
+        A.startup.ready.then(settings => settings ? applyFreshSettings(settings) : readStorageFallback());
+        return;
+      }
 
       if (!extensionApi?.runtime?.sendMessage) {
         readStorageFallback();
@@ -119,10 +131,12 @@
       }
 
       A.rootFlags?.apply?.();
+      A.centralObserver?.start?.();
       if (!document.body) return;
       this.clearPendingRender();
       this.appliedBody = document.body;
       this.ensureOwnedUI();
+      A.startupTimings.integrationStarted ??= performance.now();
 
       const s = getSettings();
       if (s.hideQuickSettings) A.quickSettings?.remove?.();
@@ -130,8 +144,11 @@
       A.background?.update?.();
 
       A.interface?.tagElements?.(document);
-      A.glass?.tagFast?.(document);
-      A.glass?.scheduleFullScan?.();
+      A.aiWarnings?.apply?.();
+      A.ads?.apply?.();
+      A.glass?.tagAll?.(document);
+
+      A.textFrost?.start?.();
 
       A.defaultModel?.maybeApply?.();
 
@@ -139,13 +156,16 @@
       this.applyAudio();
       this.applyContrast();
       A.masking?.applyInitial?.();
-      if (!s.hideQuickSettings) A.quickSettings?.ensure?.();
 
       A.queue?.pulse?.();
 
       if (!this.welcomeScreenChecked) {
         this.welcomeScreenChecked = true;
         if (!s.hasSeenWelcomeScreen) A.welcome?.show?.(() => this.applyAllSettings());
+      }
+      if (A.startupTimings.integrated === undefined) {
+        A.startupTimings.integrated = performance.now();
+        requestAnimationFrame(() => { A.startupTimings.paintOpportunity = performance.now(); });
       }
     }
 
@@ -186,9 +206,16 @@
     }
 
     clearPendingRender() {
+      this.renderRevision++;
+      this.renderScheduled = false;
+      if (this.styleFrameId !== null) cancelAnimationFrame(this.styleFrameId);
       if (this.renderFrameId !== null) cancelAnimationFrame(this.renderFrameId);
+      this.styleFrameId = null;
       this.renderFrameId = null;
       this.pendingNodes.clear();
+      this.pendingTextParents.clear();
+      this.pendingStateNodes.clear();
+      this.needsReconcile = false;
     }
 
     suspend() {
@@ -196,6 +223,7 @@
       this.otherChecks?.cancel?.();
       this.appliedBody = null;
       A.disable?.all?.();
+      if (!isEnabled() || window.navigation) A.centralObserver?.stop?.();
     }
 
     resume() {
@@ -204,16 +232,21 @@
       if (this.needsResumeScan && isEnabled() && this.isSupportedRoute()) {
         this.needsResumeScan = false;
         if (!bodyApplied) {
-          A.glass?.tagFast?.(document);
-          A.glass?.scheduleFullScan?.();
+          A.glass?.tagAll?.(document);
           A.masking?.applyInitial?.();
           A.interface?.tagElements?.(document);
+          A.aiWarnings?.apply?.();
+          A.ads?.apply?.();
           if (!getSettings().hideQuickSettings) A.quickSettings?.ensure?.();
           this.applyAudio();
         }
       }
+      if (this.pendingNodes.size || this.pendingStateNodes.size || this.pendingTextParents.size || this.needsReconcile) {
+        this.flushDOMChanges();
+      }
       A.defaultModel?.maybeApply?.();
       A.queue?.schedulePulse?.(0);
+      A.textFrost?.schedule?.();
     }
 
     isSupportedRoute() {
@@ -236,8 +269,7 @@
 
           const bgNode = document.getElementById(ID);
           document.documentElement.classList.toggle('cgpt-tab-hidden', document.hidden);
-          if (document.hidden) this.needsResumeScan = true;
-          else this.resume();
+          if (!document.hidden) this.resume();
           if (!bgNode) return;
 
           const videos = bgNode.querySelectorAll('video');
@@ -298,51 +330,107 @@
       document.addEventListener('load', event => {
         if (event.target?.tagName !== 'LINK' || event.target.rel !== 'stylesheet') return;
         A.material.invalidate();
-        if (document.body) this.domObserverCallback({ addedElements: [document.body] });
+        if (!document.body || this.styleFrameId !== null) return;
+        // Coalesce stylesheet arrivals before paint without repeating functional
+        // tagging across the full conversation for every CSS file.
+        this.styleFrameId = requestAnimationFrame(() => {
+          this.styleFrameId = null;
+          if (!this.settingsLoaded || !A.isActive() || document.hidden) return;
+          A.glass?.tagAll?.(document);
+          A.textFrost?.refresh?.(document.body);
+        });
       }, true);
 
       this.observeTheme();
     }
 
-    onDOMChanged({ mutations, addedElements, addedTexts }) {
+    onDOMChanged({ mutations, addedElements, textParents, structuralChange }) {
       if (location.href !== this.lastUrl) this.checkUrl();
-      if (!this.settingsLoaded || document.hidden || !isEnabled() || !this.isSupportedRoute()) return;
+      if (!this.settingsLoaded || !isEnabled() || !this.isSupportedRoute()) return;
       for (const node of addedElements || []) {
         if (node.isConnected) this.pendingNodes.add(node);
       }
-      for (const text of addedTexts || []) {
-        const control = A.upgrade?.changedOwner?.(text.parentElement);
-        if (control?.isConnected) this.pendingNodes.add(control);
-      }
-      // Removed labels and emptied text still need their native owner checked.
       for (const mutation of mutations || []) {
-        if (mutation.type === 'characterData' && mutation.target.nodeValue?.trim()) continue;
-        if (mutation.type !== 'characterData' &&
-            !(mutation.type === 'childList' && mutation.removedNodes.length)) continue;
-        const node = mutation.target.nodeType === 1 ? mutation.target : mutation.target.parentElement;
-        const control = A.upgrade?.changedOwner?.(node);
-        if (control?.isConnected) this.pendingNodes.add(control);
+        if (mutation.type !== 'attributes') continue;
+        // Busy, checked, expanded and disabled state remain available to the
+        // queue and model picker without repainting the container's subtree.
+        if (!['data-state', 'hidden', 'aria-hidden', 'contenteditable', 'class', 'style', 'aria-label', 'title', 'href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control'].includes(mutation.attributeName)) continue;
+        if (mutation.target.isConnected) this.pendingStateNodes.add(mutation.target);
       }
-      if (A.queue?.isEnabled?.() || A.queue?.hasWork?.()) A.queue?.schedulePulse?.(0);
-      if (!this.pendingNodes.size && !mutations?.some(mutation => mutation.type === 'childList')) return;
-      if (this.renderFrameId !== null) return;
-      this.renderFrameId = requestAnimationFrame(() => this.flushDOMChanges());
+      // Resolve text owners once per frame, including removed and emptied
+      // labels. Token-by-token delivery only records the changed parent.
+      for (const node of textParents || []) if (node.isConnected) this.pendingTextParents.add(node);
+      if (!document.hidden && (A.queue?.hasWork?.() || (structuralChange && A.queue?.isEnabled?.()))) A.queue?.schedulePulse?.(0);
+      // Streamed text does not change surface ownership. Reconcile only changed
+      // elements or a replaced body, instead of scheduling an empty paint pass.
+      this.needsReconcile ||= document.body !== this.appliedBody || (structuralChange && !document.getElementById(ID)) ||
+        mutations?.some(mutation => mutation.type === 'childList' && mutation.target === document.body);
+      // Keep exact changed branches while hidden. Returning to an unchanged
+      // tab needs no full conversation scan.
+      if (document.hidden) return;
+      if (!this.pendingNodes.size && !this.pendingStateNodes.size && !this.pendingTextParents.size && !this.needsReconcile) return;
+      if (this.renderScheduled) return;
+      this.renderScheduled = true;
+      const revision = this.renderRevision;
+      // One material transaction before the next paint, even when the host
+      // commits many mutations and microtasks during one streaming frame.
+      this.renderFrameId = requestAnimationFrame(() => {
+        this.renderFrameId = null;
+        if (revision === this.renderRevision) this.flushDOMChanges();
+      });
     }
 
     flushDOMChanges() {
-      this.renderFrameId = null;
+      this.renderScheduled = false;
+      if (document.hidden) return;
+      if (!isEnabled() || !this.isSupportedRoute()) {
+        this.clearPendingRender();
+        return;
+      }
+      const textOwners = new Map([[A.upgrade, new Set()], [A.aiWarnings, new Set()], [A.ads, new Set()]]);
+      for (const parent of this.pendingTextParents) {
+        if (!parent.isConnected) continue;
+        // Added branches already receive every scanner below.
+        let covered = false;
+        for (let node = parent; node; node = node.parentElement) {
+          if (this.pendingNodes.has(node)) { covered = true; break; }
+        }
+        if (covered) continue;
+        for (const [feature, owners] of textOwners) {
+          const owner = feature?.changedOwner?.(parent);
+          if (owner?.isConnected) owners.add(owner);
+        }
+      }
+      this.pendingTextParents.clear();
       const nodes = A.utils.minimalRoots(this.pendingNodes);
       this.pendingNodes.clear();
-      if (document.hidden || !isEnabled() || !this.isSupportedRoute()) return;
-      const previousBody = this.appliedBody;
-      this.reconcile();
-      if (previousBody !== this.appliedBody) return;
-      for (const node of nodes) {
-        A.glass?.tagFast?.(node);
-        A.interface?.tagElements?.(node);
-        if (A.glass?.hasSlowHints?.(node)) A.glass?.tagAncestorsForSlowHints?.(node);
+      const states = A.utils.minimalRoots(this.pendingStateNodes).filter(node => !nodes.some(root => root.contains(node)));
+      this.pendingStateNodes.clear();
+      if (this.needsReconcile) {
+        this.needsReconcile = false;
+        const previousBody = this.appliedBody;
+        this.reconcile();
+        if (previousBody !== this.appliedBody) return;
       }
-      if (nodes.length) this.otherChecks();
+      // A changed label belongs only to its notice classifiers. It does not
+      // remount the background, retag glass, or reindex all of its descendants.
+      for (const [feature, owners] of textOwners) for (const owner of A.utils.minimalRoots(owners)) {
+        if (!nodes.some(root => root.contains(owner))) feature.tagElements(owner);
+      }
+      // State changes can reveal a pre-existing menu. Tag that branch, but do
+      // not treat it as new text or enqueue another full text traversal.
+      for (const [branches, scanText] of [[nodes, true], [states, false]]) {
+        for (const node of branches) {
+          A.glass?.tagFast?.(node);
+          A.interface?.tagElements?.(node);
+          A.aiWarnings?.tagElements?.(node, scanText);
+          A.ads?.tagElements?.(node, scanText);
+        }
+      }
+      // Reconcile the material in this same pre-paint frame as first-time tagging.
+      if (nodes.length) A.textFrost?.refresh?.(nodes);
+      if (states.length) A.textFrost?.refreshState?.(states);
+      if (nodes.length || states.length) this.otherChecks();
       A.quickSettings?.refreshCapabilities?.();
     }
 
@@ -416,6 +504,8 @@
           'blurAvatar',
           'hideUpgradeButtons',
           'hideRateLimitMessages',
+          'hideAIWarnings',
+          'blockAds',
           'theme',
           'customFont',
           'voiceColor',
@@ -428,6 +518,7 @@
         if (changedKeys.some((k) => rootFlagKeys.includes(k))) {
           A.rootFlags?.apply?.();
         }
+        if (['cinemaMode', 'focusMode', 'blurChatHistory', 'blurAvatar'].some(key => changes[key] && settings[key])) A.interface?.tagElements?.(document);
 
         if (changes.customBgUrl || changes.backgroundBlur || changes.backgroundScaling) {
           A.background?.update?.();
@@ -435,6 +526,8 @@
         }
 
         if (changes.hideUpgradeButtons || changes.hideRateLimitMessages) A.upgrade?.applyUpgradeButtons?.();
+        if (changes.hideAIWarnings) A.aiWarnings?.apply?.();
+        if (changes.blockAds) A.ads?.apply?.();
 
         if (changes.hideQuickSettings !== undefined) {
           if (!settings.hideQuickSettings) A.quickSettings?.ensure?.();
@@ -452,7 +545,7 @@
           A.queue?.schedulePulse?.();
         }
         if (changes.autoContrast) this.applyContrast();
-        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'queueWhileGenerating', 'appearance', 'dataMaskingEnabled'].includes(key))) A.quickSettings?.ensure?.();
+        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'queueWhileGenerating', 'appearance', 'dataMaskingEnabled'].includes(key))) A.quickSettings?.ensure?.();
 
         if (changes.soundEnabled || changes.soundVolume) {
           this.applyAudio();

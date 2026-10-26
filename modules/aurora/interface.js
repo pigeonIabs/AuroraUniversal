@@ -5,7 +5,6 @@
   const selectors = A.site.selectors || {};
   const chatgpt = {
     sidebar: '#app-shell-sidebar, #stage-slideover-sidebar, #stage-sidebar-tiny-bar, [data-testid="sidebar"]',
-    history: ':is(#app-shell-sidebar, #stage-slideover-sidebar, [data-testid="sidebar"]) :is(a[href^="/c/"], a[href*="/project/"], a[href*="/projects/"], [data-testid="history-item"], [data-testid="conversation-title"])',
     avatar: '[data-testid="accounts-profile-button"] :is(img, [class*="avatar"]), button[aria-label="Open profile menu"] :is(img, [class*="avatar"])',
     content: '[data-thread-user-message-navigation-content], [data-pip-obstacle="thread-footer"], [data-testid="conversation-turn"], [data-testid^="conversation-turn-"] > .mx-auto, main :is([class*="max-w-3xl"], [class*="max-w-thread"]), #thread :is([class*="max-w-"], [data-composer-body])',
     toolbar: '[data-app-shell-titlebar], header#page-header, [data-testid="chat-header"]',
@@ -15,6 +14,7 @@
   const matching = (root, selector) => A.utils.matchingElements(root, selector);
   let widthOwners = new WeakSet();
   function tagWidth(node) {
+    if (!A.getSettings().cinemaMode) return;
     for (let owner = node, depth = 0; owner && owner !== document.body && depth < 8; owner = owner.parentElement) {
       if (A.site.appRoot && owner.matches(A.site.appRoot)) break;
       // Native display-contents wrappers do not consume the layout ancestor budget.
@@ -29,6 +29,11 @@
   function tagElements(root = document) {
     if (!A.isActive() || root.closest?.(A.ownedUI)) return;
     for (const role of roles) {
+      const settings = A.getSettings();
+      if (role === 'history' && !settings.blurChatHistory) continue;
+      if (role === 'avatar' && !settings.blurAvatar) continue;
+      if ((role === 'content' || role === 'composer') && !settings.cinemaMode) continue;
+      if (role === 'sidebar' && !settings.focusMode) continue;
       const selector = roleSelector(role);
       for (const node of matching(root, `${selector || ':not(*)'}, [data-aurora-${role}]`)) {
         if (node.closest(A.ownedUI)) continue;
@@ -42,9 +47,13 @@
     }
   }
 
-  function capabilities() {
+  function readCapabilities() {
     const supported = A.site.isSupportedRoute(location.pathname);
-    const present = role => !!document.querySelector(roleSelector(role) || ':not(*)');
+    const presence = new Map();
+    const present = role => {
+      if (!presence.has(role)) presence.set(role, !!document.querySelector(roleSelector(role) || ':not(*)'));
+      return presence.get(role);
+    };
     const editor = A.dom.findActiveComposer();
     const workflow = A.site.workflow;
     const composer = A.dom.getComposerForm(editor);
@@ -64,6 +73,8 @@
     return result;
   }
 
+  const capabilities = () => A.dom.readScope(readCapabilities);
+
   function snapshot() {
     return { site: A.site.id, url: location.href, capabilities: capabilities(),
       models: [], currentModel: '', ...A.defaultModel?.snapshot?.() };
@@ -77,6 +88,7 @@
 
   chrome.runtime.onMessage.addListener((request, _sender, respond) => {
     if (request.type === 'GET_SITE_STATE') respond(snapshot());
+    if (request.type === 'GET_STARTUP_TIMING') respond({ ...A.startupTimings, enabled: A.isActive() });
   });
   A.interface = { tagElements, capabilities, snapshot, untag };
 })();

@@ -4,11 +4,12 @@
   // Firefox gives content scripts a globalThis distinct from their window.
   // Share the same window namespace used by every feature module.
   const A = (window.AuroraExt = window.AuroraExt || {});
+  A.startupTimings = { injected: performance.now() };
   const chatgptOnly = new Set([
-    'legacyComposer', 'voiceColor', 'cuteVoiceUI',
+    'legacyComposer', 'voiceColor', 'cuteVoiceUI', 'blockAds',
   ]);
   const chatFeatures = new Set(['queueWhileGenerating', 'defaultModel', 'cinemaMode', 'glassUserMessages']);
-  const visibilityFeatures = new Set(['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages']);
+  const visibilityFeatures = new Set(['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings']);
   const sites = [
     { id: 'chatgpt', name: 'ChatGPT', host: 'chatgpt.com' },
     { id: 'claude', name: 'Claude', host: 'claude.ai' },

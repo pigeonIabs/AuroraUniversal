@@ -238,6 +238,7 @@ html.theme-light .tab-link.active {
   display: none;
 }
 .label { font-size: 13px; white-space: nowrap; }
+.glass-intensity-output { display: inline-flex; flex-shrink: 0; gap: 2px; font-variant-numeric: tabular-nums; font-size: 13px; }
 .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
 .switch input { display: none; }
 .track {

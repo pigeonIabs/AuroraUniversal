@@ -5,14 +5,6 @@
   const A = (window.AuroraExt = window.AuroraExt || {});
   A.utils = A.utils || {};
 
-  A.utils.getCachedElement = A.utils.getCachedElement || ((key, queryFn) => {
-    const cache = A.cache?.ui;
-    if (cache && cache[key] && cache[key].isConnected) return cache[key];
-    const element = queryFn();
-    if (element && cache) cache[key] = element;
-    return element;
-  });
-
   A.utils.debounce = A.utils.debounce || ((func, wait) => {
     let timeout;
     const debounced = function (...args) {
@@ -25,6 +17,10 @@
 
   A.utils.setAttribute = (node, name, value) => {
     if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+  };
+
+  A.utils.setText = (node, value) => {
+    if (node.textContent !== value) node.textContent = value;
   };
 
   A.utils.setStyle = (node, name, value) => {
@@ -46,6 +42,38 @@
     return nodes;
   };
 
+  // Prune protected branches before matching. Notice discovery should scale
+  // with the site's controls, rather than with the length of a conversation.
+  A.utils.matchingElementsOutside = (root, selector, boundary) => {
+    if (!root?.querySelectorAll || root.closest?.(boundary)) return [];
+    const nodes = root.matches?.(selector) ? [root] : [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+      acceptNode(node) {
+        if (node.matches(boundary)) return NodeFilter.FILTER_REJECT;
+        return node.matches(selector) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      },
+    });
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node);
+    return nodes;
+  };
+
+  // Reject a protected branch once. Descendants cannot escape it, so each
+  // visited element needs a local match instead of another ancestor search.
+  A.utils.textParentsOutside = function* (root, boundary) {
+    if (root.closest?.(boundary) || root.parentElement?.closest(boundary)) return;
+    const parents = new Set();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (node.nodeType === 1) return node.matches(boundary) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP;
+        return node.nodeValue?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      },
+    });
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      const parent = text.parentElement;
+      if (!parents.has(parent)) { parents.add(parent); yield parent; }
+    }
+  };
+
   // Keep only changed branches. Walking ancestors avoids pairwise contains()
   // checks when the host mounts hundreds of nodes in one render.
   A.utils.minimalRoots = nodes => {
@@ -58,12 +86,6 @@
     });
   };
 
-  A.utils.toggleClassForElements = A.utils.toggleClassForElements || ((elements, className, force) => {
-    elements.forEach((el) => {
-      if (el) el.classList.toggle(className, force);
-    });
-  });
-
   A.utils.safeRequestIdleCallback =
     A.utils.safeRequestIdleCallback ||
     ((callback, options) => {
@@ -72,6 +94,28 @@
   A.utils.cancelIdleCallback = handle => {
     if (window.cancelIdleCallback) window.cancelIdleCallback(handle);
     else clearTimeout(handle);
+  };
+
+  // Privacy-rounded clocks cannot enforce a millisecond budget. A hard step
+  // limit bounds each task even when every clock read returns the same value.
+  A.utils.advanceWork = (iterator, steps = 64, milliseconds = 3) => {
+    const deadline = performance.now() + milliseconds;
+    for (let index = 0; index < steps; index++) {
+      if (iterator.next().done) return true;
+      if (performance.now() >= deadline) break;
+    }
+    return false;
+  };
+
+  const modules = new Map();
+  A.utils.loadModule = path => {
+    if (!modules.has(path)) {
+      modules.set(path, import(chrome.runtime.getURL(path)).catch(error => {
+        modules.delete(path);
+        throw error;
+      }));
+    }
+    return modules.get(path);
   };
 
   A.utils.normalizeToken =

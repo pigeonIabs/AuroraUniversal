@@ -18,7 +18,9 @@
   const hubFiles = `${hub} [data-target="ViewerIndexTreeList"] > ul.border, ${hub} [data-target="LastCommit"] > div.border`;
   // Discussion comments join separately painted top and bottom border shells.
   const hubDiscussion = `${hub} [data-target="DiscussionEvents"] div.border:is(.rounded-t-lg, .rounded-b-lg)`;
-  const hubPanels = `${hub} .overview-card-wrapper, ${hub} main :is(div, a).border:is(.rounded-lg, .rounded-xl, .rounded-2xl), ${hub} main > .container > .flex-none, ${hubFiles}, ${hubDiscussion}, ${settingsPanels}`;
+  // Collection actions share one painted list, with transparent controls inside.
+  const hubCollectionActions = `${hub} ul.border.rounded-2xl:has(a[href="/docs/hub/collections"])`;
+  const hubPanels = `${hub} .overview-card-wrapper, ${hub} main :is(div, a).border:is(.rounded-lg, .rounded-xl, .rounded-2xl), ${hub} main > .container > .flex-none, ${hubFiles}, ${hubDiscussion}, ${hubCollectionActions}, ${settingsPanels}`;
   Object.assign(A.site, {
     appRoot: `#app > .fixed.grid, ${hub}`,
     isSupportedRoute: path => !/^\/(?:login|logout|join|oauth|auth|api)(?:\/|$)/.test(path) && !/^\/chat\/(?:login|logout|oauth|auth|api)(?:\/|$)/.test(path),

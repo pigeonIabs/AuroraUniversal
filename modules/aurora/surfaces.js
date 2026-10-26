@@ -5,7 +5,8 @@
   const A = window.AuroraExt;
   const selectors = A.site?.selectors || {};
   const ownUI = A.ownedUI;
-  const surfaceRoles = ['composer', 'sidebar', 'menu', 'message', 'code', 'toolbar', 'overlay', 'panel', 'promotion', 'control'];
+  const surfaceRoles = ['composer', 'sidebar', 'menu', 'message', 'code', 'toolbar', 'overlay', 'panel', 'promotion', 'control',
+    ...(A.site.id === 'claude' ? ['notice'] : [])];
 
   function each(root, selector, apply) {
     if (!selector || !root?.querySelectorAll) return;
@@ -92,11 +93,6 @@
       const composer = selectors.composer && editor.closest(selectors.composer);
       if (composer) tagSurface(composer, 'composer');
     });
-    for (const role of ['history', 'avatar', 'content']) {
-      each(root, selectors[role], node => {
-        if (!node.closest(ownUI) && !node.hasAttribute('data-aurora-surface')) node.setAttribute(`data-aurora-${role}`, '');
-      });
-    }
     A.upgrade?.tagElements?.(root);
   }
 

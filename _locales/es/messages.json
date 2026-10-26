@@ -3,7 +3,7 @@
     "message": "Aurora Universal"
   },
   "extensionDescription": {
-    "message": "Temas de cristal líquido y fondos para ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek y Hugging Face."
+    "message": "Temas de cristal y fondos para ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek y Hugging Face."
   },
   "actionTitle": {
     "message": "Configuración de Aurora Universal"
@@ -264,13 +264,13 @@
     "message": "Color de voz"
   },
   "labelGlassStyle": {
-    "message": "Estilo de vidrio líquido"
+    "message": "Estilo de cristal"
   },
   "labelGlassUserMessages": {
-    "message": "Mensajes de usuario con efecto de vidrio líquido"
+    "message": "Cristal en tus mensajes"
   },
   "tooltipGlassUserMessages": {
-    "message": "Aplica el estilo de vidrio líquido activo a las burbujas de tus mensajes"
+    "message": "Aplica el estilo de cristal seleccionado a tus mensajes"
   },
   "glassAppearanceOptionDimmed": {
     "message": "Atenuado"
@@ -279,7 +279,7 @@
     "message": "Claro"
   },
   "quickSettingsLabelGlassStyle": {
-    "message": "Estilo de vidrio líquido"
+    "message": "Estilo de cristal"
   },
   "errorLoadingSettings": {
     "message": "Error: No se pudieron cargar los ajustes. Por favor, intenta recargar la página."
@@ -291,7 +291,7 @@
     "message": "Welcome to Aurora"
   },
   "welcomeDescription": {
-    "message": "Personalize ChatGPT with ambient backgrounds, liquid glass effects, privacy controls, and workflow upgrades."
+    "message": "Personalize ChatGPT with ambient backgrounds, glass effects, privacy controls, and workflow upgrades."
   },
   "welcomeBtnGetStarted": {
     "message": "Comenzar"
@@ -318,7 +318,7 @@
     "message": "Azul"
   },
   "welcomeLabelGlassStyle": {
-    "message": "Estilo de vidrio líquido"
+    "message": "Estilo de cristal"
   },
   "welcomeGlassClear": {
     "message": "Claro"
@@ -468,7 +468,7 @@
     "message": "Sonidos de interfaz"
   },
   "tooltipHapticSound": {
-    "message": "Reproducir sonidos sutiles de vidrio líquido al interactuar"
+    "message": "Reproducir sonidos sutiles al interactuar"
   },
   "labelAutoContrast": {
     "message": "Contraste automático (Imágenes)"
@@ -537,6 +537,18 @@
     "message": "Alto"
   },
   "labelGlassTransparency": {
-    "message": "Transparencia del vidrio líquido"
+    "message": "Transparencia"
+  },
+  "labelHideAIWarnings": {
+    "message": "Ocultar avisos de IA"
+  },
+  "labelBlockAds": {
+    "message": "Bloquear anuncios"
+  },
+  "tooltipBlockAds": {
+    "message": "Ocultar anuncios patrocinados de ChatGPT y promociones para anunciantes en todos los planes"
+  },
+  "tooltipHideAIWarnings": {
+    "message": "Ocultar los avisos de precisión y contenido generado por IA en todos los sitios compatibles"
   }
 }

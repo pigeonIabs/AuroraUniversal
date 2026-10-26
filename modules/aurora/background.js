@@ -12,6 +12,64 @@
     return A.isEnabled ? A.isEnabled() : true;
   }
 
+  // Bake the original 100px Gaussian blur once for CSS, including its
+  // 300px transparent halo.
+  const gradientTextures = new Map();
+  let gradientBlobs = new WeakMap();
+  let gradientResize = 0;
+  function gradientTexture(diameter, color) {
+    const key = `${diameter}|${color}`;
+    if (gradientTextures.has(key)) return gradientTextures.get(key);
+    const padding = 300, extent = diameter + padding * 2;
+    const scale = Math.min(0.35, 640 / extent);
+    const texture = document.createElement('canvas');
+    texture.width = texture.height = Math.ceil(extent * scale);
+    const ctx = texture.getContext('2d');
+    const ratio = texture.width / extent;
+    ctx.filter = `blur(${100 * ratio}px)`;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(extent * ratio / 2, extent * ratio / 2, diameter * ratio / 2, 0, Math.PI * 2);
+    ctx.fill();
+    const value = { key, canvas: texture, diameter, padding, extent, url: texture.toDataURL() };
+    gradientTextures.set(key, value);
+    while (gradientTextures.size > 6) gradientTextures.delete(gradientTextures.keys().next().value);
+    return value;
+  }
+  function prepareGradient(layer) {
+    if (!layer?.classList.contains('gpt5-active')) return [];
+    const frames = [];
+    for (const blob of layer.querySelectorAll('.blob')) {
+      const style = getComputedStyle(blob);
+      const diameter = parseFloat(style.width);
+      const color = style.getPropertyValue('--blob-color').trim();
+      if (!(diameter > 0) || !color) continue;
+      const texture = gradientTexture(diameter, color);
+      if (gradientBlobs.get(blob) !== texture) {
+        gradientBlobs.set(blob, texture);
+        blob.style.setProperty('--aurora-gradient-texture', `url("${texture.url}")`);
+      }
+      frames.push({node:blob, texture, opacity:Number(style.opacity)});
+    }
+    return frames;
+  }
+  function gradientFrame(layer) {
+    return prepareGradient(layer).map(({node, texture, opacity}) => {
+      const rect = node.getBoundingClientRect(), sx = rect.width / texture.diameter, sy = rect.height / texture.diameter;
+      return { key: texture.key, canvas: texture.canvas, opacity,
+        x: rect.left - texture.padding * sx, y: rect.top - texture.padding * sy,
+        width: texture.extent * sx, height: texture.extent * sy };
+    });
+  }
+  function onGradientResize() {
+    clearTimeout(gradientResize);
+    gradientResize = setTimeout(() => {
+      gradientResize = 0;
+      const layer = document.querySelector(`#${ID} .media-layer.active.gpt5-active`);
+      if (layer) prepareGradient(layer);
+    }, 100);
+  }
+
   const positionedApps = new Map();
 
   function restoreApp(keep = null) {
@@ -63,7 +121,8 @@
   }
 
   function makeBgNode() {
-    const wrap = document.createElement('div');
+    // A distinct tag cannot be mistaken for the host's first server-rendered div.
+    const wrap = document.createElement('aurora-background');
     wrap.id = ID;
     wrap.className = 'bg-visible';
     wrap.setAttribute('aria-hidden', 'true');
@@ -114,13 +173,36 @@
   }
 
   const spaceObservers = new Map();
+  let spaceImage;
+  let bodyObserver;
+
+  function attachBackground(node) {
+    if (!document.body) {
+      document.documentElement.appendChild(node);
+      bodyObserver = new MutationObserver(() => { if (document.body) attachBackground(node); });
+      bodyObserver.observe(document.documentElement, { childList: true });
+      return;
+    }
+    bodyObserver?.disconnect();
+    bodyObserver = null;
+    // Preserve the prepared image and running animations when the body arrives.
+    if (node.isConnected && document.body.moveBefore) document.body.moveBefore(node, null);
+    else document.body.appendChild(node);
+  }
 
   function makeSpaceBackground() {
+    // Start the existing asset request before CSS layout or the host body.
+    // CSS shares this resource. No canvas, resampling or extra raster is used.
+    if (!spaceImage) {
+      spaceImage = new Image();
+      spaceImage.onload = () => { A.startupTimings.spaceAssetLoaded = performance.now(); };
+      spaceImage.src = chrome.runtime.getURL('assets/space-stars.svg');
+    }
     const sky = document.createElement('div');
     sky.className = 'space-bg';
     const firmament = document.createElement('div');
     firmament.className = 'space-firmament';
-    firmament.style.setProperty('--aurora-space-stars', `url("${chrome.runtime.getURL('assets/space-stars.svg')}")`);
+    firmament.style.setProperty('--aurora-space-stars', `url("${spaceImage.src}")`);
     firmament.style.setProperty('--space-angle', `${Math.random() * 360}deg`);
     // An off-center celestial pole gives every star the same slow circular path.
     const poleX = 0.36 + Math.random() * 0.28;
@@ -174,22 +256,18 @@
   // BACKGROUND MANAGER - State Machine for Reliable Background Switching
   // ========================================================================
   const BackgroundManager = {
-    // State: 'idle' | 'loading' | 'transitioning'
+    // State: 'idle' | 'loading'
     state: 'idle',
     activeLayerId: 'a',
     currentUrl: null,
-    pendingUrl: null,
-    pendingForce: false,
     loadingUrl: null,
     abortController: null,
-    transitionTimeout: null,
     generation: 0,
-    TRANSITION_MS: 750,
     LOAD_TIMEOUT_MS: 5000,
 
-    // Default is Aurora's original GPT-5 wallpaper on every supported site.
+    // The original wallpaper loads from its provider rather than being redistributed.
     DEFAULT_SRCSET:
-      'https://persistent.oaistatic.com/burrito-nux/640.webp 640w, https://persistent.oaistatic.com/burrito-nux/1280.webp 1280w, https://persistent.oaistatic.com/burrito-nux/1920.webp 1920w',
+      [640, 1280, 1920].map(width => `https://persistent.oaistatic.com/burrito-nux/${width}.webp ${width}w`).join(', '),
     DEFAULT_SRC: 'https://persistent.oaistatic.com/burrito-nux/640.webp',
     VIDEO_EXTENSIONS: ['.mp4', '.webm', '.ogv'],
 
@@ -246,11 +324,6 @@
         this.abortController.abort();
         this.abortController = null;
       }
-      if (this.transitionTimeout) {
-        clearTimeout(this.transitionTimeout);
-        this.transitionTimeout = null;
-      }
-      this.pendingUrl = null;
     },
 
     isVideo(url) {
@@ -272,20 +345,38 @@
 
       return new Promise((resolve, reject) => {
         let timeout;
-        const finish = () => {
+        let settled = false;
+        const finish = async (result) => {
+          if (settled) return;
+          settled = true;
           clearTimeout(timeout);
           media.removeEventListener(event, finish);
           media.removeEventListener('error', finish);
           controller.signal.removeEventListener('abort', finish);
-          if (this.abortController === controller) this.abortController = null;
           if (controller.signal.aborted) { reject(new Error('Aborted')); return; }
+          if (result?.type === 'error' || result === 'timeout') {
+            if (this.abortController === controller) this.abortController = null;
+            reject(new Error('Background media failed to load'));
+            return;
+          }
+          try {
+            // A load event does not guarantee that Gecko has a decoded frame.
+            // Keep the current layer painted until the replacement is ready.
+            if (!isVideo && image.decode) await image.decode();
+            if (controller.signal.aborted) throw new Error('Aborted');
+          } catch (error) {
+            if (this.abortController === controller) this.abortController = null;
+            reject(error);
+            return;
+          }
+          if (this.abortController === controller) this.abortController = null;
           if (!isVideo && image.naturalWidth && A.getSettings?.().autoContrast) A.contrast?.engine?.analyze?.(image);
           resolve();
         };
         media.addEventListener(event, finish, { once: true });
         media.addEventListener('error', finish, { once: true });
         controller.signal.addEventListener('abort', finish, { once: true });
-        timeout = setTimeout(finish, this.LOAD_TIMEOUT_MS);
+        timeout = setTimeout(() => finish('timeout'), this.LOAD_TIMEOUT_MS);
         image.style.display = isVideo ? 'none' : 'block';
         video.style.display = isVideo ? 'block' : 'none';
         if (isVideo) {
@@ -313,54 +404,22 @@
       return this.loadMedia(layer, this.DEFAULT_SRC, this.DEFAULT_SRCSET);
     },
 
-    crossfade(toLayer, fromLayer) {
-      return new Promise((resolve) => {
-        if (!toLayer || !fromLayer) {
-          resolve();
-          return;
-        }
-
-        const controller = new AbortController();
-        this.abortController = controller;
-        let frame;
-        const finish = () => {
-          cancelAnimationFrame(frame);
-          toLayer.removeEventListener('transitionend', onTransitionEnd);
-          controller.signal.removeEventListener('abort', finish);
-          clearTimeout(this.transitionTimeout);
-          this.transitionTimeout = null;
-          if (this.abortController === controller) this.abortController = null;
-          resolve();
-        };
-        const onTransitionEnd = event => {
-          if (event.propertyName === 'opacity' && event.target === toLayer) finish();
-        };
-        this.transitionTimeout = setTimeout(finish, this.TRANSITION_MS + 100);
-        toLayer.addEventListener('transitionend', onTransitionEnd);
-        controller.signal.addEventListener('abort', finish, { once: true });
-
-        frame = requestAnimationFrame(() => {
-          toLayer.classList.add('active');
-          fromLayer.classList.remove('active');
-        });
-      });
+    commitLayer(toLayer, fromLayer, url) {
+      const container = this.getContainer();
+      container.classList.toggle('pure-black-mode', url === '__pure_black__');
+      container.classList.toggle('space-mode', url === '__space__');
+      toLayer.classList.add('active');
+      fromLayer.classList.remove('active');
     },
 
     async switchTo(url, force = false) {
-      if (this.state !== 'idle') {
-        if (this.state === 'loading' && (url !== this.loadingUrl || force)) {
-          this.generation += 1;
-          this.abort();
-          this.state = 'idle';
-          return this.switchTo(url, force);
-        }
-        if (url === this.loadingUrl && !force) {
-          if (this.pendingUrl !== url) { this.pendingUrl = null; this.pendingForce = false; }
-          return;
-        }
-        this.pendingUrl = url;
-        this.pendingForce = force;
-        return;
+      url = url || '';
+      if (this.state === 'loading') {
+        if (url === this.loadingUrl && !force) return;
+        this.generation += 1;
+        this.abort();
+        this.state = 'idle';
+        this.loadingUrl = null;
       }
 
       if (url === this.currentUrl && !force) return;
@@ -370,7 +429,7 @@
 
       const activeLayer = this.getActiveLayer();
       const firstPaint = this.currentUrl === null;
-      const inactiveLayer = firstPaint ? activeLayer : this.getInactiveLayer();
+      const inactiveLayer = this.getInactiveLayer();
       if (!activeLayer || !inactiveLayer) return;
       const generation = this.generation;
 
@@ -378,10 +437,10 @@
         this.state = 'loading';
         this.loadingUrl = url;
         this.cleanLayer(inactiveLayer);
-        if (firstPaint) inactiveLayer.classList.add('active');
 
         if (url === '__gpt5_animated__') {
           inactiveLayer.classList.add('gpt5-active');
+          prepareGradient(inactiveLayer);
         } else if (url === '__pure_black__') {
           inactiveLayer.classList.add('pure-black-active');
         } else if (url === '__space__') {
@@ -389,12 +448,12 @@
           inactiveLayer.classList.add('space-active');
         } else if (url === '__local__') {
           if (chrome?.runtime?.id && chrome?.storage?.local) {
-            const localData = await new Promise((resolve) => {
+            const localData = await (A.startup?.takeLocalBackground?.() || new Promise((resolve) => {
               chrome.storage.local.get(LOCAL_BG_KEY, (res) => {
                 if (chrome.runtime.lastError || !res || !res[LOCAL_BG_KEY]) resolve(null);
                 else resolve(res[LOCAL_BG_KEY]);
               });
-            });
+            }));
 
             if (generation !== this.generation) return;
             if (localData) await this.loadMedia(inactiveLayer, localData);
@@ -409,31 +468,23 @@
         }
 
         if (generation !== this.generation) return;
-        container.classList.toggle('pure-black-mode', url === '__pure_black__');
-        container.classList.toggle('space-mode', url === '__space__');
-        this.state = 'transitioning';
-        if (firstPaint) inactiveLayer.classList.add('active');
-        else await this.crossfade(inactiveLayer, activeLayer);
-        if (generation !== this.generation) return;
+        // The source is ready. Commit paint and state in this same task.
+        this.commitLayer(inactiveLayer, activeLayer, url);
 
-        if (!firstPaint) this.cleanLayer(activeLayer);
+        this.cleanLayer(activeLayer);
 
         this.activeLayerId = inactiveLayer.dataset.layerId;
         this.currentUrl = url;
         this.loadingUrl = null;
         this.state = 'idle';
 
-        if (this.pendingUrl !== null) {
-          const pending = this.pendingUrl;
-          const pendingForce = this.pendingForce;
-          this.pendingUrl = null;
-          this.pendingForce = false;
-          this.switchTo(pending, pendingForce);
-        }
       } catch (err) {
         if (generation !== this.generation) return;
+        this.cleanLayer(inactiveLayer);
+        this.loadingUrl = null;
         this.state = 'idle';
         if (err.message !== 'Aborted') console.error('Aurora BG switch error:', err);
+        if (firstPaint && url) this.switchTo('');
       }
     },
 
@@ -459,22 +510,22 @@
 
     A.utils.setStyle(bgNode, '--cgpt-bg-blur-radius', blurPx);
     A.utils.setStyle(bgNode, '--cgpt-object-fit', scaling);
+    prepareGradient(bgNode.querySelector('.media-layer.active'));
   }
 
   function showBg() {
-    if (!isEnabled()) return;
+    if (!isEnabled() || !document.documentElement) return;
     let node = document.getElementById(ID);
     if (!node) {
       A.background.reset?.();
       node = makeBgNode();
-      const add = () => {
-        document.body.prepend(node);
-        ensureAppOnTop();
-        applyCustomStyles();
-        updateBackgroundImage();
-      };
-      if (document.body) add();
-      else document.addEventListener('DOMContentLoaded', add, { once: true });
+      attachBackground(node);
+      window.addEventListener('resize', onGradientResize, { passive: true });
+      ensureAppOnTop();
+      applyCustomStyles();
+      updateBackgroundImage();
+      A.startupTimings.mounted ??= performance.now();
+      A.startupTimings.mountedBeforeBody ??= !document.body;
     } else {
       node.classList.add('bg-visible');
       ensureAppOnTop();
@@ -485,6 +536,7 @@
   A.background.restoreApp = restoreApp;
   A.background.ensureAppOnTop = ensureAppOnTop;
   A.background.manager = BackgroundManager;
+  A.background.gradientFrame = gradientFrame;
   A.background.show = A.background.show || showBg;
   A.background.applyStyles = A.background.applyStyles || applyCustomStyles;
   A.background.update = A.background.update || updateBackgroundImage;
@@ -492,6 +544,11 @@
   A.background.reset =
     A.background.reset ||
     (() => {
+      bodyObserver?.disconnect();
+      bodyObserver = null;
+      window.removeEventListener('resize', onGradientResize);
+      clearTimeout(gradientResize); gradientResize = 0;
+      gradientTextures.clear(); gradientBlobs = new WeakMap();
       for (const observer of spaceObservers.values()) observer.disconnect();
       spaceObservers.clear();
       BackgroundManager.generation += 1;
@@ -504,7 +561,5 @@
       BackgroundManager.loadingUrl = null;
       BackgroundManager.activeLayerId = 'a';
       BackgroundManager.state = 'idle';
-      BackgroundManager.pendingUrl = null;
-      BackgroundManager.pendingForce = false;
     });
 })();

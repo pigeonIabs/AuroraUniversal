@@ -43,6 +43,7 @@
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+      osc.onended = () => { osc.disconnect(); gain.disconnect(); };
 
       const vol = s.soundVolume === 'high' ? 0.1 : s.soundVolume === 'medium' ? 0.05 : 0.02;
 
@@ -111,6 +112,7 @@
       }
       this.onMouseEnter = null;
       this.onClick = null;
+      this.ctx?.suspend().catch(() => {});
     },
   };
 

@@ -15,15 +15,36 @@
     legacyModelSwitcher: '[data-testid="model-switcher-dropdown-button"]',
   });
 
+  // Visibility probes often share the same ancestor chain. Cache reads only
+  // inside an explicit synchronous read transaction, never across host edits.
+  let reads = null;
+  function readScope(read) {
+    if (reads) return read();
+    reads = { styles: new Map(), visible: new Map() };
+    try { return read(); }
+    finally { reads = null; }
+  }
+  function styleOf(node) {
+    if (!reads) return window.getComputedStyle(node);
+    if (!reads.styles.has(node)) reads.styles.set(node, window.getComputedStyle(node));
+    return reads.styles.get(node);
+  }
+
   function isVisible(element) {
     if (!element || !element.isConnected || element.hidden) return false;
+    if (reads?.visible.has(element)) return reads.visible.get(element);
+    const visible = measureVisibility(element);
+    reads?.visible.set(element, visible);
+    return visible;
+  }
 
+  function measureVisibility(element) {
     const rect = element.getBoundingClientRect?.();
     if (!rect || rect.width < 1 || rect.height < 1) return false;
 
     for (let node = element; node && node.nodeType === Node.ELEMENT_NODE; node = node.parentElement) {
       if (node.hidden || node.inert || node.getAttribute('aria-hidden') === 'true') return false;
-      const style = window.getComputedStyle(node);
+      const style = styleOf(node);
       if (style.display === 'none' || style.visibility === 'hidden' || style.contentVisibility === 'hidden') {
         return false;
       }
@@ -140,6 +161,7 @@
 
   A.dom = Object.freeze({
     selectors,
+    readScope,
     isVisible,
     firstVisible,
     findActiveComposer,
@@ -148,7 +170,7 @@
     getComposerText,
     findComposerButton,
     setComposerText,
-    isGenerating: () => !!findComposerButton(findActiveComposer(), 'stop'),
+    isGenerating: (composer = findActiveComposer()) => !!findComposerButton(composer, 'stop'),
     conversationKey: () => `${location.origin}${location.pathname.replace(/\/+$/, '') || '/'}`,
     conversationIdentity: () => document.querySelector(A.site?.workflow?.userMessage || '[data-user-message-bubble], [data-message-author-role="user"]'),
     userMessageCount: () => document.querySelectorAll(A.site?.workflow?.userMessage || '[data-user-message-bubble], [data-message-author-role="user"]').length,

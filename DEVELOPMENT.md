@@ -1,42 +1,53 @@
 # Development
 
-Aurora uses plain JavaScript and CSS. Each website loads its own adapter and styles through `manifest.json`.
+Aurora Universal is a Firefox extension written in plain JavaScript and CSS. Runtime code ships as readable source without a compilation step or remote scripts.
 
-## Build and releases
+## Build
 
 ```sh
+python scripts/build_xpi.py
 python scripts/build_xpi.py --output build/aurora-universal-development.xpi
+python scripts/prepare_release.py
 ```
 
-The builder packages tracked source and manifest resources with stable ordering, normalized line endings, and fixed ZIP timestamps. Keep generated XPIs in `build/` and local captures, backups, and installation receipts in `work/`.
+Python 3.9 or later is required. The builder includes runtime files, bundled assets, locales, and license notices. Documentation, launch media, local work, and development tools stay outside the XPI. File ordering, line endings, permissions, and ZIP timestamps are normalized for reproducible builds.
 
-Develop on `main`. Create tags and publish releases when requested. Preserve the Gecko ID `aurora-for-chatgpt-librewolf@local` so settings and backgrounds carry forward.
+Keep packages in `build/` and local receipts, backups, and captures in `work/`. Both are ignored by Git. Release copy and promotional sources live in `release/`.
 
-## Source map
+## Architecture
 
-| Location | Purpose |
+| Location | Responsibility |
 | --- | --- |
-| `modules/aurora/sites.js` | Website registry and page capabilities |
-| `modules/aurora/adapters/` | Native routes, surfaces, composers, and workflow controls |
-| `modules/aurora/material.js` and `glass.js` | Native surface ownership and liquid glass appearance |
-| `modules/aurora/central-observer.js` | Shared observation and incremental updates |
-| `modules/aurora/interface.js` and `features.css` | Focus, width, and privacy targets |
-| `modules/message-queue.js` | Conversation-scoped message queue |
-| `modules/aurora/model-preferences.js` | Native model catalogs and per-website preferences |
-| `modules/aurora/preferences.js` | Shared defaults |
-| `popup.html`, `popup.js`, and `popup.css` | Toolbar settings |
-| `assets/fonts/` and `fonts.css` | Bundled fonts and licenses |
+| `manifest.json` | Permissions, resources, and script load order |
+| `modules/aurora/sites.js` | Site registry and feature capabilities |
+| `modules/aurora/adapters/` | Native surfaces, routes, composers, and controls |
+| `modules/aurora/preferences.js` | Shared defaults and normalization |
+| `modules/aurora/startup.js` | Early preferences and background mounting |
+| `modules/aurora/central-observer.js` | Shared incremental page observation |
+| `modules/aurora/material.js` | Native paint ownership |
+| `modules/aurora/text-frost.js` | Readability over overlapping text |
+| `modules/aurora/orchestrator.js` | Feature lifecycle and update scheduling |
+| `modules/message-queue.js` | Conversation-scoped queued messages |
+| `popup.html`, `popup.js`, `popup.css` | Toolbar settings |
 
-## Implementation rules
+Content scripts load at `document_start` in dependency order. The background mounts as soon as preferences arrive and moves into the body when available. The shared observer discovers native surfaces incrementally. Masking and message queues load only when enabled.
 
-Liquid glass changes existing native surface fills, tint, border colors, shadows, and backdrop blur. Preserve website shapes, dimensions, spacing, typography, icons, and hit areas. Keep appearance separate from focus and cinema settings.
+## Working rules
 
-Use the shared observer and process changed branches incrementally. Discover workflow controls independently of liquid glass surfaces. Scope selectors to known composers and use native send controls.
+**Preserve native geometry.** Glass changes fill, tint, transparency, border color, shadows, and backdrop blur. Website shape, spacing, typography, icons, and hit areas remain native. Focus mode and cinema width are separate features with separate settings.
 
-Queues preserve active drafts and stay within the current conversation. Navigation, cleanup, or disabling the feature clears pending work. Guard against duplicate submissions and pause uncertain sends for an explicit retry.
+**Share page work.** Use the existing observer. New branches, changed state, and changed text have distinct update paths. Do not rescan unchanged conversations. Keep DOM reads together, coalesce material writes, and yield expensive overlap discovery in bounded slices.
 
-Page capabilities determine which controls appear in both settings panels. Reading fonts load from the extension package. User data stays in browser storage or page memory as described in [PRIVACY.md](PRIVACY.md).
+**Respect lifecycle.** Hidden tabs retain pending changes until visible. Disabling Aurora stops observers and restores owned changes. Background replacements keep the active media until the new source is ready.
 
-## Verification
+**Protect drafts.** Queue work belongs to one conversation. Navigation or disabling clears pending work. Use native send controls, prevent duplicate submissions, and pause uncertain sends for explicit retry.
 
-Use focused startup or installation checks when a change needs them. The startup regression is available with `node tests/startup-scope.cjs`. Live interface acceptance belongs to the user's testing pass.
+**Keep data local.** Preferences use browser storage. Uploaded media stays local. Page capabilities determine which settings appear. See [Privacy](PRIVACY.md) for the data flow and network exceptions.
+
+## Releases
+
+Aurora Universal starts at `1.0.0` with the Gecko ID `aurora-universal@pigeonlabs`. Read the version and ID from `manifest.json` in release tooling.
+
+The earlier `aurora-for-chatgpt-librewolf@local` ID has a public 1.7.9 version on Mozilla. Universal therefore uses a new identity and listing. Keep the old extension's data available during migration. See [migration details](release/MIGRATION.md).
+
+Create tags, push changes, submit to Mozilla, or publish releases only when explicitly requested. Live UI acceptance belongs to the user's testing pass. Limit automated checks to critical startup or installation requirements when necessary.

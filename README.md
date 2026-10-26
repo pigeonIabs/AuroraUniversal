@@ -1,8 +1,23 @@
-# <img src="icons/logo-48.png" width="32" height="32" alt=""> Aurora Universal
+# Aurora Universal
 
-Add beautiful liquid glass to every major AI platform. Built for Firefox.
+Glass, backgrounds, and a quieter workspace for the AI sites you use. Built for Firefox.
 
-## Supported websites
+![Aurora Universal 1.0.0](release/media/aurora-universal-cover.webp)
+
+Aurora changes the material of the interface while keeping each site's layout and controls familiar. Adjust transparency, choose an image or video background, and bring the same atmosphere to eight AI platforms.
+
+## Make it yours
+
+- Glass transparency, light and dark themes, and bundled reading fonts
+- Image and video backgrounds, including files stored in your browser
+- Focus mode, cinema width, history blur, and sensitive text masking
+- Message queues and preferred models on supported chat pages
+- Separate controls for promotions, usage notices, and AI disclaimers
+- ChatGPT sponsored-placement hiding, enabled by default
+
+Settings show the features available on the current website. Preferences stay in browser storage, with Firefox Sync available for preferences. Uploaded backgrounds stay local. [Privacy details](PRIVACY.md).
+
+## Eight websites
 
 | Website | Coverage |
 | --- | --- |
@@ -11,35 +26,28 @@ Add beautiful liquid glass to every major AI platform. Built for Firefox.
 | [Gemini](https://gemini.google.com) | Chats, Gems, Connected Apps, Labs, and media pages |
 | [Grok](https://grok.com) | Chats and native model selection |
 | [Qwen](https://chat.qwen.ai) | Chats, My Library, and My Published |
-| [Google AI Studio](https://aistudio.google.com) | Prompts, apps, live, media, library, documentation, and API keys |
+| [Google AI Studio](https://aistudio.google.com) | Prompts, apps, live, media, and library |
 | [DeepSeek](https://chat.deepseek.com) | Chats |
 | [Hugging Face](https://huggingface.co) | Hub, models, datasets, Spaces listings, and HuggingChat |
 
-## Features
+## Version 1.0.0
 
-- Liquid glass transparency and blur that preserve each website's native layout and controls
-- Image and video backgrounds, light and dark themes, and bundled reading fonts
-- Quick settings, searchable preferences, and individual website switches
-- History and avatar blur, sensitive text masking, focus mode, and cinema width
-- Message queues and website-specific model preferences where native controls support them
-- Separate controls for upgrade promotions and usage notices
+This is the first Aurora Universal release, following the original Aurora for ChatGPT. The earlier `1.8.*` development numbering belongs to that transition. Universal starts at `1.0.0`.
 
-Settings follow the current page's available features. Preferences and uploaded backgrounds stay in browser storage. [Privacy details](PRIVACY.md).
+Get the release files from [GitHub Releases](https://github.com/pigeonIabs/AuroraUniversal/releases/tag/v1.0.0). The development XPI is unsigned. A Firefox Add-ons listing is being submitted separately. [Release notes](release/RELEASE_NOTES.md).
 
 ## Install from source
 
-In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json`. Open a supported website and use the Aurora toolbar button.
+In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json`. Open a supported website, then use the Aurora toolbar button.
 
-For an XPI, run this from the project folder with Python 3.9+ and Git installed.
+To build an XPI with Python 3.9 or later, run this from the project folder.
 
 ```sh
-python scripts/build_xpi.py --output build/aurora-universal-development.xpi
+python scripts/build_xpi.py
 ```
 
-Permanent installation in standard Firefox requires a [Mozilla-signed XPI](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/). Local unsigned builds can be installed in Firefox Developer Edition, Nightly, or compatible browsers such as LibreWolf with signature enforcement configured for development. The existing extension ID preserves saved settings and backgrounds.
+The package is written to `build/aurora-universal-1.0.0.xpi`. Standard Firefox requires a [Mozilla-signed package](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) for permanent installation. Unsigned development packages require a browser configured to accept them.
 
-The current source includes all eight websites. [Version 1.8](https://github.com/pigeonIabs/AuroraUniversal/releases/tag/v1.8) is the earlier ChatGPT release.
+Universal uses a new extension ID and installs separately from Aurora for ChatGPT LibreWolf. Export preferences from the old extension's settings, import them into Universal, then disable the old extension to avoid overlapping styles. Uploaded backgrounds need to be selected again. [Migration details](release/MIGRATION.md).
 
-[Development guide](DEVELOPMENT.md) · [AGPLv3 license](LICENSE)
-
-Aurora Universal is licensed under AGPL-3.0-only. [Third-party notices](THIRD_PARTY_NOTICES.md) cover included source and fonts.
+[Development](DEVELOPMENT.md) · [Privacy](PRIVACY.md) · [AGPLv3 license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

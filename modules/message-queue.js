@@ -4,6 +4,7 @@
   'use strict';
 
   const dom = () => window.AuroraExt.dom;
+  const ui = () => window.AuroraExt.utils;
   class AuroraComposerLocator {
     static findActive() { return dom().findActiveComposer(); }
     static getForm(composer) { return dom().getComposerForm(composer); }
@@ -29,8 +30,8 @@
       if (!btn) return;
       const badge = btn.querySelector('.aurora-queue-count');
       if (!badge) return;
-      badge.textContent = count > 0 ? String(Math.min(count, 99)) : '';
-      badge.style.display = count > 0 ? 'inline-flex' : 'none';
+      ui().setText(badge, count > 0 ? String(Math.min(count, 99)) : '');
+      ui().setStyle(badge, 'display', count > 0 ? 'inline-flex' : 'none');
     }
 
     ensureButton({ anchor, count, onClick, visible }) {
@@ -70,7 +71,7 @@
       this.updateBadge(count);
     }
 
-    ensurePanel({ composer, queue, pending, status, onRemove, onRetry }) {
+    ensurePanel({ composer, bounds, queue, pending, status, onRemove, onRetry }) {
       const PANEL_ID = 'aurora-queue-panel';
       const shouldShow = (queue.length > 0) || !!pending;
       if (!shouldShow || !document.body) {
@@ -98,18 +99,18 @@
 
       // Position the panel just above the composer.
       try {
-        const rect = composer.getBoundingClientRect();
+        const rect = bounds || composer.getBoundingClientRect();
         const maxW = Math.max(0, Math.round(window.innerWidth - 16));
         const width = Math.min(maxW, Math.max(240, Math.round(rect.width)));
         const rawLeft = Math.round(rect.left);
         const left = Math.max(8, Math.min(rawLeft, window.innerWidth - width - 8));
         const bottom = Math.max(8, Math.round(window.innerHeight - rect.top + 10));
-        panel.style.left = `${left}px`;
-        panel.style.width = `${width}px`;
+        ui().setStyle(panel, 'left', `${left}px`);
+        ui().setStyle(panel, 'width', `${width}px`);
         const above = rect.top >= 150;
-        panel.style.bottom = above ? `${bottom}px` : 'auto';
-        panel.style.top = above ? 'auto' : `${Math.max(8, Math.min(rect.bottom + 10, window.innerHeight - 150))}px`;
-        panel.style.maxHeight = `${Math.max(100, Math.min(220, above ? rect.top - 20 : window.innerHeight - rect.bottom - 20))}px`;
+        ui().setStyle(panel, 'bottom', above ? `${bottom}px` : 'auto');
+        ui().setStyle(panel, 'top', above ? 'auto' : `${Math.max(8, Math.min(rect.bottom + 10, window.innerHeight - 150))}px`);
+        ui().setStyle(panel, 'max-height', `${Math.max(100, Math.min(220, above ? rect.top - 20 : window.innerHeight - rect.bottom - 20))}px`);
       } catch (e) {
         // ignore
       }
@@ -119,10 +120,10 @@
       const list = panel.querySelector('.aurora-queue-list');
       if (!title || !subtitle || !list) return;
 
-      title.textContent = `${this.getMessage('queuedPanelTitle')} (${queue.length})`;
-      subtitle.textContent = status || '';
-      subtitle.hidden = !status;
-      list.setAttribute('aria-label', this.getMessage('queuedPanelTitle'));
+      ui().setText(title, `${this.getMessage('queuedPanelTitle')} (${queue.length})`);
+      ui().setText(subtitle, status || '');
+      ui().toggleAttribute(subtitle, 'hidden', !status);
+      ui().setAttribute(list, 'aria-label', this.getMessage('queuedPanelTitle'));
 
       const settings = window.AuroraExt.getSettings();
       const signature = JSON.stringify([queue.map(item => [item.id, item.blocked]), pending?.phase, settings.dataMaskingEnabled, settings.maskingRandomMode]);
@@ -214,6 +215,7 @@
       this.ui = new AuroraMessageQueueUI({ getMessage });
       document.addEventListener('keydown', event => this.handleKeydown(event), true);
       document.addEventListener('input', event => {
+        if (!this.hasWork()) return;
         const composer = AuroraComposerLocator.findActive();
         if (!composer || !composer.contains(event.target)) return;
         if (event.isTrusted && !this.editing && this.pending?.phase === 'prepared') {
@@ -297,7 +299,7 @@
       if (document.hidden) return;
       const composer = AuroraComposerLocator.findActive();
       if (!composer) { this.ui.removeAll(); return; }
-      const generating = dom().isGenerating();
+      const generating = dom().isGenerating(composer);
       const text = AuroraComposerLocator.getText(composer).trim();
       const pending = this.pending;
       if (pending) {
@@ -360,8 +362,9 @@
         : generating ? this.getMessage('queuedPanelSubtitleGenerating')
         : next && text && !this.pending ? this.getMessage('queueWaitingForDraft') : '';
       const anchor = dom().findComposerButton(composer, generating ? 'stop' : 'send');
+      const bounds = (this.queue.length || this.pending) ? composer.getBoundingClientRect() : null;
       this.ui.ensureButton({ anchor, count: this.queue.length, visible: generating || this.hasWork(), onClick: () => this.enqueueFromComposer(AuroraComposerLocator.findActive()) });
-      this.ui.ensurePanel({ composer, queue: this.queue, pending: this.pending, status,
+      this.ui.ensurePanel({ composer, bounds, queue: this.queue, pending: this.pending, status,
         onRemove: item => {
           if (this.pending?.queuedItem === item) {
             if (this.pending.phase === 'submitted') return;
@@ -388,7 +391,7 @@
     handleKeydown(event) {
       if (!this.isEnabled() || event.isComposing || event.key !== 'Enter' || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
       const composer = AuroraComposerLocator.findActive();
-      if (!composer || (event.target !== composer && !composer.contains(event.target)) || !dom().isGenerating()) return;
+      if (!composer || (event.target !== composer && !composer.contains(event.target)) || !dom().isGenerating(composer)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       this.enqueueFromComposer(composer);

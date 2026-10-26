@@ -3,9 +3,27 @@
   'use strict';
   const A = window.AuroraExt;
   const attributes = ['data-aurora-glass', 'data-aurora-surface', 'data-aurora-code-block',
-    'data-aurora-surface-edge', 'data-aurora-image-toolbar', 'data-aurora-image-top-control'];
+    'data-aurora-surface-edge', 'data-aurora-image-toolbar', 'data-aurora-image-top-control', 'data-aurora-work-context',
+    'data-aurora-library-header'];
   const shells = '[role="menu"], [role="listbox"], [role="dialog"], [role="tooltip"], button, [role="button"]';
   const excluded = '.sr-only, [hidden], [aria-hidden="true"]';
+  // State is communicated by native paint, including thumbs and selected fills.
+  // Keep control subtrees outside generic ownership. Explicit Chat/Work
+  // material in app-skin.css paints only its existing native selection layer.
+  const nativeControls = [
+    '[role="switch"]', '[role="checkbox"]', '[role="radio"]',
+    '[role="menuitemcheckbox"]', '[role="menuitemradio"]',
+    '[role="tab"]', '[role="option"]', '[role="tablist"]', '[role="radiogroup"]',
+    '[aria-checked]', '[aria-pressed]', '[aria-selected]', '[aria-current]',
+    'input:is([type="checkbox" i], [type="radio" i], [type="range" i])',
+    '[data-state="checked"]', '[data-state="unchecked"]',
+    '[data-state="on"]', '[data-state="off"]',
+    '[data-state="active"]', '[data-state="inactive"]',
+    '[data-model-picker-power-slider]',
+    '[role="group"]:has(> .bg-background-mode-toggle-track)',
+  ].join(',');
+  const preservesNativePaint = node => A.site?.id === 'chatgpt' &&
+    !!node?.closest?.(nativeControls) && !node.closest(A.ownedUI);
   let paint = new WeakMap();
   let pass = 0;
   let environment = '';
@@ -21,7 +39,7 @@
   }
 
   function usable(node) {
-    return node?.nodeType === 1 && !node.matches(excluded);
+    return node?.nodeType === 1 && !node.matches(excluded) && !preservesNativePaint(node);
   }
 
   function cachedPaint(node) {
@@ -57,7 +75,13 @@
   function readBatch(nodes) {
     const pending = [];
     for (const node of new Set(nodes)) {
-      if (!usable(node) || cachedPaint(node)) continue;
+      if (!usable(node)) {
+        if (preservesNativePaint(node)) {
+          for (const attribute of attributes) node.removeAttribute(attribute);
+        }
+        continue;
+      }
+      if (cachedPaint(node)) continue;
       const saved = [];
       for (const attribute of attributes) {
         const value = node.getAttribute(attribute);
@@ -70,6 +94,7 @@
     } finally {
       for (const { node, saved } of pending) {
         for (const [attribute, value] of saved) node.setAttribute(attribute, value);
+        if (paint.has(node)) paint.get(node).style = node.getAttribute('style');
       }
     }
   }
@@ -93,10 +118,12 @@
     return groups;
   }
 
-  function prepare(nodes) {
-    beginPass();
-    const candidates = [...new Set(nodes)].filter(usable);
-    readBatch(candidates);
+  function prepare(nodes, newPass = true) {
+    const all = [...new Set(nodes)];
+    if (!all.length) return;
+    if (newPass) beginPass();
+    readBatch(all);
+    const candidates = all.filter(usable);
     // Resolve transparent positioning shells as a batch too. A menu item or
     // icon never becomes the paint owner of its larger interaction container.
     const pending = candidates.filter(node => !paint.get(node).painted && node.matches(shells));
@@ -112,11 +139,11 @@
     const nativeShell = A.site.surfaceShells?.[node.getAttribute('data-aurora-surface')];
     allowTransparent ||= !!nativeShell && node.matches(nativeShell);
     // Isolated legacy controls use the same transaction as a full adapter pass.
-    if (!cachedPaint(node)) prepare([node]);
+    if (!cachedPaint(node)) prepare([node], false);
     const value = paint.get(node);
     let target = value.painted || allowTransparent ? node : value.owner;
     if (target === undefined && node.matches(shells)) {
-      prepare([node]);
+      prepare([node], false);
       target = paint.get(node).owner;
     }
     if (!target) return null;

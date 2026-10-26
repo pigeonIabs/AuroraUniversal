@@ -10,6 +10,8 @@
     glassUserMessages: true,
     hideUpgradeButtons: false,
     hideRateLimitMessages: false,
+    hideAIWarnings: true,
+    blockAds: true,
     disableAnimations: false,
     focusMode: false,
     hideQuickSettings: false,

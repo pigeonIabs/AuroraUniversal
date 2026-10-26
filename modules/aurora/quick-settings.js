@@ -14,7 +14,6 @@
   const isEnabled = () => (A.isEnabled ? A.isEnabled() : true);
   const getSettings = () => (A.getSettings ? A.getSettings() : {});
 
-  let qsInitScheduled = false;
   let themeTimer = null;
   let outsideClick = null;
   let escapeKey = null;
@@ -22,7 +21,7 @@
   function syncPanel(panel, settings) {
     const context = { capabilities: A.interface?.capabilities?.() };
     panel.querySelectorAll('.qs-row[data-setting]').forEach(row => {
-      row.hidden = !A.sites.supports(A.site, row.dataset.setting, context);
+      A.utils.toggleAttribute(row, 'hidden', !A.sites.supports(A.site, row.dataset.setting, context));
     });
     panel.querySelectorAll('.qs-section-title').forEach(title => {
       let row = title.nextElementSibling;
@@ -31,35 +30,22 @@
         if (!row.hidden) visible = true;
         row = row.nextElementSibling;
       }
-      title.hidden = !visible;
+      A.utils.toggleAttribute(title, 'hidden', !visible);
     });
     panel.querySelectorAll('.qs-row[data-setting] input').forEach(input => {
       input.checked = !!settings[input.closest('.qs-row').dataset.setting];
     });
     const appearance = settings.appearance || 'clear';
     const toggle = panel.querySelector('#qs-appearance-toggle');
-    if (toggle) toggle.dataset.switchState = appearance === 'dimmed' ? '1' : '0';
+    if (toggle) A.utils.setAttribute(toggle, 'data-switch-state', appearance === 'dimmed' ? '1' : '0');
     toggle?.querySelectorAll('button').forEach(button => {
-      button.setAttribute('aria-pressed', String(button.dataset.settingValue === appearance));
+      A.utils.setAttribute(button, 'aria-pressed', String(button.dataset.settingValue === appearance));
     });
   }
 
   function ensure() {
     if (!A.isActive() || getSettings().hideQuickSettings) { remove(); return; }
-    if (!document.body) {
-      if (!qsInitScheduled) {
-        qsInitScheduled = true;
-        document.addEventListener(
-          'DOMContentLoaded',
-          () => {
-            qsInitScheduled = false;
-            ensure();
-          },
-          { once: true }
-        );
-      }
-      return;
-    }
+    if (!document.body) return;
 
     const settings = getSettings();
 
@@ -199,6 +185,8 @@
       createToggleRow('focusMode', 'labelFocusMode'),
       createToggleRow('hideUpgradeButtons', 'quickSettingsLabelHideUpgradeButtons'),
       createToggleRow('hideRateLimitMessages', 'labelHideRateLimitMessages'),
+      createToggleRow('hideAIWarnings', 'labelHideAIWarnings'),
+      createToggleRow('blockAds', 'labelBlockAds'),
       createSectionTitle('tabPrivacy'),
       createToggleRow('blurChatHistory', 'labelBlurChatHistory'),
       createToggleRow('blurAvatar', 'labelBlurAvatar'),
@@ -210,7 +198,7 @@
       appearanceRow
     );
 
-    const qsToggles = ['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'blurChatHistory', 'blurAvatar', 'dataMaskingEnabled', 'cinemaMode', 'queueWhileGenerating'];
+    const qsToggles = ['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'blurChatHistory', 'blurAvatar', 'dataMaskingEnabled', 'cinemaMode', 'queueWhileGenerating'];
     qsToggles.forEach((key) => {
       const checkbox = document.getElementById(`qs-${key}`);
       if (!checkbox) return;

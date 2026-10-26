@@ -7,8 +7,6 @@ import argparse
 import fnmatch
 import hashlib
 import json
-import os
-import subprocess
 import sys
 import tempfile
 import zipfile
@@ -31,6 +29,9 @@ EXCLUDED_PARTS = {
     ".venv",
     "work",
     "scripts",
+    "release",
+    "output",
+    ".github",
     "__pycache__",
 }
 EXCLUDED_FILES = {".gitignore", ".ds_store", "amo-metadata.json", "agents.md", "project_context.md"}
@@ -45,6 +46,9 @@ TEXT_SUFFIXES = {
     ".xml",
 }
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+SOURCE_DIRECTORIES = ("_locales", "assets", "icons", "modules")
+ROOT_SUFFIXES = {".css", ".html", ".js"}
+PACKAGE_DOCUMENTS = ("LICENSE", "PRIVACY.md", "THIRD_PARTY_NOTICES.md")
 
 
 def excluded(path: str) -> bool:
@@ -69,21 +73,16 @@ def safe_package_path(value: str) -> str:
     return candidate.as_posix()
 
 
-def tracked_paths() -> List[str]:
-    try:
-        result = subprocess.run(
-            ["git", "ls-files", "--cached", "-z"],
-            cwd=ROOT,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    except (OSError, subprocess.CalledProcessError) as error:
-        detail = getattr(error, "stderr", b"")
-        if isinstance(detail, bytes):
-            detail = detail.decode(errors="replace").strip()
-        raise RuntimeError(f"Could not list tracked project files. {detail}") from error
-    return [os.fsdecode(path) for path in result.stdout.split(b"\0") if path]
+def source_paths() -> List[str]:
+    """Package runtime sources independently of Git's staging state."""
+    paths = {"manifest.json", *PACKAGE_DOCUMENTS}
+    paths.update(path.name for path in ROOT.iterdir()
+                 if path.is_file() and path.suffix in ROOT_SUFFIXES)
+    for directory in SOURCE_DIRECTORIES:
+        for path in (ROOT / directory).rglob("*"):
+            if path.is_file():
+                paths.add(path.relative_to(ROOT).as_posix())
+    return sorted(paths)
 
 
 def manifest_references(manifest: dict) -> Tuple[Set[str], List[str]]:
@@ -144,7 +143,7 @@ def add_source_file(files: dict[str, Path], path: str) -> None:
 
 def collect_files(manifest: dict) -> dict[str, Path]:
     files: dict[str, Path] = {}
-    for path in tracked_paths():
+    for path in source_paths():
         add_source_file(files, path)
 
     required, patterns = manifest_references(manifest)
@@ -186,7 +185,11 @@ def build(output: Path) -> Tuple[int, str]:
     if not isinstance(version, str) or not version:
         raise ValueError("manifest.json must define a version string")
 
-    files = collect_files(manifest)
+    return write_archive(output, collect_files(manifest))
+
+
+def write_archive(output: Path, files: dict[str, Path]) -> Tuple[int, str]:
+    """Write an atomic, reproducible archive and return its file count and hash."""
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.resolve() in (source.resolve() for source in files.values()):
         raise ValueError("The output path must not overwrite a package input")

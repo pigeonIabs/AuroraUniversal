@@ -1,0 +1,36 @@
+{
+  "extension": "Aurora Universal",
+  "version": "1.0.0",
+  "capturedAt": "2026-10-26T06:46:11.362Z",
+  "sites": [
+    {
+      "website": "https://chat.qwen.ai/",
+      "signedOut": true,
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "website": "https://grok.com/",
+      "signedOut": true,
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "pixelRatio": 2
+      }
+    }
+  ],
+  "promptsSubmitted": false,
+  "personalProfileUsed": false,
+  "reconstructedInterface": false,
+  "video": {
+    "file": "aurora-universal-1.0.0.mp4",
+    "width": 1920,
+    "height": 1080,
+    "framesPerSecond": 30,
+    "durationSeconds": 44.93000000000001
+  },
+  "editing": "Camera movement, crossfade, cursor emphasis, and original ambient audio. Native website geometry is unchanged."
+}

@@ -6,22 +6,22 @@
   const A = (window.AuroraExt = window.AuroraExt || {});
   A.glass = A.glass || {};
 
-  const safeRequestIdleCallback = A.utils?.safeRequestIdleCallback || ((cb) => setTimeout(cb, 1));
   const isEnabled = () => (A.isEnabled ? A.isEnabled() : true);
-
-  // Perf note: CSS :has() is expensive in querySelectorAll. Keep it out of the hot path.
-  const GLASS_SELECTORS_SLOW = [
-    'div[role="dialog"]:has(input#search[placeholder="Search GPTs"])',
-    'div.bg-token-bg-primary.w-full.block:has(ul[class*="divide-y"])',
-    ':is(div, label):has(> input[placeholder="Search plugins" i])',
-    ':where(#web-mobile-root) form:has(:where(#mobile-composer-prompt)):not(:has([data-composer-surface-variant]))',
-    'div.flex.justify-between:has([data-testid="project-modal-trigger"])',
-  ];
 
   const GLASS_SELECTORS_FAST = [
     /* Popups, Menus, Dialogs */
     // Current floating product and source panels paint their native summary shell.
     '[data-summary-panel-variant]',
+    // Library/storage owns separate painted category and bulk-action shells.
+    // Resolve their native paint instead of changing the tabs or their geometry.
+    '[data-testid="artifacts-surface-top-controls"]',
+    '[class*="_toolbarShell"]',
+    '[class*="_refreshedStickyToolbarShell"]',
+    '[data-testid="artifacts-surface-floating-selection-controls"]',
+    '[data-testid="artifacts-surface-floating-selection-controls"] button',
+    '[data-testid="artifacts-surface-top-controls"] button',
+    '[data-theme="dark"][class*="Container-"] > [role="toolbar"][class*="Toolbar-"]',
+    '[data-theme="dark"][class*="Container-"] > [role="toolbar"][class*="Toolbar-"] button',
     '[role="menu"]',
     '[role="dialog"]',
     '[role="listbox"][data-state="open"]',
@@ -44,6 +44,15 @@
     '[class*="composer-surface-primary"]',
     '[data-testid="chatgpt-writing-block"]',
     '[data-markdown-copy="code-block"]',
+    // DIL renders generated icon backplates and numeric summaries as native
+    // boxes/cards, independently of Markdown and its utility-class surfaces.
+    // The shared paint gate leaves transparent layout boxes untouched and
+    // applies material only to the existing component that owns the fill.
+    '[data-dil-message-id] [data-d-component="box"]',
+    '[data-dil-message-id] [data-d-component="card"]',
+    '[data-dil-message-id] [data-d-component="badge"]',
+    '[data-dil-message-id] [data-d-component="button"]',
+    '[data-dil-message-id] [data-d-component="pressable"]',
     '[data-composer-overlay-floating-ui] > div',
     'dialog[open]',
     '#octane-mobile-composer-actions-popover',
@@ -94,8 +103,6 @@
   ];
 
   const GLASS_SELECTOR_FAST = GLASS_SELECTORS_FAST.join(',');
-  const GLASS_SELECTOR_SLOW = GLASS_SELECTORS_SLOW.join(',');
-  const GLASS_SELECTOR_ALL = [...GLASS_SELECTORS_FAST, ...GLASS_SELECTORS_SLOW].join(',');
 
   function tagPaintOwner(node, attribute = 'data-aurora-glass') {
     const owner = A.material.owner(node);
@@ -311,17 +318,21 @@
 
   function codePaintCandidates(root) {
     const groups = [];
+    const starts = new Set();
+    const candidates = new Map();
     for (const content of A.utils.matchingElements(root, CODE_CONTENT_SELECTOR)) {
       if (content.closest('[data-testid="chatgpt-writing-block"]')) continue;
       const turn = content.closest('div[data-message-author-role="assistant"]') ||
         content.closest('.agent-turn') || content.closest('[data-chatgpt-search-unit-key$=":assistant"]');
       const wrappers = [];
       let wrapper = content.tagName === 'PRE' ? content.parentElement : content;
+      if (starts.has(wrapper)) continue;
+      starts.add(wrapper);
       for (let depth = 0; wrapper && wrapper !== turn && depth < 5; depth += 1, wrapper = wrapper.parentElement) {
-        if (/(code|contain-inline-size|bg-token|bg-surface)/i.test(wrapper.getAttribute('class') || '') ||
-            wrapper.querySelector('button[aria-label*="copy" i], button[title*="copy" i], button[aria-label*="download" i], button[title*="download" i], button[aria-label*="edit" i], button[title*="edit" i]')) {
-          wrappers.push(wrapper);
-        }
+        if (!candidates.has(wrapper)) candidates.set(wrapper,
+          /(code|contain-inline-size|bg-token|bg-surface)/i.test(wrapper.getAttribute('class') || '') ||
+          !!wrapper.querySelector('button[aria-label*="copy" i], button[title*="copy" i], button[aria-label*="download" i], button[title*="download" i], button[aria-label*="edit" i], button[title*="edit" i]'));
+        if (candidates.get(wrapper)) wrappers.push(wrapper);
       }
       groups.push(wrappers);
     }
@@ -339,103 +350,130 @@
     }
   }
 
+  // Work's Outputs/Sources panel uses ordinary native rows. Surface discovery
+  // stays independent of the promotion scanner's protected-content boundaries.
+  function workContextPanels(root, candidates) {
+    const panels = new Set();
+    const sourceRow = '[class~="group/add-source-row"]';
+    const excluded = `${A.ownedUI}, [data-message-author-role], [data-message-id], .prose, .markdown, pre, code`;
+    const anchors = new Set(A.utils.matchingElements(root, sourceRow));
+    for (const node of candidates) {
+      if (node.closest(excluded)) continue;
+      const label = (node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (/^(?:Outputs|Sources|Create file or site)$/i.test(label)) anchors.add(node);
+    }
+    if (root?.nodeType === 1) {
+      const panel = root.closest('[data-aurora-work-context="panel"]');
+      if (panel) panels.add(panel);
+    }
+    for (const anchor of anchors) {
+      if (anchor.closest(excluded)) continue;
+      const nativeSourceRow = anchor.matches(sourceRow);
+      for (let node = anchor.parentElement, depth = 0; node && depth < 6; node = node.parentElement, depth++) {
+        if (node.matches('body, main, #root, #web-mobile-root, [data-app-shell-frame], [data-app-shell-main-surface]')) break;
+        if (!node.matches('div, section, aside') || !node.classList.contains('border')) continue;
+        const text = node.textContent || '';
+        if (nativeSourceRow || (/\bOutputs\b/i.test(text) && /\bSources\b/i.test(text))) {
+          panels.add(node);
+          break;
+        }
+      }
+    }
+    return [...panels].map(panel => ({ panel, layers: [...panel.querySelectorAll(
+      'div[class*="bg-"], section[class*="bg-"], header[class*="bg-"], button, [role="button"]'
+    )].filter(node => !node.closest(excluded)) }));
+  }
 
-  function tag(root = document, includeSlowSelectors = false) {
+  function tagWorkContext(groups) {
+    for (const { panel, layers } of groups) {
+      const owner = tagPaintOwner(panel);
+      if (!owner) continue;
+      A.utils.setAttribute(owner, 'data-aurora-work-context', 'panel');
+      for (const layer of layers) {
+        const rowOwner = A.material.owner(layer);
+        if (rowOwner && rowOwner !== owner && owner.contains(rowOwner)) {
+          // The section owns the backdrop. Row fills retain their native shape
+          // while revealing that glass instead of stacking multiple filters.
+          A.utils.setAttribute(rowOwner, 'data-aurora-work-context', 'row');
+        }
+      }
+    }
+  }
+
+
+  function tagLibraryHeader(root) {
+    // Current Library headers own their opaque paint on the existing ::before.
+    // The search input ID scopes this shared collapsing-header component to Library.
+    const headers = new Set();
+    if (root?.nodeType === 1) {
+      const header = root.closest('[data-scroll-collapse][data-sticky]');
+      if (header) headers.add(header);
+    }
+    for (const input of A.utils.matchingElements(root, 'input[id^="library-search-"]')) {
+      const header = input.closest('[data-scroll-collapse][data-sticky]');
+      if (header) headers.add(header);
+    }
+    for (const header of headers) {
+      if (header.querySelector('input[id^="library-search-"]')) {
+        A.utils.setAttribute(header, 'data-aurora-library-header', 'true');
+      }
+    }
+  }
+
+  function tag(root = document, initial = false) {
     if (!isEnabled()) return;
     const controls = A.upgrade.tagElements(root);
-    const selector = includeSlowSelectors ? GLASS_SELECTOR_ALL : GLASS_SELECTOR_FAST;
-
-    const elements = A.utils.matchingElements(root, selector);
+    for (const node of A.utils.matchingElements(root, 'button, a, [role="button"], [role="link"], [role="menuitem"]')) controls.add(node);
+    const elements = new Set([...A.utils.matchingElements(root, GLASS_SELECTOR_FAST), ...hintOwners(root, initial)]);
     const code = codePaintCandidates(root);
-    A.material.prepare([...elements, ...code.flat()]);
+    const workContext = workContextPanels(root, controls);
+    A.material.prepare([...elements, ...code.flat(), ...workContext.flatMap(({ panel, layers }) => [panel, ...layers])]);
     for (const el of elements) {
       tagPaintOwner(el);
     }
 
     tagCodeBlocks(root, code);
+    tagWorkContext(workContext);
     tagImageViewer(root, controls);
+    tagLibraryHeader(root);
   }
 
   function untag(root = document) {
-    cancelFullScan();
     if (root === document || root?.contains?.(activeImageAction)) clearImageViewerTracking();
-    A.material.clear(root, [...A.material.attributes, 'data-aurora-image-viewer', 'data-aurora-image-control-group']);
+    A.material.clear(root, [...A.material.attributes, 'data-aurora-image-viewer', 'data-aurora-image-control-group', 'data-aurora-work-context']);
   }
 
-  // Full document scan is throttled and scheduled in idle time to avoid jank.
-  let fullScanHandle = null;
-  function cancelFullScan() {
-    if (fullScanHandle !== null) A.utils.cancelIdleCallback(fullScanHandle);
-    fullScanHandle = null;
-  }
-  function scheduleFullScan() {
-    if (!isEnabled() || fullScanHandle !== null) return;
-    fullScanHandle = safeRequestIdleCallback(() => {
-      fullScanHandle = null;
-      if (!A.isActive?.()) return;
-      const elements = A.utils.matchingElements(document, GLASS_SELECTOR_SLOW);
-      A.material.prepare(elements);
-      elements.forEach(node => tagPaintOwner(node));
-    }, { timeout: 1000 });
-  }
-
-  // Slow-glass candidates (suggestion dropdowns, search dialogs).
-  const GLASS_SLOW_HINTS_SELECTOR = 'ul[class*="divide-y"], input#search, input[placeholder="Search plugins" i], #mobile-composer-prompt, [data-testid="project-modal-trigger"]';
-  function hasSlowHints(node) {
-    if (!node || node.nodeType !== 1) return false;
-    try {
-      if (node.matches?.(GLASS_SLOW_HINTS_SELECTOR)) return true;
-      return !!node.querySelector?.(GLASS_SLOW_HINTS_SELECTOR);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function tagAncestorsForSlowHints(root) {
-    if (!root || root.nodeType !== 1) return;
-    try {
-      // 1) Suggestion lists / dropdowns: tag wrapper immediately so glass applies without a full scan.
-      const lists = [];
-      if (root.matches?.('ul[class*="divide-y"]')) lists.push(root);
-      root.querySelectorAll?.('ul[class*="divide-y"]').forEach((ul) => lists.push(ul));
-      for (const ul of lists) {
-        const container =
-          ul.closest?.('div.bg-token-bg-primary.w-full.block') || ul.closest?.('div.bg-token-bg-primary');
-        if (container) tagPaintOwner(container);
-      }
-
-      // 2) Search dialogs: tag dialog/popover wrapper.
-      const searches = [];
-      if (root.matches?.('input#search')) searches.push(root);
-      root.querySelectorAll?.('input#search').forEach((input) => searches.push(input));
-      for (const input of searches) {
-        const dialog = input.closest?.('div[role="dialog"]') || input.closest?.('.popover');
-        if (dialog) tagPaintOwner(dialog);
-      }
-
-      for (const input of A.utils.matchingElements(root, 'input[placeholder="Search plugins" i]')) {
-        if (input.parentElement?.matches('div, label')) tagPaintOwner(input.parentElement);
-      }
-      for (const editor of A.utils.matchingElements(root, '#mobile-composer-prompt')) {
-        const form = editor.closest('#web-mobile-root form');
-        if (form && !form.querySelector('[data-composer-surface-variant]')) tagPaintOwner(form);
-      }
-      for (const trigger of A.utils.matchingElements(root, '[data-testid="project-modal-trigger"]')) {
-        for (let parent = trigger.parentElement; parent; parent = parent.parentElement) {
-          if (parent.matches('div.flex.justify-between')) tagPaintOwner(parent);
+  // Find small identifying controls once, then follow their existing owners.
+  // This replaces broad :has() queries and five repeated descendant scans.
+  const HINTS = 'ul[class*="divide-y"], input#search, input[placeholder="Search plugins" i], #mobile-composer-prompt, [data-testid="project-modal-trigger"]';
+  function hintOwners(root, initial) {
+    const owners = new Set();
+    for (const node of A.utils.matchingElements(root, HINTS)) {
+      let owner = null;
+      if (node.matches('ul[class*="divide-y"]')) {
+        if (initial) {
+          for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+            if (parent.matches('div.bg-token-bg-primary.w-full.block')) owners.add(parent);
+          }
+        } else owner = node.closest('div.bg-token-bg-primary.w-full.block') || node.closest('div.bg-token-bg-primary');
+      } else if (node.id === 'search') owner = node.closest('div[role="dialog"]') || node.closest('.popover');
+      else if (node.matches('input[placeholder="Search plugins" i]')) {
+        if (node.parentElement?.matches('div, label')) owner = node.parentElement;
+      } else if (node.id === 'mobile-composer-prompt') {
+        const form = node.closest('#web-mobile-root form');
+        if (form && !form.querySelector('[data-composer-surface-variant]')) owner = form;
+      } else {
+        for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+          if (parent.matches('div.flex.justify-between')) owners.add(parent);
         }
       }
-    } catch (e) {
-      // ignore
+      if (owner) owners.add(owner);
     }
+    return owners;
   }
 
-  A.glass.tagFast = A.glass.tagFast || ((root = document) => tag(root, false));
-  A.glass.tagAll = A.glass.tagAll || ((root = document) => tag(root, true));
-  A.glass.scheduleFullScan = A.glass.scheduleFullScan || scheduleFullScan;
-  A.glass.hasSlowHints = A.glass.hasSlowHints || hasSlowHints;
-  A.glass.tagAncestorsForSlowHints = A.glass.tagAncestorsForSlowHints || tagAncestorsForSlowHints;
-  A.glass.tagCodeBlocks = A.glass.tagCodeBlocks || tagCodeBlocks;
+  A.glass.tagFast = tag;
+  A.glass.tagAll = (root = document) => tag(root, true);
   A.glass.untag = A.glass.untag || untag;
 })();
 

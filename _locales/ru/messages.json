@@ -3,7 +3,7 @@
     "message": "Aurora Universal"
   },
   "extensionDescription": {
-    "message": "Темы с жидким стеклом и фоны для ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek и Hugging Face."
+    "message": "Темы со стеклом и фоны для ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek и Hugging Face."
   },
   "actionTitle": {
     "message": "Настройки Aurora Universal"
@@ -117,13 +117,13 @@
     "message": "Отключить анимации открытия/закрытия меню"
   },
   "labelGlassStyle": {
-    "message": "Стиль жидкого стекла"
+    "message": "Стиль стекла"
   },
   "labelGlassUserMessages": {
-    "message": "Сообщения пользователя с эффектом жидкого стекла"
+    "message": "Стекло в ваших сообщениях"
   },
   "tooltipGlassUserMessages": {
-    "message": "Применять активный стиль жидкого стекла к вашим сообщениям"
+    "message": "Применить выбранный стиль стекла к вашим сообщениям"
   },
   "sectionInterface": {
     "message": "Интерфейс"
@@ -279,7 +279,7 @@
     "message": "Цвет голоса"
   },
   "quickSettingsLabelGlassStyle": {
-    "message": "Стиль жидкого стекла"
+    "message": "Стиль стекла"
   },
   "errorLoadingSettings": {
     "message": "Ошибка: Не удалось загрузить настройки. Пожалуйста, попробуйте перезагрузить страницу."
@@ -291,7 +291,7 @@
     "message": "Welcome to Aurora"
   },
   "welcomeDescription": {
-    "message": "Personalize ChatGPT with ambient backgrounds, liquid glass effects, privacy controls, and workflow upgrades."
+    "message": "Personalize ChatGPT with ambient backgrounds, glass effects, privacy controls, and workflow upgrades."
   },
   "welcomeBtnGetStarted": {
     "message": "Начать"
@@ -318,7 +318,7 @@
     "message": "Синий"
   },
   "welcomeLabelGlassStyle": {
-    "message": "Стиль жидкого стекла"
+    "message": "Стиль стекла"
   },
   "welcomeGlassClear": {
     "message": "Прозрачный"
@@ -468,7 +468,7 @@
     "message": "Звуки интерфейса"
   },
   "tooltipHapticSound": {
-    "message": "Воспроизводить тонкие звуки жидкого стекла при взаимодействии"
+    "message": "Воспроизводить тихие звуки при взаимодействии"
   },
   "labelAutoContrast": {
     "message": "Авто-контраст (Изображения)"
@@ -579,6 +579,18 @@
     "message": "Высокая"
   },
   "labelGlassTransparency": {
-    "message": "Прозрачность жидкого стекла"
+    "message": "Прозрачность"
+  },
+  "labelHideAIWarnings": {
+    "message": "Скрывать предупреждения ИИ"
+  },
+  "labelBlockAds": {
+    "message": "Блокировать рекламу"
+  },
+  "tooltipBlockAds": {
+    "message": "Скрывать рекламу ChatGPT и предложения для рекламодателей на всех тарифах"
+  },
+  "tooltipHideAIWarnings": {
+    "message": "Скрывать предупреждения о точности и контенте ИИ на всех поддерживаемых сайтах"
   }
 }

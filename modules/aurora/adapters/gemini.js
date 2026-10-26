@@ -19,6 +19,8 @@
       modelLabel: '.mode-title, .model-name, [data-test-id="mode-name"], .mdc-list-item__primary-text',
       currentLabel: button => button.querySelector('.conversation-title')?.textContent || button.getAttribute('aria-label')?.match(/currently\s+(.+)$/i)?.[1] || button.textContent,
     },
+    // This host owns native composer paint even before its deferred CSS arrives.
+    surfaceShells: { composer: 'input-area-v2' },
     selectors: {
       // The custom element owns the native background, border, and corner shape.
       // .text-input-field is its square, transparent layout child.

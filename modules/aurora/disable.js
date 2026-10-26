@@ -19,6 +19,7 @@
   const HIDE_UPGRADE_CLASS = cfg.HIDE_UPGRADE_CLASS || 'cgpt-hide-upgrade';
 
   function disableAllFeatures() {
+    A.textFrost?.stop?.();
     const root = document.documentElement;
 
     root.classList.remove(
@@ -34,6 +35,8 @@
       'cgpt-blur-avatar',
       'cgpt-hide-upgrade',
       'cgpt-hide-rate-limits',
+      'cgpt-hide-ai-warnings',
+      'cgpt-block-ads',
       'cgpt-theme-transitioning',
       'cgpt-tab-hidden',
       'cgpt-snapshot-mode',
@@ -60,6 +63,8 @@
     A.queue?.shutdown?.();
     A.glass?.untag?.();
     A.upgrade?.untag?.();
+    A.aiWarnings?.untag?.();
+    A.ads?.untag?.();
     A.interface?.untag?.();
     A.background?.restoreApp?.();
 
@@ -77,7 +82,6 @@
         A.background.manager.currentUrl = null;
         A.background.manager.activeLayerId = 'a';
         A.background.manager.state = 'idle';
-        A.background.manager.pendingUrl = null;
       }
     } catch (e) {
       // ignore

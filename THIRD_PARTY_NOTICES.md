@@ -28,6 +28,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Included background
+
+`assets/grok-4.webp` is inherited from the MIT-licensed Aurora for ChatGPT source at revision `59cebc4`. The inherited source notice above is retained. [Upstream license](https://github.com/TG-TG-TG-TG-TG-TG/Aurora-for-ChatGPT/blob/main/LICENSE).
+
+The default ChatGPT wallpaper loads from OpenAI's `persistent.oaistatic.com/burrito-nux/` service. Those wallpaper files are not distributed in the extension package. Optional remote backgrounds retain their respective ownership.
+
 ## Fonts
 
 Bundled fonts use the SIL Open Font License 1.1. Their copyright and license notices are included alongside the files in `assets/fonts/`.

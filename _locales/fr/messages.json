@@ -3,7 +3,7 @@
     "message": "Aurora Universal"
   },
   "extensionDescription": {
-    "message": "Thèmes de verre liquide et fonds pour ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek et Hugging Face."
+    "message": "Thèmes de verre et fonds pour ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek et Hugging Face."
   },
   "actionTitle": {
     "message": "Paramètres Aurora Universal"
@@ -117,13 +117,13 @@
     "message": "Désactiver les animations d'ouverture/fermeture du menu"
   },
   "labelGlassStyle": {
-    "message": "Style de verre liquide"
+    "message": "Style de verre"
   },
   "labelGlassUserMessages": {
-    "message": "Bulles utilisateur en verre liquide"
+    "message": "Verre sur vos messages"
   },
   "tooltipGlassUserMessages": {
-    "message": "Applique le style de verre liquide actif aux bulles de vos messages"
+    "message": "Appliquer le style de verre sélectionné à vos messages"
   },
   "sectionInterface": {
     "message": "Interface"
@@ -279,7 +279,7 @@
     "message": "Couleur de la voix"
   },
   "quickSettingsLabelGlassStyle": {
-    "message": "Style de verre liquide"
+    "message": "Style de verre"
   },
   "errorLoadingSettings": {
     "message": "Erreur : Impossible de charger les paramètres. Veuillez essayer de recharger la page."
@@ -291,7 +291,7 @@
     "message": "Welcome to Aurora"
   },
   "welcomeDescription": {
-    "message": "Personalize ChatGPT with ambient backgrounds, liquid glass effects, privacy controls, and workflow upgrades."
+    "message": "Personalize ChatGPT with ambient backgrounds, glass effects, privacy controls, and workflow upgrades."
   },
   "welcomeBtnGetStarted": {
     "message": "Commencer"
@@ -318,7 +318,7 @@
     "message": "Bleu"
   },
   "welcomeLabelGlassStyle": {
-    "message": "Style de verre liquide"
+    "message": "Style de verre"
   },
   "welcomeGlassClear": {
     "message": "Transparent"
@@ -468,7 +468,7 @@
     "message": "Sons d'interface"
   },
   "tooltipHapticSound": {
-    "message": "Jouer des sons subtils de verre liquide lors des interactions"
+    "message": "Jouer des sons discrets lors des interactions"
   },
   "labelAutoContrast": {
     "message": "Contraste automatique (Images)"
@@ -537,6 +537,18 @@
     "message": "Élevé"
   },
   "labelGlassTransparency": {
-    "message": "Transparence du verre liquide"
+    "message": "Transparence"
+  },
+  "labelHideAIWarnings": {
+    "message": "Masquer les avertissements IA"
+  },
+  "labelBlockAds": {
+    "message": "Bloquer les publicités"
+  },
+  "tooltipBlockAds": {
+    "message": "Masquer les placements sponsorisés de ChatGPT et les promotions pour les annonceurs sur tous les forfaits"
+  },
+  "tooltipHideAIWarnings": {
+    "message": "Masquer les avertissements sur la précision et le contenu généré par IA sur tous les sites compatibles"
   }
 }

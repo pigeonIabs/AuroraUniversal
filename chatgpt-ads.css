@@ -1,0 +1,23 @@
+/* Hide native placements before paint and remove their own reserved space.
+ * Message prose, code, drafts and Aurora controls remain outside these rules. */
+html.cgpt-ambient-on.cgpt-block-ads[data-aurora-site="chatgpt"] :is(
+  [data-aurora-ad],
+  [data-assistant-ads],
+  [data-assistant-ads-unit],
+  [data-ad-card-root],
+  [data-partial-island="assistant-ads"],
+  [data-conversation-control="assistant-ads"],
+  [class*="_assistantAds"],
+  [data-testid="bazaar-v2-elevated-box"],
+  [data-testid="bazaar-single-card-container"],
+  div[data-message-supplement]:has(aside[data-partial-island="assistant-ads"]),
+  .border-token-border-default.mt-2.border-t:has(button[aria-label="Ad options"]),
+  div.opacity-100.transition-opacity.ease-out:has(button[aria-label="Sponsored options"], button[aria-label="Ad options"]),
+  section:has(> [aria-label="Sponsored"]),
+  [data-message-role="assistant"] > section[class]:has(> [aria-label] > div[role="list"] a[rel][target="_blank"][href*="&oppref="]),
+  div[role="complementary"]:has(a[href*="oppref="]),
+  aside[aria-label="Advertisement" i],
+  aside[aria-label="Sponsored" i]
+):not(:is(pre, code, .markdown, .prose, .markdown-body, [contenteditable], [data-message-author-role="user"], [data-testid="user-message"]) *) {
+  display: none !important;
+}

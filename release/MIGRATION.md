@@ -1,8 +1,8 @@
 # Moving to Aurora Universal
 
-Aurora Universal begins at 1.0.0 with its own Firefox Add-ons listing and extension ID, `aurora-universal@pigeonlabs`.
+Aurora Universal has its own Firefox Add-ons listing and extension ID, `aurora-universal@pigeonlabs`.
 
-The earlier Aurora for ChatGPT LibreWolf listing uses `aurora-for-chatgpt-librewolf@local` and already has version 1.7.9. Universal installs alongside it rather than replacing it through automatic updates.
+Aurora for ChatGPT LibreWolf uses `aurora-for-chatgpt-librewolf@local`. Universal installs separately, so preferences need to be imported.
 
 ## Keep your preferences
 

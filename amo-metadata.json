@@ -3,10 +3,10 @@
     "en-US": "Aurora Universal"
   },
   "summary": {
-    "en-US": "Glass, backgrounds, and a quieter workspace across eight AI websites. Built for Firefox."
+    "en-US": "Liquid glass and image or video backgrounds for AI websites. Built for Firefox."
   },
   "description": {
-    "en-US": "Bring glass, image and video backgrounds, and shared preferences to ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face. Keep each website's familiar layout while adjusting transparency, themes, and fonts. Focus mode, history blur, text masking, message queues, and native model preferences appear where supported. Preferences use browser storage. Uploaded backgrounds stay local."
+    "en-US": "Liquid glass with adjustable transparency, light and dark themes, bundled fonts, and image or video backgrounds. Includes focus mode, cinema width, history blur, sensitive text masking, message queues, and preferred models where supported. Separate controls hide promotions, usage notices, and AI disclaimers. Supports ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face. Preferences use browser storage and Firefox Sync. Uploaded backgrounds stay local."
   },
   "categories": [
     "appearance",
@@ -19,8 +19,8 @@
   "version": {
     "license": "AGPL-3.0-only",
     "release_notes": {
-      "en-US": "The first Aurora Universal release expands Aurora beyond ChatGPT to eight AI websites. Includes shared appearance and privacy settings, local image and video backgrounds, bundled fonts, message queues, and native model preferences where supported. Universal begins at 1.0.0 following the earlier 1.8 development builds."
+      "en-US": "Liquid glass with adjustable transparency, image and video backgrounds, bundled fonts, focus mode, cinema width, history blur, and text masking. Includes message queues and preferred models where supported, plus separate controls for promotions, usage notices, and AI disclaimers."
     },
-    "approval_notes": "AGPL-3.0-only extension with readable JavaScript and CSS. No build-time transpilation, analytics, or remote executable code. unlimitedStorage supports local user-selected backgrounds within a 15 MB file limit. Host access applies site-specific appearance and features. License and third-party notices are included. Aurora Universal begins at 1.0.0 with the new Gecko ID aurora-universal@pigeonlabs. It replaces the earlier ChatGPT-only project but uses a separate listing. Remote wallpaper loads directly from its provider."
+    "approval_notes": "AGPL-3.0-only extension with readable JavaScript and CSS. No build-time transpilation, analytics, or remote executable code. unlimitedStorage supports local user-selected backgrounds within a 15 MB file limit. Host access applies site-specific appearance and features. License and third-party notices are included. Gecko ID is aurora-universal@pigeonlabs. Remote wallpaper loads directly from its provider."
   }
 }

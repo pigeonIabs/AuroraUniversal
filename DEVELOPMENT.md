@@ -46,8 +46,6 @@ Content scripts load at `document_start` in dependency order. The background mou
 
 ## Releases
 
-Aurora Universal starts at `1.0.0` with the Gecko ID `aurora-universal@pigeonlabs`. Read the version and ID from `manifest.json` in release tooling.
-
-The earlier `aurora-for-chatgpt-librewolf@local` ID has a public 1.7.9 version on Mozilla. Universal therefore uses a new identity and listing. Keep the old extension's data available during migration. See [migration details](release/MIGRATION.md).
+Read the version and extension ID from `manifest.json` in release tooling. Keep the old extension's data available during migration. See [migration details](release/MIGRATION.md).
 
 Create tags, push changes, submit to Mozilla, or publish releases only when explicitly requested. Live UI acceptance belongs to the user's testing pass. Limit automated checks to critical startup or installation requirements when necessary.

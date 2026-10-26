@@ -1,12 +1,10 @@
 # Aurora Universal
 
-Glass, backgrounds, and a quieter workspace for the AI sites you use. Built for Firefox.
+Liquid glass and image or video backgrounds for AI websites. Built for Firefox.
 
 ![Aurora Universal 1.0.0](release/media/aurora-universal-cover.webp)
 
-Aurora changes the material of the interface while keeping each site's layout and controls familiar. Adjust transparency, choose an image or video background, and bring the same atmosphere to eight AI platforms.
-
-## Make it yours
+## Features
 
 - Glass transparency, light and dark themes, and bundled reading fonts
 - Image and video backgrounds, including files stored in your browser
@@ -15,26 +13,15 @@ Aurora changes the material of the interface while keeping each site's layout an
 - Separate controls for promotions, usage notices, and AI disclaimers
 - ChatGPT sponsored-placement hiding, enabled by default
 
-Settings show the features available on the current website. Preferences stay in browser storage, with Firefox Sync available for preferences. Uploaded backgrounds stay local. [Privacy details](PRIVACY.md).
+Preferences use browser storage and Firefox Sync. Uploaded backgrounds stay local. [Privacy details](PRIVACY.md).
 
-## Eight websites
+## Websites
 
-| Website | Coverage |
-| --- | --- |
-| [ChatGPT](https://chatgpt.com) | Chats, projects, settings, and the web app |
-| [Claude](https://claude.ai) | Chats and native model selection |
-| [Gemini](https://gemini.google.com) | Chats, Gems, Connected Apps, Labs, and media pages |
-| [Grok](https://grok.com) | Chats and native model selection |
-| [Qwen](https://chat.qwen.ai) | Chats, My Library, and My Published |
-| [Google AI Studio](https://aistudio.google.com) | Prompts, apps, live, media, and library |
-| [DeepSeek](https://chat.deepseek.com) | Chats |
-| [Hugging Face](https://huggingface.co) | Hub, models, datasets, Spaces listings, and HuggingChat |
+[ChatGPT](https://chatgpt.com) · [Claude](https://claude.ai) · [Gemini](https://gemini.google.com) · [Grok](https://grok.com) · [Qwen](https://chat.qwen.ai) · [Google AI Studio](https://aistudio.google.com) · [DeepSeek](https://chat.deepseek.com) · [Hugging Face](https://huggingface.co)
 
-## Version 1.0.0
+## Download
 
-This is the first Aurora Universal release, following the original Aurora for ChatGPT. The earlier `1.8.*` development numbering belongs to that transition. Universal starts at `1.0.0`.
-
-Get the release files from [GitHub Releases](https://github.com/pigeonIabs/AuroraUniversal/releases/tag/v1.0.0). The development XPI is unsigned. A Firefox Add-ons listing is being submitted separately. [Release notes](release/RELEASE_NOTES.md).
+Get the release files from [GitHub Releases](https://github.com/pigeonIabs/AuroraUniversal/releases/tag/v1.0.0). The development XPI is unsigned. [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aurora-universal/) is awaiting review. [Release notes](release/RELEASE_NOTES.md).
 
 ## Install from source
 
@@ -48,6 +35,6 @@ python scripts/build_xpi.py
 
 The package is written to `build/aurora-universal-1.0.0.xpi`. Standard Firefox requires a [Mozilla-signed package](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) for permanent installation. Unsigned development packages require a browser configured to accept them.
 
-Universal uses a new extension ID and installs separately from Aurora for ChatGPT LibreWolf. Export preferences from the old extension's settings, import them into Universal, then disable the old extension to avoid overlapping styles. Uploaded backgrounds need to be selected again. [Migration details](release/MIGRATION.md).
+[Migrating from Aurora for ChatGPT](release/MIGRATION.md).
 
 [Development](DEVELOPMENT.md) · [Privacy](PRIVACY.md) · [AGPLv3 license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

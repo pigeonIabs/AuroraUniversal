@@ -14,7 +14,6 @@
   const isEnabled = () => (A.isEnabled ? A.isEnabled() : true);
   const getSettings = () => (A.getSettings ? A.getSettings() : {});
 
-  let themeTimer = null;
   let outsideClick = null;
   let escapeKey = null;
 
@@ -32,15 +31,10 @@
       }
       A.utils.toggleAttribute(title, 'hidden', !visible);
     });
-    panel.querySelectorAll('.qs-row[data-setting] input').forEach(input => {
+    panel.querySelectorAll('.qs-row[data-setting] input[type="checkbox"]').forEach(input => {
       input.checked = !!settings[input.closest('.qs-row').dataset.setting];
     });
-    const appearance = settings.appearance || 'clear';
-    const toggle = panel.querySelector('#qs-appearance-toggle');
-    if (toggle) A.utils.setAttribute(toggle, 'data-switch-state', appearance === 'dimmed' ? '1' : '0');
-    toggle?.querySelectorAll('button').forEach(button => {
-      A.utils.setAttribute(button, 'aria-pressed', String(button.dataset.settingValue === appearance));
-    });
+    panel.querySelector('.aurora-glass-control')?.syncGlass(settings);
   }
 
   function ensure() {
@@ -159,26 +153,12 @@
     appearanceRow.dataset.setting = 'appearance';
     const appearanceLabel = document.createElement('label');
     appearanceLabel.textContent = getMessage('quickSettingsLabelGlassStyle');
-    const appearanceSwitch = document.createElement('div');
-    appearanceSwitch.className = 'aurora-glass-switch';
-    appearanceSwitch.id = 'qs-appearance-toggle';
-    appearanceSwitch.dataset.switchState = settings.appearance === 'dimmed' ? '1' : '0';
-    const appearanceGlider = document.createElement('div');
-    appearanceGlider.className = 'aurora-switch-glider';
-    appearanceSwitch.appendChild(appearanceGlider);
-    [
-      ['0', 'clear', 'glassAppearanceOptionClear'],
-      ['1', 'dimmed', 'glassAppearanceOptionDimmed'],
-    ].forEach(([value, settingValue, messageKey]) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'aurora-switch-btn';
-      button.dataset.value = value;
-      button.dataset.settingValue = settingValue;
-      button.textContent = getMessage(messageKey);
-      appearanceSwitch.appendChild(button);
-    });
-    appearanceRow.append(appearanceLabel, appearanceSwitch);
+    const glassControl = A.glassControl.create('qs-glass-amount', settings, patch => {
+      Object.assign(getSettings(), patch);
+      A.rootFlags.apply();
+    }, patch => A.preferences.save(patch));
+    appearanceLabel.htmlFor = 'qs-glass-amount';
+    appearanceRow.append(appearanceLabel, glassControl);
 
     panel.replaceChildren(
       createSectionTitle('quickSettingsSectionVisibility'),
@@ -204,33 +184,10 @@
       if (!checkbox) return;
       checkbox.checked = !!settings[key];
       checkbox.addEventListener('change', () => {
-        chrome.storage.sync.set({ [key]: checkbox.checked });
+        A.preferences.save({ [key]: checkbox.checked });
       });
     });
 
-    const appearanceToggle = document.getElementById('qs-appearance-toggle');
-    if (appearanceToggle) {
-      const currentAppearance = settings.appearance || 'clear';
-      appearanceToggle.setAttribute('data-switch-state', currentAppearance === 'dimmed' ? '1' : '0');
-
-      const segmentBtns = appearanceToggle.querySelectorAll('.aurora-switch-btn');
-      segmentBtns.forEach((btnEl) => {
-        btnEl.addEventListener('click', () => {
-          const settingValue = btnEl.dataset.settingValue;
-          const switchState = btnEl.dataset.value;
-
-          document.documentElement.classList.add('cgpt-theme-transitioning');
-          if (themeTimer) clearTimeout(themeTimer);
-          themeTimer = setTimeout(() => {
-            document.documentElement.classList.remove('cgpt-theme-transitioning');
-            themeTimer = null;
-          }, 600);
-
-          chrome.storage.sync.set({ appearance: settingValue });
-          appearanceToggle.setAttribute('data-switch-state', switchState);
-        });
-      });
-    }
     syncPanel(panel, settings);
   }
 
@@ -239,8 +196,6 @@
     if (escapeKey) document.removeEventListener('keydown', escapeKey);
     escapeKey = null;
     outsideClick = null;
-    if (themeTimer) clearTimeout(themeTimer);
-    themeTimer = null;
     document.getElementById(QS_BUTTON_ID)?.remove();
     document.getElementById(QS_PANEL_ID)?.remove();
   }

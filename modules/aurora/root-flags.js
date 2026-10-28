@@ -56,14 +56,13 @@
     const glassIntensity = Number.isFinite(storedGlassIntensity)
       ? Math.max(0, Math.min(100, storedGlassIntensity))
       : fallbackGlassIntensity;
-    // This control changes only the opacity of the glass fill. Appearance
-    // presets continue to provide the border, saturation, and shadow.
+    // The same continuous amount controls surface fill and material tokens.
     setStyle(root, '--aurora-glass-fill-opacity', `${100 - glassIntensity}%`);
     const storedBackgroundBlur = Number(s.backgroundBlur);
     const backgroundBlur = Number.isFinite(storedBackgroundBlur)
       ? Math.max(0, Math.min(150, storedBackgroundBlur))
       : 60;
-    const maxGlassBlur = s.appearance === 'clear' ? 24 : 14;
+    const maxGlassBlur = 14 + glassIntensity / 10;
     // Space is already a sharp procedural scene. Blurring its one-pixel stars
     // erases them even through a fully transparent surface. Keep its material
     // clear while text-frost still protects controls over scrolled page text.
@@ -97,7 +96,7 @@
         if (detectedTheme !== lastDetectedTheme && now - lastDetectedThemeWriteAt > 500) {
           lastDetectedTheme = detectedTheme;
           lastDetectedThemeWriteAt = now;
-          chrome.storage.local.set({ detectedTheme }, () => {
+          chrome.storage.local.set({ [`detectedTheme:${A.site.id}`]: detectedTheme }, () => {
             // ignore errors (extension context invalidated etc.)
           });
         }

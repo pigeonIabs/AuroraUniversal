@@ -6,7 +6,7 @@
     appRoot: 'chat-app-orchestrator, chat-app, #app-root',
     // All sidebar destinations share the app shell, including discovery and
     // library detail routes. Keep appearance active through their route changes.
-    isSupportedRoute: path => path === '/' || /^\/(?:app|apps|extensions|gem|gems|notebook|notebooks|spark|agent|scheduled|scheduled-tasks|search|daily-brief|students|immersive-view|images|videos|library)(?:\/|$)/.test(path),
+    isSupportedRoute: () => true,
     isNewConversation: path => path === '/' || path === '/app' || /^\/gem\/[^/]+\/?$/.test(path),
     workflow: {
       editor: 'rich-textarea .ql-editor[contenteditable="true"]',

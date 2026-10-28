@@ -22,6 +22,7 @@
       this.settingsRequestRevision = 0;
       this.settingsReadPending = false;
       this.pendingSettings = {};
+      this.pendingStorageChanges = {};
 
       this.appliedBody = null;
       this.renderScheduled = false;
@@ -76,7 +77,10 @@
         // Keep a stable settings object reference.
         A.state = A.state || {};
         A.state.settings = A.state.settings || {};
-        Object.assign(A.state.settings, A.preferences.normalize({ ...freshSettings, ...this.pendingSettings }));
+        freshSettings = A.preferences.applyChanges({ ...freshSettings }, this.pendingStorageChanges);
+        this.pendingStorageChanges = {};
+        A.state.storedSettings = freshSettings;
+        Object.assign(A.state.settings, A.preferences.normalize({ ...A.preferences.resolve(freshSettings), ...this.pendingSettings }));
         this.pendingSettings = {};
         this.settingsReadPending = false;
         this.settingsLoaded = true;
@@ -87,7 +91,7 @@
 
       const readStorageFallback = () => {
         try {
-          extensionApi?.storage?.sync?.get?.(A.preferences.defaults, (storedSettings) => {
+          extensionApi?.storage?.sync?.get?.(null, (storedSettings) => {
             if (extensionApi?.runtime?.lastError || !storedSettings) return;
             applyFreshSettings({
               ...storedSettings,
@@ -466,8 +470,13 @@
 
     onStorageChanged(changes, area) {
       if (area === 'sync') {
-        const changedKeys = Object.keys(changes);
         const settings = getSettings();
+        if (this.settingsReadPending) Object.assign(this.pendingStorageChanges, changes);
+        const stored = A.state.storedSettings ||= {};
+        A.preferences.applyChanges(stored, changes);
+        changes = A.preferences.diff(settings, A.preferences.resolve(stored));
+        const changedKeys = Object.keys(changes);
+        if (!changedKeys.length) return;
 
         changedKeys.forEach((key) => {
           if (!changes[key]) return;
@@ -520,8 +529,8 @@
         }
         if (['cinemaMode', 'focusMode', 'blurChatHistory', 'blurAvatar'].some(key => changes[key] && settings[key])) A.interface?.tagElements?.(document);
 
-        if (changes.customBgUrl || changes.backgroundBlur || changes.backgroundScaling) {
-          A.background?.update?.();
+        if (changes.customBgUrl || changes.customBgDataKey || changes.backgroundBlur || changes.backgroundScaling) {
+          A.background?.update?.(!!changes.customBgDataKey);
           A.background?.applyStyles?.();
         }
 
@@ -545,12 +554,12 @@
           A.queue?.schedulePulse?.();
         }
         if (changes.autoContrast) this.applyContrast();
-        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'queueWhileGenerating', 'appearance', 'dataMaskingEnabled'].includes(key))) A.quickSettings?.ensure?.();
+        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'queueWhileGenerating', 'appearance', 'glassIntensity', 'dataMaskingEnabled'].includes(key))) A.quickSettings?.ensure?.();
 
         if (changes.soundEnabled || changes.soundVolume) {
           this.applyAudio();
         }
-      } else if (area === 'local' && changes[LOCAL_BG_KEY]) {
+      } else if (area === 'local' && changes[getSettings().customBgDataKey || LOCAL_BG_KEY]) {
         if (isEnabled() && this.isSupportedRoute()) A.background?.update?.(true);
       }
     }

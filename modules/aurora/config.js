@@ -33,8 +33,6 @@
     HIDE_UPGRADE_CLASS: 'cgpt-hide-upgrade',
 
     // Preset URLs / assets
-    BLUE_WALLPAPER_URL:
-      'https://img.freepik.com/free-photo/abstract-luxury-gradient-blue-background-smooth-dark-blue-with-black-vignette-studio-banner_1258-54581.jpg?semt=ais_hybrid&w=740&q=80',
     GROK_HORIZON_URL: runtimeUrl('assets/grok-4.webp'),
 
     ...(A.site?.config || {}),

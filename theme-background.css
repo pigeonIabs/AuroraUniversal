@@ -1,0 +1,289 @@
+/* Shared Aurora theme tokens and background paint for sites and the toolbar preview. */
+html.cgpt-ambient-on {
+  /* Base Colors & Background */
+  --theme-bg-color: #000;
+  --theme-text-primary: #f0f4f8;
+  --theme-text-secondary: rgba(240, 244, 248, 0.7);
+  --bg-filter: brightness(0.55);
+  --bg-opacity: 0.58;
+  --haze-gradient: linear-gradient( to bottom, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.10) 22%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.02) 68%, rgba(255,255,255,0.00) 85% );
+  --overlay-gradient: linear-gradient( to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.75) 18%, rgba(0, 0, 0, 0.50) 36%, rgba(0, 0, 0, 0.24) 60%, rgba(0, 0, 0, 0.00) 80% );
+
+  /* --- THEME: DIMMED GLASS (DEFAULT) --- */
+  --glass-blur: var(--aurora-glass-blur, 40px);
+  --glass-saturate: 180%;
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --glass-bg: rgba(44, 44, 51, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-inner-highlight: rgba(255, 255, 255, 0.1);
+  --aurora-ui-radius: 24px;
+  --menu-item-hover: color-mix(in oklab, currentColor 12%, transparent);
+  --composer-blur: var(--aurora-glass-blur, 14px);
+  --composer-bg: rgba(0,0,0,0.35);
+  --composer-border: rgba(255,255,255,0.14);
+  --composer-shadow: 0 8px 30px rgba(0,0,0,.40);
+  --user-bubble-border: rgba(255, 255, 255, 0.25);
+  --sidebar-glass-blur: var(--aurora-glass-blur, 22px);
+  --sidebar-glass-sat: 140%;
+  --sidebar-glass-bg: rgba(18, 18, 18, 0.14);
+  --sidebar-glass-stroke: rgba(255, 255, 255, 0.08);
+  --sidebar-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --sidebar-sticky-highlight: rgba(255,255,255,0.06);
+  --sidebar-gradient-overlay: linear-gradient( to bottom, rgba(255,255,255,0.015), rgba(0,0,0,0.015) );
+  --sidebar-glass-radius: 16px;
+
+  /* --- THEME: CLEAR GLASS --- */
+  --clear-blur: var(--aurora-glass-blur, 24px);
+  --clear-saturate: 180%;
+  --clear-shadow: 0 16px 50px rgba(0,0,0,0.4);
+  --clear-bg: rgba(255, 255, 255, 0.08);
+  --clear-border: rgba(255, 255, 255, 0.2);
+  --clear-glow: rgba(255, 255, 255, 0.08);
+  --clear-shadow-light: 0 16px 40px rgba(0,0,0,0.18);
+  --clear-bg-light: rgba(255,255,255,0.2);
+  --clear-border-light: rgba(0,0,0,0.15);
+  --clear-glow-light: rgba(255,255,255,0.25);
+
+  /* --- SEMANTIC THEME LAYER (OPTIMIZATION) --- */
+  /* Default Mappings (Dimmed) - updated dynamically by classes below */
+  --aurora-glass-bg: var(--composer-bg);
+  --aurora-glass-border: var(--composer-border);
+  --aurora-glass-shadow: var(--composer-shadow);
+  --aurora-glass-blur: 14px;
+  --aurora-glass-saturate: var(--glass-saturate);
+  --aurora-glass-glow: transparent;
+  --aurora-glass-fill-opacity: 100%;
+  --aurora-glass-fill: var(--aurora-glass-bg);
+  --aurora-sidebar-glass-fill: color-mix(in srgb, var(--sidebar-glass-bg) var(--aurora-glass-fill-opacity), transparent);
+  --aurora-clear-bg: var(--clear-bg);
+  --aurora-clear-border: var(--clear-border);
+  --aurora-clear-shadow: var(--clear-shadow);
+  --aurora-clear-glow: var(--clear-glow);
+
+  /* CSS Variable-Driven State Defaults */
+  --aurora-display-limit: block;
+  --aurora-display-upgrade: block;
+  --aurora-display-sora: block;
+  --aurora-display-gpts: block;
+
+  /* --- COMPONENT: AURORA GLASS SWITCH --- */
+  --aurora-ui-switch-radius: 6px;
+  --aurora-ui-switch-glider-radius: 4px;
+  --switch-bg: rgba(0, 0, 0, 0.25);
+  --switch-border: rgba(255, 255, 255, 0.08);
+  --switch-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  --switch-glider-bg: rgba(255, 255, 255, 0.12);
+  --switch-glider-border: rgba(255, 255, 255, 0.15);
+  --switch-glider-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --switch-text-color: var(--theme-text-secondary);
+  --switch-active-text-color: #fff;
+  --switch-active-text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  --switch-glider-blur: blur(var(--aurora-glass-blur)) saturate(120%);
+}
+
+html.cgpt-ambient-on.cgpt-light-mode {
+  --theme-bg-color: #fff;
+  --theme-text-primary: #1d1d1f;
+  --theme-text-secondary: rgba(29, 29, 31, 0.7);
+  --bg-filter: brightness(0.99) contrast(1);
+  --bg-opacity: 0.72;
+  --haze-gradient: linear-gradient( to bottom, rgba(0,0,0,0.153) 0%, rgba(0,0,0,0.09) 22%, rgba(0,0,0,0.045) 45%, rgba(0,0,0,0.0225) 68%, rgba(0,0,0,0.00) 85% );
+  --overlay-gradient: linear-gradient( to top, rgba(255,255,255,0.693) 0%, rgba(255,255,255,0.539) 18%, rgba(255,255,255,0.346) 36%, rgba(255,255,255,0.154) 60%, rgba(255,255,255,0.00) 80% );
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  --glass-bg: rgba(242, 242, 247, 0.8);
+  --glass-border: rgba(0,0,0,0.1);
+  --glass-inner-highlight: rgba(255, 255, 255, 0.7);
+  --composer-bg: rgba(255,255,255,0.2);
+  --composer-border: rgba(0,0,0,0.09);
+  --composer-shadow: 0 6px 26px rgba(0,0,0,0.20);
+  --user-bubble-border: rgba(0, 0, 0, 0.12);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.22);
+  --sidebar-glass-stroke: rgba(0, 0, 0, 0.072);
+  --sidebar-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --sidebar-sticky-highlight: rgba(0,0,0,0.06);
+  --sidebar-gradient-overlay: linear-gradient( to bottom, rgba(0,0,0,0.015), rgba(255,255,255,0.015) );
+}
+
+/* --- Switch Component Overrides --- */
+
+html.cgpt-light-mode {
+  --switch-bg: rgba(0, 0, 0, 0.05);
+  --switch-border: rgba(0, 0, 0, 0.06);
+  --switch-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  --switch-glider-bg: #fff;
+  --switch-glider-border: rgba(0,0,0,0.08);
+  --switch-glider-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  --switch-active-text-color: #000;
+  --switch-active-text-shadow: none;
+}
+
+/* The slider changes material continuously, including the switch surfaces. */
+html.cgpt-ambient-on {
+  --switch-bg: color-mix(in srgb, rgba(0, 0, 0, 0.25) var(--aurora-glass-fill-opacity), var(--clear-bg));
+  --switch-border: color-mix(in srgb, rgba(255, 255, 255, 0.08) var(--aurora-glass-fill-opacity), var(--clear-border));
+  --switch-glider-bg: color-mix(in srgb, rgba(255, 255, 255, 0.12) var(--aurora-glass-fill-opacity), rgba(255, 255, 255, 0.15));
+  --switch-glider-border: color-mix(in srgb, rgba(255, 255, 255, 0.15) var(--aurora-glass-fill-opacity), var(--clear-border));
+}
+html.cgpt-ambient-on.cgpt-light-mode {
+  --switch-bg: color-mix(in srgb, rgba(0, 0, 0, 0.05) var(--aurora-glass-fill-opacity), var(--clear-bg-light));
+  --switch-border: color-mix(in srgb, rgba(0, 0, 0, 0.06) var(--aurora-glass-fill-opacity), var(--clear-border-light));
+  --switch-glider-bg: color-mix(in srgb, #fff var(--aurora-glass-fill-opacity), rgba(255, 255, 255, 0.65));
+  --switch-glider-border: color-mix(in srgb, rgba(0, 0, 0, 0.08) var(--aurora-glass-fill-opacity), var(--clear-border-light));
+}
+
+html.cgpt-light-mode {
+  --aurora-clear-bg: var(--clear-bg-light);
+  --aurora-clear-border: var(--clear-border-light);
+  --aurora-clear-shadow: var(--clear-shadow-light);
+  --aurora-clear-glow: var(--clear-glow-light);
+}
+
+html.cgpt-ambient-on {
+  --aurora-glass-fill: color-mix(in srgb, var(--aurora-glass-bg) var(--aurora-glass-fill-opacity), transparent);
+}
+
+/* One continuous material replaces the former binary appearance presets. */
+html.cgpt-ambient-on {
+  --aurora-glass-bg: var(--composer-bg);
+  --aurora-glass-border: color-mix(in srgb, var(--composer-border) var(--aurora-glass-fill-opacity), var(--aurora-clear-border));
+  --aurora-glass-glow: color-mix(in srgb, transparent var(--aurora-glass-fill-opacity), var(--aurora-clear-glow));
+  --aurora-glass-shadow: var(--composer-shadow);
+  --aurora-glass-saturate: 100%;
+}
+
+/* --- Background Container & Media --- */
+#cgpt-ambient-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--theme-bg-color); opacity: 1; contain: paint; overflow: hidden; }
+html.cgpt-bg-anim-disabled #cgpt-ambient-bg { transition: none; }
+#cgpt-ambient-bg.bg-visible { opacity: 1; }
+/* Decoded layers swap together. Hidden media never participates in backdrop
+ * composition, and switching does not blend two full-screen filter trees. */
+#cgpt-ambient-bg .media-layer { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; }
+#cgpt-ambient-bg .media-layer.active { opacity: 1; visibility: visible; }
+#cgpt-ambient-bg .media-layer.pure-black-active { background: #000; }
+#cgpt-ambient-bg.pure-black-mode { background: #000; }
+#cgpt-ambient-bg.pure-black-mode :is(.haze, .overlay) { display: none !important; }
+#cgpt-ambient-bg.space-mode { background: #000; }
+#cgpt-ambient-bg.space-mode :is(.haze, .overlay) { display: none !important; }
+#cgpt-ambient-bg picture, #cgpt-ambient-bg img, #cgpt-ambient-bg video, #cgpt-ambient-bg .haze, #cgpt-ambient-bg .overlay, #cgpt-ambient-bg .animated-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#cgpt-ambient-bg img, #cgpt-ambient-bg video { filter: blur(var(--cgpt-bg-blur-radius, 60px)) var(--bg-filter); opacity: var(--bg-opacity); z-index: 0; transition: opacity 160ms ease; }
+#cgpt-ambient-bg .haze { z-index: 2; background: var(--haze-gradient); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.6s ease; }
+#cgpt-ambient-bg .overlay { z-index: 1; background: var(--overlay-gradient) !important; transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.6s ease; }
+html.cgpt-ambient-on #cgpt-ambient-bg .overlay { background: transparent !important; }
+html.cgpt-ambient-on #cgpt-ambient-bg .haze { display: none !important; }
+html.cgpt-ambient-on:not(.cgpt-light-mode) #cgpt-ambient-bg img, html.cgpt-ambient-on:not(.cgpt-light-mode) #cgpt-ambient-bg video { filter: blur(var(--cgpt-bg-blur-radius, 60px)) brightness(0.85) saturate(1.04); opacity: 1; }
+html.cgpt-ambient-on.cgpt-light-mode #cgpt-ambient-bg img, html.cgpt-ambient-on.cgpt-light-mode #cgpt-ambient-bg video { filter: blur(var(--cgpt-bg-blur-radius, 60px)) brightness(1) saturate(1.02); opacity: 1; }
+
+/* --- Animated Gradient Background --- */
+@keyframes move-blob-1 { 0% { transform: scale(1) translate(0px, 0px); } 33% { transform: scale(1.1) translate(30vw, -15vh); } 66% { transform: scale(0.9) translate(-20vw, 20vh); } 100% { transform: scale(1) translate(0px, 0px); } }
+@keyframes move-blob-2 { 0% { transform: scale(1) translate(0px, 0px); } 33% { transform: scale(1.2) translate(-25vw, 10vh); } 66% { transform: scale(0.8) translate(15vw, -20vh); } 100% { transform: scale(1) translate(0px, 0px); } }
+@keyframes move-blob-3 { 0% { transform: scale(1) translate(0px, 0px); } 33% { transform: scale(1.15) translate(20vw, 20vh); } 66% { transform: scale(0.85) translate(-30vw, -10vh); } 100% { transform: scale(1) translate(0px, 0px); } }
+#cgpt-ambient-bg .animated-bg { display: none; z-index: 0; overflow: hidden; position: relative; }
+#cgpt-ambient-bg .media-layer.gpt5-active .animated-bg { display: block; }
+/* Cached images retain the original solid-circle Gaussian blur and halo.
+ * Animation only moves the existing three background elements. */
+.animated-bg .blob { position: absolute; border-radius: 50%; opacity: 0.45; background: transparent; will-change: transform; }
+.animated-bg .blob::before { content: ""; position: absolute; inset: -300px; background-image: var(--aurora-gradient-texture); background-size: 100% 100%; background-repeat: no-repeat; }
+.animated-bg .blob:nth-child(1) { width: 60vmax; height: 60vmax; top: -30vmax; left: -20vmax; --blob-color: #ff99c8; animation: move-blob-1 45s infinite alternate ease-in-out; }
+.animated-bg .blob:nth-child(2) { width: 70vmax; height: 70vmax; bottom: -40vmax; right: -30vmax; --blob-color: #a9d6ff; animation: move-blob-2 60s infinite alternate ease-in-out; }
+.animated-bg .blob:nth-child(3) { width: 50vmax; height: 50vmax; bottom: -20vmax; left: 10vmax; --blob-color: #fcf6bd; animation: move-blob-3 75s infinite alternate ease-in-out; }
+#cgpt-ambient-bg .media-layer:not(.active) .animated-bg .blob,
+html.cgpt-tab-hidden .animated-bg .blob { animation-play-state: paused !important; }
+html.cgpt-animations-disabled .animated-bg .blob { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .animated-bg .blob { animation: none !important; }
+}
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob { opacity: 0.6 !important; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(1) { --blob-color: #ff78b4; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(2) { --blob-color: #77b5fe; }
+html.cgpt-ambient-on.cgpt-light-mode .animated-bg .blob:nth-child(3) { --blob-color: #fdd26e; }
+
+/* Space keeps its pinpoints sharp independently of the image/video blur slider. */
+/* Scenic backgrounds use two decoded textures. Motion stays on the compositor. */
+#cgpt-ambient-bg.scenic-mode :is(.haze, .overlay) { display: none !important; }
+#cgpt-ambient-bg .scenic-bg { position: absolute; inset: 0; overflow: hidden; background: #02080e; }
+#cgpt-ambient-bg .scenic-base,
+#cgpt-ambient-bg .scenic-light { position: absolute; inset: -6%; background-size: cover; background-position: center; background-repeat: no-repeat; }
+#cgpt-ambient-bg .scenic-light { mix-blend-mode: screen; will-change: transform; transform-origin: 50% 15%; }
+#cgpt-ambient-bg .scenic-northern-lights .scenic-light { animation: aurora-curtain-drift 38s ease-in-out infinite alternate; }
+#cgpt-ambient-bg .scenic-dawn .scenic-light { animation: aurora-cloud-drift 72s ease-in-out infinite alternate; }
+#cgpt-ambient-bg .scenic-ember .scenic-light { animation: aurora-ember-drift 56s ease-in-out infinite alternate; }
+#cgpt-ambient-bg .scenic-deep-ocean .scenic-light { animation: aurora-ocean-drift 32s ease-in-out infinite alternate; }
+@keyframes aurora-curtain-drift { from { transform: translateX(-2%) skewX(-2deg); opacity: .7; } to { transform: translateX(2%) skewX(2deg); opacity: 1; } }
+@keyframes aurora-cloud-drift { from { transform: translate(-2%, 1%) scale(1); } to { transform: translate(2%, -1%) scale(1.04); } }
+@keyframes aurora-ember-drift { from { transform: translateY(2%) scale(1); opacity: .7; } to { transform: translateY(-2%) scale(1.03); opacity: 1; } }
+@keyframes aurora-ocean-drift { from { transform: translateX(-2%) skewX(-3deg); opacity: .6; } to { transform: translateX(2%) skewX(3deg); opacity: 1; } }
+#cgpt-ambient-bg .media-layer:not(.active) .scenic-light,
+html.cgpt-tab-hidden #cgpt-ambient-bg .scenic-light { animation-play-state: paused !important; }
+html.cgpt-animations-disabled #cgpt-ambient-bg .scenic-light { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  #cgpt-ambient-bg .scenic-light { animation: none !important; }
+}
+
+/* Space keeps its pinpoints sharp independently of the image/video blur slider. */
+#cgpt-ambient-bg .space-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: #010102;
+}
+#cgpt-ambient-bg .space-firmament {
+  position: absolute;
+  width: var(--space-diameter);
+  height: var(--space-diameter);
+  background-image: var(--aurora-space-stars);
+  background-size: cover;
+  background-position: center;
+  transform: translate(-50%, -50%) rotate(var(--space-angle));
+  transform-origin: center;
+  will-change: transform;
+  /* Keep the baked dust steady. Only individual stars change brightness. */
+  animation: aurora-sidereal-drift 10800s linear infinite;
+}
+@keyframes aurora-sidereal-drift {
+  from { transform: translate(-50%, -50%) rotate(var(--space-angle)); }
+  to { transform: translate(-50%, -50%) rotate(calc(var(--space-angle) + 360deg)); }
+}
+#cgpt-ambient-bg .space-twinkle {
+  position: absolute;
+  width: var(--twinkle-size, 2px);
+  height: var(--twinkle-size, 2px);
+  background: #dbe5f4;
+  box-shadow: 0 0 3px 1px rgba(179, 202, 237, 0.2);
+  opacity: 0.35;
+  will-change: opacity;
+  animation: aurora-star-flicker var(--twinkle-duration) var(--twinkle-delay) infinite ease-in-out;
+}
+@keyframes aurora-star-flicker {
+  0%, 100% { opacity: 0.22; }
+  32% { opacity: 0.4; }
+  52% { opacity: 0.9; }
+  70% { opacity: 0.32; }
+  83% { opacity: 0.58; }
+}
+#cgpt-ambient-bg .space-meteor {
+  --meteor-distance: clamp(170px, 28vw, 440px);
+  position: absolute;
+  left: 17%;
+  top: 14%;
+  width: clamp(54px, 7vw, 100px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(167, 191, 221, 0.18) 55%, #e2ecfa);
+  transform-origin: right center;
+  opacity: 0;
+  animation: aurora-shooting-star 37s 6s infinite linear;
+}
+@keyframes aurora-shooting-star {
+  0% { opacity: 0; transform: translate(0, 0) rotate(var(--meteor-angle, 32deg)); }
+  0.2% { opacity: 0.72; }
+  0.9% { opacity: 0.5; }
+  1.6%, 100% { opacity: 0; transform: translate(var(--meteor-distance), calc(var(--meteor-distance) * var(--meteor-slope, 0.625))) rotate(var(--meteor-angle, 32deg)); }
+}
+#cgpt-ambient-bg .media-layer:not(.active) .space-bg *,
+html.cgpt-tab-hidden #cgpt-ambient-bg .space-bg * { animation-play-state: paused !important; }
+html.cgpt-animations-disabled #cgpt-ambient-bg .space-bg * { animation: none !important; }
+html.cgpt-animations-disabled #cgpt-ambient-bg .space-meteor { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  #cgpt-ambient-bg .space-bg * { animation: none !important; }
+  #cgpt-ambient-bg .space-meteor { display: none; }
+}
+

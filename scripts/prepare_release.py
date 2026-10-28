@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 from pathlib import Path
 
 from build_xpi import ROOT, build, collect_files, write_archive
@@ -17,11 +16,11 @@ def prepare() -> None:
     destination = ROOT / 'build'
     package = destination / f'aurora-universal-{version}.xpi'
     build(package)
-    shutil.copyfile(package, destination / 'aurora-universal-development.xpi')
+    build(destination / 'aurora-universal-development.xpi', 'aurora-for-chatgpt-librewolf@local')
 
     sources = collect_files(manifest)
     for name in ('.gitignore', '.gitattributes', 'README.md', 'DEVELOPMENT.md', 'amo-metadata.json',
-                 'scripts/build_xpi.py', 'scripts/prepare_release.py', 'release/index.html'):
+                 'scripts/build_xpi.py', 'scripts/prepare_release.py', 'scripts/generate_theme_art.py', 'release/index.html'):
         sources[name] = ROOT / name
     for pattern in ('release/*.md', 'release/studio/*', 'release/media/*'):
         for path in ROOT.glob(pattern):
@@ -46,7 +45,8 @@ def prepare() -> None:
     write_archive(press_archive, media)
 
     artifacts = [package, source_archive, press_archive,
-                 ROOT / 'release/media' / f'aurora-universal-{version}.mp4']
+                 *[ROOT / 'release/media' / name for name in ('aurora-universal-launch.mp4',
+                   'aurora-space-timelapse.mp4', 'aurora-animated-gradient.mp4')]]
     checksums = []
     inventory = []
     for path in artifacts:

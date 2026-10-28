@@ -6,7 +6,9 @@
   const A = window.AuroraExt;
   A.startupTimings.settingsRequested = performance.now();
   let localBackground = null;
+  let localBackgroundKey = null;
   let settings = null;
+  let storedSettings = {};
   const changesDuringRead = {};
   // Prepare appearance before the host creates its body. Background attachment
   // handles the later body without delaying loading or restarting the scene.
@@ -23,31 +25,33 @@
   });
   function storageChanged(changes, area) {
     if (area === 'sync') {
-      for (const [key, change] of Object.entries(changes)) {
-        if (!Object.hasOwn(A.preferences.defaults, key)) continue;
-        const value = A.preferences.value(key, change.newValue);
-        changesDuringRead[key] = value;
-        if (settings) settings[key] = A.state.settings[key] = value;
-      }
+      Object.assign(changesDuringRead, changes);
+      A.preferences.applyChanges(storedSettings, changes);
       if (!settings) return;
+      const next = A.preferences.resolve(storedSettings);
+      if (!Object.keys(A.preferences.diff(settings, next)).length) return;
+      const mediaChanged = settings.customBgDataKey !== next.customBgDataKey;
+      if (mediaChanged) localBackground = null;
+      Object.assign(settings, next);
+      Object.assign(A.state.settings, next);
       if (A.isActive()) {
         A.rootFlags.apply();
         mountAppearance();
         A.background.applyStyles();
-        A.background.update();
+        A.background.update(mediaChanged);
       } else {
         document.documentElement?.classList.remove(A.config.HTML_CLASS);
         A.background.reset();
         document.getElementById(A.config.ID)?.remove();
         A.background.restoreApp();
       }
-    } else if (area === 'local' && changes[A.config.LOCAL_BG_KEY]) {
+    } else if (area === 'local' && changes[settings?.customBgDataKey || A.config.LOCAL_BG_KEY]) {
       localBackground = null;
       if (settings && A.isActive()) A.background.update(true);
     }
   }
   chrome.storage.onChanged.addListener(storageChanged);
-  const ready = read('sync', { ...A.preferences.defaults, extensionSettingsBackup: null }).then(stored => {
+  const ready = read('sync', null).then(stored => {
     A.startupTimings.settingsReceived = performance.now();
     if (!stored) return null;
     const backup = stored.extensionSettingsBackup;
@@ -57,14 +61,18 @@
       }
     }
     delete stored.extensionSettingsBackup;
-    settings = A.preferences.normalize({ ...stored, ...changesDuringRead });
+    storedSettings = A.preferences.applyChanges(stored, changesDuringRead);
+    A.state.storedSettings = storedSettings;
+    settings = A.preferences.resolve(storedSettings);
     Object.assign(A.state.settings, settings);
     if (settings.customBgUrl === '__local__') {
-      localBackground = read('local', A.config.LOCAL_BG_KEY).then(value => value?.[A.config.LOCAL_BG_KEY] || null);
+      const key = settings.customBgDataKey;
+      localBackgroundKey = key;
+      localBackground = read('local', key).then(value => value?.[key] || null);
     }
     if (A.isActive() && document.documentElement) A.rootFlags.apply();
     mountAppearance();
-    return settings;
+    return storedSettings;
   });
   A.startup = {
     ready,
@@ -72,7 +80,7 @@
       chrome.storage.onChanged.removeListener(storageChanged);
     },
     takeLocalBackground() {
-      const pending = localBackground;
+      const pending = localBackgroundKey === A.getSettings().customBgDataKey ? localBackground : null;
       localBackground = null;
       return pending;
     },

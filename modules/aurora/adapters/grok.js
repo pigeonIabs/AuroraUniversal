@@ -3,7 +3,7 @@
   const A = window.AuroraExt;
   Object.assign(A.site, {
     appRoot: '#grok-app-root, #__next',
-    isSupportedRoute: path => path === '/' || /^\/(?:c|chat|project|projects|imagine|supergrok)(?:\/|$)/.test(path),
+    isSupportedRoute: () => true,
     isNewConversation: path => path === '/',
     workflow: {
       editor: '.query-bar textarea, .query-bar [contenteditable="true"]',

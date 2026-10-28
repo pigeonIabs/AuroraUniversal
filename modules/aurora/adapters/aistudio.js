@@ -4,8 +4,8 @@
   const A = window.AuroraExt;
   Object.assign(A.site, {
     appRoot: 'ms-app, app-root',
-    // Appearance covers keys and docs while chat features remain prompt-scoped.
-    isSupportedRoute: path => path === '/' || /^\/(?:app\/|u\/\d+\/)?(?:prompts|apps|live|generate|library|api-keys|apikey|docs)(?:\/|$)/.test(path),
+    // Appearance applies throughout the site. Chat features remain prompt-scoped.
+    isSupportedRoute: () => true,
     isNewConversation: path => /\/(?:prompts\/new_chat)\/?$/.test(path),
     workflow: {
       editor: 'ms-prompt-box textarea, ms-prompt-input-wrapper textarea, .chat-input-field textarea, ms-prompt-input-wrapper [contenteditable="true"]',
@@ -24,12 +24,12 @@
       sidebar: 'ms-navbar-v2 .nav-content, mat-sidenav, mat-drawer, ms-side-nav, ms-sidenav, .left-nav',
       menu: '.nav-flyout-panel, .mat-mdc-menu-panel, .mat-mdc-select-panel, .mat-mdc-dialog-surface, .mat-mdc-tooltip-surface, .cdk-overlay-container :is([role="menu"], [role="listbox"], [role="dialog"])',
       panel: 'ms-run-settings, .run-settings, .run-settings-menu, ms-sliding-right-panel, ms-documentation ms-callout, ms-global-banner .global-banner, ms-thought-chunk:not(ms-conversation-turn-execution-steps *) .compact-accordion > mat-expansion-panel',
-      control: 'button.model-selector-card, button.system-instructions-card, button.category-card, ms-system-instructions .mat-mdc-text-field-wrapper, ms-system-instructions input[ms-input], ms-system-instructions textarea[ms-input], ms-dashboard-selector .mat-mdc-text-field-wrapper, ms-api-switcher .mat-mdc-text-field-wrapper, ms-nav-items-documentation .search-input, ms-documentation mat-card.docs-card',
+      control: 'ms-carousel-nav .carousel-nav, button.model-selector-card, button.system-instructions-card, button.category-card, ms-system-instructions .mat-mdc-text-field-wrapper, ms-system-instructions input[ms-input], ms-system-instructions textarea[ms-input], ms-dashboard-selector .mat-mdc-text-field-wrapper, ms-api-switcher .mat-mdc-text-field-wrapper, ms-nav-items-documentation .search-input, ms-documentation mat-card.docs-card',
       message: 'ms-chat-turn[data-role="user"] .chat-turn-container, ms-chat-turn.user .chat-turn-container',
       history: ':is(ms-navbar-v2, mat-sidenav, mat-drawer, ms-side-nav, ms-sidenav, .left-nav) a[href*="/prompts/"]',
       avatar: 'ms-account-switcher img, button[aria-label*="Google Account"] img',
-      plane: 'ms-app, app-root, .banner-and-app-container, .makersuite-layout, .layout-wrapper, .layout-main, .router-outlet-wrapper, .chunk-editor-main, mat-sidenav-container, mat-drawer-container, mat-sidenav-content, mat-drawer-content, ms-prompt-view, ms-chat-session, .chat-session-container, ms-api-keys .page-content-wrapper, ms-documentation .page-content-wrapper',
-      toolbar: 'ms-header, ms-toolbar, ms-prompt-toolbar, .prompt-toolbar',
+      plane: 'ms-marketing-welcome-new-screen, ms-hero-prompt, ms-hero-prompt .hero, ms-marketing-slider, ms-marketing-remix, ms-app, app-root, .banner-and-app-container, .makersuite-layout, .layout-wrapper, .layout-main, .router-outlet-wrapper, .chunk-editor-main, mat-sidenav-container, mat-drawer-container, mat-sidenav-content, mat-drawer-content, ms-prompt-view, ms-chat-session, .chat-session-container, ms-api-keys .page-content-wrapper, ms-documentation .page-content-wrapper',
+      toolbar: 'ms-marketing-welcome-new-screen .nav, ms-header, ms-toolbar, ms-prompt-toolbar, .prompt-toolbar',
       content: '.chat-session-container',
       code: 'ms-docs-tabs.code-tabs, ms-code-block > .container, pre:not(ms-code-block pre)',
       rateLimit: 'ms-billing-quota-error-callout, ms-quota-error-callout, .quota-exceeded-container, [data-test-id="quota-exceeded"]',

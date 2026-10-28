@@ -1,4 +1,13 @@
-# Aurora Universal 1.0.0
+# Aurora Universal 1.0.1
+
+- Added Northern Lights, Dawn, and Ember backgrounds. Replaced Blue with Deep Ocean.
+- Enabled Aurora throughout all eight supported websites, including sign-in and welcome pages.
+- Added material support for ChatGPT's signed-out Octane layout.
+- Settings now stay shared until a website has its own customization, and matching values become shared again automatically.
+- Combined glass appearance into one Clear to Dimmed slider and added the selected background to the settings preview.
+- Added a full-frame launch demo featuring every website and built-in background.
+
+## Aurora Universal 1.0.0
 
 Universal expands [Aurora for ChatGPT](https://github.com/TG-TG-TG-TG-TG-TG/Aurora-for-ChatGPT) to seven more websites.
 

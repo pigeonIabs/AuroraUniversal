@@ -1,36 +1,65 @@
 {
-  "extension": "Aurora Universal",
-  "version": "1.0.0",
-  "capturedAt": "2026-10-26T06:46:11.362Z",
-  "sites": [
+  "capture": "Real signed-out websites in an isolated Firefox profile with Aurora installed",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "personalProfileUsed": false,
+  "promptsSubmitted": false,
+  "sources": [
     {
-      "website": "https://chat.qwen.ai/",
-      "signedOut": true,
-      "viewport": {
-        "width": 1920,
-        "height": 1080,
-        "pixelRatio": 2
-      }
+      "still": "chatgpt-space.png",
+      "website": "ChatGPT",
+      "url": "https://chatgpt.com/",
+      "background": "Space"
     },
     {
-      "website": "https://grok.com/",
-      "signedOut": true,
-      "viewport": {
-        "width": 1920,
-        "height": 1080,
-        "pixelRatio": 2
-      }
+      "still": "claude-dawn.png",
+      "website": "Claude",
+      "url": "https://claude.ai/login",
+      "background": "Dawn"
+    },
+    {
+      "still": "gemini-northern-lights.png",
+      "website": "Gemini",
+      "url": "https://gemini.google.com/app",
+      "background": "Northern Lights"
+    },
+    {
+      "still": "grok-horizon.png",
+      "website": "Grok",
+      "url": "https://grok.com/",
+      "background": "Grok Horizon"
+    },
+    {
+      "still": "qwen-gradient.png",
+      "website": "Qwen",
+      "url": "https://chat.qwen.ai/",
+      "background": "Animated Gradient"
+    },
+    {
+      "still": "aistudio-ember.png",
+      "website": "Google AI Studio",
+      "url": "https://aistudio.google.com/welcome",
+      "background": "Ember"
+    },
+    {
+      "still": "deepseek-ocean.png",
+      "website": "DeepSeek",
+      "url": "https://chat.deepseek.com/sign_in",
+      "background": "Deep Ocean"
+    },
+    {
+      "still": "huggingface-wallpaper.png",
+      "website": "Hugging Face",
+      "url": "https://huggingface.co/",
+      "background": "Default Wallpaper"
+    },
+    {
+      "still": "chatgpt-black.png",
+      "website": "ChatGPT",
+      "url": "https://chatgpt.com/",
+      "background": "Pure Black"
     }
-  ],
-  "promptsSubmitted": false,
-  "personalProfileUsed": false,
-  "reconstructedInterface": false,
-  "video": {
-    "file": "aurora-universal-1.0.0.mp4",
-    "width": 1920,
-    "height": 1080,
-    "framesPerSecond": 30,
-    "durationSeconds": 44.93000000000001
-  },
-  "editing": "Camera movement, crossfade, cursor emphasis, and original ambient audio. Native website geometry is unchanged."
+  ]
 }

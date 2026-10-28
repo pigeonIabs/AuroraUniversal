@@ -206,9 +206,6 @@
   "bgPresetOptionGpt5Animated": {
     "message": "动画渐变"
   },
-  "bgPresetOptionBlue": {
-    "message": "蓝色壁纸"
-  },
   "bgPresetOptionGrokHorizon": {
     "message": "Grok地平线"
   },
@@ -313,9 +310,6 @@
   },
   "welcomePresetHorizon": {
     "message": "地平线"
-  },
-  "welcomePresetBlue": {
-    "message": "蓝色"
   },
   "welcomeLabelGlassStyle": {
     "message": "玻璃样式"
@@ -550,5 +544,17 @@
   },
   "tooltipHideAIWarnings": {
     "message": "在所有支持的网站上隐藏 AI 准确性和生成内容提示"
+  },
+  "bgPresetOptionDeepOcean": {
+    "message": "深海"
+  },
+  "bgPresetOptionNorthernLights": {
+    "message": "北极光"
+  },
+  "bgPresetOptionDawn": {
+    "message": "黎明"
+  },
+  "bgPresetOptionEmber": {
+    "message": "余烬"
   }
 }

@@ -1,8 +1,10 @@
 // Toolbar settings. Render defaults, then hydrate from the background cache.
 
 // --- Constants & Defaults ---
-const LOCAL_BG_KEY = 'customBgData';
-const BLUE_WALLPAPER_URL = 'https://img.freepik.com/free-photo/abstract-luxury-gradient-blue-background-smooth-dark-blue-with-black-vignette-studio-banner_1258-54581.jpg?semt=ais_hybrid&w=740&q=80';
+const SCENIC_BACKGROUNDS = {
+  __deep_ocean__: 'bgPresetOptionDeepOcean', __northern_lights__: 'bgPresetOptionNorthernLights',
+  __dawn__: 'bgPresetOptionDawn', __ember__: 'bgPresetOptionEmber'
+};
 const GROK_HORIZON_URL = chrome?.runtime?.getURL ? chrome.runtime.getURL('assets/grok-4.webp') : 'assets/grok-4.webp';
 const PURE_BLACK_BACKGROUND = '__pure_black__';
 
@@ -21,11 +23,21 @@ let listenersAttached = false;
 let selectedSite = AuroraExt.sites.all[0];
 let activeSiteTab = null;
 let currentSettings = DEFAULTS;
+let storedSettings = DEFAULTS;
+let detectedThemes = {};
+let siteSelectedByUser = false;
 let siteState = { models: [], currentModel: '' };
 let siteRequestRevision = 0;
 
 // --- Helpers ---
 const getMessage = (key, substitutions) => chrome?.i18n?.getMessage(key, substitutions) || key;
+
+function saveSettings(patch, site = selectedSite.id, scope = siteSelectedByUser ? 'site' : 'auto') {
+  return AuroraExt.preferences.save(patch, site, undefined, scope).then(result => {
+    if (result?.settings) renderUi(result.settings, detectedThemes);
+    return result;
+  });
+}
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,9 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   cacheElements();
+  document.querySelector('main').inert = true;
 
   applyLocalization();
-  applySiteScope();
+  const siteScopeReady = applySiteScope();
   
   setupTabs();
   
@@ -50,16 +63,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chrome.runtime.lastError) {
       // Fallback: direct storage access if message fails
       Promise.all([
-        chrome.storage.sync.get(DEFAULTS),
-        chrome.storage.local.get(['customBgData', 'detectedTheme'])
-      ]).then(([sync, local]) => {
+        chrome.storage.sync.get(null),
+        chrome.storage.local.get(AuroraExt.sites.all.map(site => `detectedTheme:${site.id}`))
+      ]).then(async ([sync, local]) => {
+        await siteScopeReady;
         hydrateWithRealData({ ...DEFAULTS, ...sync }, local);
       });
       return;
     }
     
     const { settings, local } = response || {};
-    hydrateWithRealData(settings || DEFAULTS, local || {});
+    siteScopeReady.then(() => hydrateWithRealData(settings || DEFAULTS, local || {}));
   });
 });
 
@@ -67,7 +81,10 @@ async function applySiteScope() {
   const select = document.getElementById('websiteSelect');
   for (const site of AuroraExt.sites.all) select.add(new Option(site.name, site.id));
   select.addEventListener('change', () => {
+    closeAllSelects();
+    siteSelectedByUser = true;
     selectedSite = AuroraExt.sites.all.find(site => site.id === select.value);
+    renderUi(storedSettings, detectedThemes);
     refreshSiteControls();
   });
   document.getElementById('siteEnabled').addEventListener('change', async event => {
@@ -76,7 +93,7 @@ async function applySiteScope() {
     const stored = await chrome.storage.sync.get({ disabledSites: [] });
     const disabled = new Set(Array.isArray(stored.disabledSites) ? stored.disabledSites : []);
     if (checked) disabled.delete(id); else disabled.add(id);
-    chrome.storage.sync.set({ disabledSites: [...disabled] });
+    saveSettings({ disabledSites: [...disabled] });
   });
   const saveModel = async value => {
     const id = selectedSite.id;
@@ -84,7 +101,7 @@ async function applySiteScope() {
     const models = { ...stored.siteDefaultModels, [id]: value };
     currentSettings = { ...currentSettings, siteDefaultModels: models };
     renderSiteSettings();
-    chrome.storage.sync.set({ siteDefaultModels: models });
+    saveSettings({ siteDefaultModels: models });
   };
   document.getElementById('siteDefaultModel').addEventListener('change', event => saveModel(event.target.value));
   document.getElementById('useCurrentModel').addEventListener('click', () => {
@@ -92,9 +109,10 @@ async function applySiteScope() {
   });
   try {
     [activeSiteTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    selectedSite = AuroraExt.sites.fromUrl(activeSiteTab?.url) || selectedSite;
+    if (!siteSelectedByUser) selectedSite = AuroraExt.sites.fromUrl(activeSiteTab?.url) || selectedSite;
   } catch { /* The site selector remains available on extension pages. */ }
   select.value = selectedSite.id;
+  renderUi(storedSettings, detectedThemes);
   chrome.tabs.onUpdated?.addListener((tabId, change, tab) => {
     if (tabId !== activeSiteTab?.id || !change.url) return;
     activeSiteTab = tab;
@@ -110,7 +128,7 @@ function filterSiteControls() {
   [...TOGGLE_KEYS, 'defaultModel', 'voiceColor'].forEach(key => {
     const el = document.getElementById(key) || document.getElementById(`${key}Selector`);
     const row = el?.closest('.row');
-    if (row) row.dataset.siteUnsupported = String(!AuroraExt.sites.supports(site, key, context) || (key === 'defaultModel' && site.id !== 'chatgpt') || (key === 'maskingRandomMode' && !currentSettings.dataMaskingEnabled) || (key === 'autoContrast' && ['__pure_black__', '__gpt5_animated__'].includes(currentSettings.customBgUrl)));
+    if (row) row.dataset.siteUnsupported = String(!AuroraExt.sites.supports(site, key, context) || (key === 'defaultModel' && site.id !== 'chatgpt') || (key === 'maskingRandomMode' && !currentSettings.dataMaskingEnabled) || (key === 'autoContrast' && ['__pure_black__', '__gpt5_animated__', ...Object.keys(SCENIC_BACKGROUNDS)].includes(currentSettings.customBgUrl)));
   });
   document.getElementById('siteDefaultModelRow').dataset.siteUnsupported = String(site.id === 'chatgpt' || !AuroraExt.sites.supports(site, 'defaultModel', context));
   document.getElementById('soundVolume')?.closest('.row')?.setAttribute('data-site-unsupported', String(!currentSettings.soundEnabled));
@@ -177,6 +195,7 @@ function renderSiteSettings() {
 }
 
 function hydrateWithRealData(settings, localData) {
+  document.querySelector('main').inert = false;
   // Re-render with actual user data
   renderUi(settings, localData);
   
@@ -203,8 +222,11 @@ function cacheElements() {
   // Individual elements
   $.blurSlider = document.getElementById('blurSlider');
   $.blurValue = document.getElementById('blurValue');
-  $.glassIntensitySlider = document.getElementById('glassIntensitySlider');
-  $.glassIntensityValue = document.getElementById('glassIntensityValue');
+  $.glassControl = AuroraExt.glassControl.create('glassIntensitySlider', DEFAULTS, patch => {
+    currentSettings = { ...currentSettings, ...patch };
+    AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'));
+  }, patch => saveSettings(patch));
+  document.getElementById('glassControlHost').append($.glassControl);
   $.bgUrl = document.getElementById('bgUrl');
   $.bgFile = document.getElementById('bgFile');
   $.clearBg = document.getElementById('clearBg');
@@ -231,7 +253,6 @@ function cacheElements() {
     bgPreset: document.getElementById('bgPreset'),
     bgScalingSelector: document.getElementById('bgScalingSelector'),
     themeSelector: document.getElementById('themeSelector'),
-    appearanceSelector: document.getElementById('appearanceSelector'),
     fontSelector: document.getElementById('fontSelector'),
     voiceColorSelector: document.getElementById('voiceColorSelector'),
     defaultModelSelector: document.getElementById('defaultModelSelector')
@@ -239,16 +260,20 @@ function cacheElements() {
 }
 
 // --- Core Rendering Logic (Optimized) ---
-function renderUi(settings, localData = {}) {
+function renderUi(stored, localData = {}) {
+  storedSettings = stored;
+  detectedThemes = localData;
+  const settings = AuroraExt.preferences.resolve(stored, selectedSite.id);
   currentSettings = settings;
   renderSiteSettings();
   filterSiteControls();
   // Theme Toggle
   let isLightTheme = settings.theme === 'light';
-  if (settings.theme === 'auto' && localData.detectedTheme === 'light') {
-    isLightTheme = true;
+  if (settings.theme === 'auto') {
+    isLightTheme = (localData[`detectedTheme:${selectedSite.id}`] ||
+      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'light';
   }
-  document.documentElement.classList.toggle('theme-light', isLightTheme);
+  AuroraExt.popupPreview.apply(settings, isLightTheme);
 
   // Boolean Toggles (uses cached elements)
   TOGGLE_KEYS.forEach(key => {
@@ -269,18 +294,14 @@ function renderUi(settings, localData = {}) {
     $.blurSlider.value = settings.backgroundBlur;
     $.blurValue.textContent = settings.backgroundBlur;
   }
-  if ($.glassIntensitySlider && $.glassIntensityValue) {
-    const storedIntensity = Number(settings.glassIntensity);
-    const intensity = Number.isFinite(storedIntensity)
-      ? Math.max(0, Math.min(100, storedIntensity))
-      : (settings.appearance === 'clear' ? 100 : 0);
-    $.glassIntensitySlider.value = String(intensity);
-    $.glassIntensityValue.textContent = String(intensity);
-  }
+  $.glassControl?.syncGlass(settings);
 
   // Text Inputs
   if ($.bgUrl) {
-    if (settings.customBgUrl === '__space__') {
+    if (SCENIC_BACKGROUNDS[settings.customBgUrl]) {
+      $.bgUrl.value = getMessage(SCENIC_BACKGROUNDS[settings.customBgUrl]);
+      $.bgUrl.disabled = true;
+    } else if (settings.customBgUrl === '__space__') {
       $.bgUrl.value = getMessage('bgPresetOptionSpace') || 'Space';
       $.bgUrl.disabled = true;
     } else if (settings.customBgUrl === '__gpt5_animated__') {
@@ -290,7 +311,7 @@ function renderUi(settings, localData = {}) {
       $.bgUrl.value = getMessage('statusLocalFileInUse') || 'Local File Active';
       $.bgUrl.disabled = true;
     } else if (document.activeElement !== $.bgUrl) {
-      const presets = [BLUE_WALLPAPER_URL, GROK_HORIZON_URL, PURE_BLACK_BACKGROUND];
+      const presets = [GROK_HORIZON_URL, PURE_BLACK_BACKGROUND];
       $.bgUrl.value = presets.includes(settings.customBgUrl) ? '' : settings.customBgUrl;
       $.bgUrl.disabled = false;
     }
@@ -312,12 +333,12 @@ const SELECT_CONFIGS = [
       { value: '__space__', labelKey: 'bgPresetOptionSpace' },
       { value: '__gpt5_animated__', labelKey: 'bgPresetOptionGpt5Animated' },
       { value: 'grokHorizon', labelKey: 'bgPresetOptionGrokHorizon' },
-      { value: 'blue', labelKey: 'bgPresetOptionBlue' },
+      ...Object.entries(SCENIC_BACKGROUNDS).map(([value, labelKey]) => ({ value, labelKey })),
       { value: 'custom', labelKey: 'bgPresetOptionCustom', hidden: true }
     ],
     mapVal: (v) => {
       if (!v) return 'default';
-      if (v === BLUE_WALLPAPER_URL) return 'blue';
+      if (SCENIC_BACKGROUNDS[v]) return v;
       if (v === GROK_HORIZON_URL) return 'grokHorizon';
       if (v === PURE_BLACK_BACKGROUND) return PURE_BLACK_BACKGROUND;
       if (v === '__space__') return '__space__';
@@ -326,14 +347,13 @@ const SELECT_CONFIGS = [
     },
     onSelect: (val) => {
       let url = '';
-      if (val === 'blue') url = BLUE_WALLPAPER_URL;
+      if (SCENIC_BACKGROUNDS[val]) url = val;
       else if (val === 'grokHorizon') url = GROK_HORIZON_URL;
       else if (val === PURE_BLACK_BACKGROUND) url = PURE_BLACK_BACKGROUND;
       else if (val === '__space__') url = '__space__';
       else if (val === '__gpt5_animated__') url = '__gpt5_animated__';
       // Space preserves the uploaded background and changes only the selection.
-      if (val !== 'custom' && val !== '__space__') chrome.storage.local.remove(LOCAL_BG_KEY);
-      chrome.storage.sync.set({ customBgUrl: url });
+      saveSettings({ customBgUrl: url });
     }
   },
   {
@@ -350,17 +370,6 @@ const SELECT_CONFIGS = [
       { value: 'light', labelKey: 'themeOptionLight' },
       { value: 'dark', labelKey: 'themeOptionDark' }
     ]
-  },
-  {
-    id: 'appearanceSelector', key: 'appearance',
-    options: [
-      { value: 'clear', labelKey: 'glassAppearanceOptionClear' },
-      { value: 'dimmed', labelKey: 'glassAppearanceOptionDimmed' }
-    ],
-    onSelect: (val) => chrome.storage.sync.set({
-      appearance: val,
-      glassIntensity: val === 'clear' ? 100 : 0
-    })
   },
   {
     id: 'fontSelector', key: 'customFont',
@@ -477,7 +486,9 @@ function initOrUpdateSelects(settings) {
       // Attach trigger click listener ONCE
       trigger.addEventListener('click', (e) => {
         e.stopPropagation();
+        const wasOpen = container.classList.contains('is-open');
         closeAllSelects();
+        if (wasOpen) return;
         container.classList.add('is-open');
         optsContainer.style.display = 'block';
         trigger.setAttribute('aria-expanded', 'true');
@@ -494,7 +505,7 @@ function initOrUpdateSelects(settings) {
         if (cfg.onSelect) {
           cfg.onSelect(selectedVal);
         } else {
-          chrome.storage.sync.set({ [cfg.key]: selectedVal });
+          saveSettings({ [cfg.key]: selectedVal });
         }
         
         // Update label immediately (optimistic)
@@ -545,7 +556,7 @@ document.addEventListener('click', closeAllSelects);
 
 // --- Event Listeners (Setup ONCE) ---
 function setupChangeListeners() {
-  document.getElementById('soundVolume')?.addEventListener('change', event => chrome.storage.sync.set({ soundVolume: event.target.value }));
+  document.getElementById('soundVolume')?.addEventListener('change', event => saveSettings({ soundVolume: event.target.value }));
   // Toggles - event delegation on body
   TOGGLE_KEYS.forEach(key => {
     const el = $.toggles?.[key];
@@ -553,14 +564,14 @@ function setupChangeListeners() {
       el.addEventListener('change', () => {
         currentSettings = { ...currentSettings, [key]: el.checked };
         filterSiteControls();
-        chrome.storage.sync.set({ [key]: el.checked });
+        saveSettings({ [key]: el.checked });
       });
     }
   });
 
   if ($.masterToggleBtn) {
     $.masterToggleBtn.addEventListener('click', () => {
-      chrome.storage.sync.set({ extensionEnabled: $.masterToggleBtn.dataset.state === 'disabled' });
+      saveSettings({ extensionEnabled: $.masterToggleBtn.dataset.state === 'disabled' });
     });
   }
 
@@ -569,40 +580,31 @@ function setupChangeListeners() {
     let sliderTimeout;
     $.blurSlider.addEventListener('input', () => {
       $.blurValue.textContent = $.blurSlider.value;
+      currentSettings = { ...currentSettings, backgroundBlur: $.blurSlider.value };
+      AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'));
       clearTimeout(sliderTimeout);
+      const site = selectedSite.id;
+      const scope = siteSelectedByUser ? 'site' : 'auto';
+      const value = $.blurSlider.value;
       sliderTimeout = setTimeout(() => {
-        chrome.storage.sync.set({ backgroundBlur: $.blurSlider.value });
+        saveSettings({ backgroundBlur: value }, site, scope);
       }, 150);
     });
   }
 
-  if ($.glassIntensitySlider) {
-    let glassIntensityTimeout;
-    $.glassIntensitySlider.addEventListener('input', () => {
-      const value = $.glassIntensitySlider.value;
-      if ($.glassIntensityValue) $.glassIntensityValue.textContent = value;
-      clearTimeout(glassIntensityTimeout);
-      glassIntensityTimeout = setTimeout(() => {
-        chrome.storage.sync.set({ glassIntensity: Number(value) });
-      }, 100);
-    });
-  }
 
   // BG URL
   if ($.bgUrl) {
     $.bgUrl.addEventListener('change', () => {
       const val = $.bgUrl.value.trim();
-      if (val !== '__local__' && val !== '__gpt5_animated__') {
-        chrome.storage.local.remove(LOCAL_BG_KEY);
-      }
-      chrome.storage.sync.set({ customBgUrl: val });
+      saveSettings({ customBgUrl: val });
     });
   }
 
   // BG File
   if ($.bgFile) {
     $.bgFile.addEventListener('click', () => {
-      const uploadUrl = chrome.runtime.getURL('background-upload.html');
+      const uploadUrl = `${chrome.runtime.getURL('background-upload.html')}?site=${encodeURIComponent(selectedSite.id)}&scope=${siteSelectedByUser ? 'site' : 'auto'}`;
       chrome.tabs.create({ url: uploadUrl }, () => {
         if (chrome.runtime.lastError) {
           window.open(uploadUrl, '_blank');
@@ -614,12 +616,12 @@ function setupChangeListeners() {
   // Reset
   if ($.clearBg) {
     $.clearBg.addEventListener('click', () => {
-      chrome.storage.sync.set({
+      saveSettings({
         customBgUrl: DEFAULTS.customBgUrl,
+        customBgDataKey: DEFAULTS.customBgDataKey,
         backgroundBlur: DEFAULTS.backgroundBlur,
         backgroundScaling: DEFAULTS.backgroundScaling
       });
-      chrome.storage.local.remove(LOCAL_BG_KEY);
       if ($.blurSlider) {
         $.blurSlider.value = DEFAULTS.backgroundBlur;
         $.blurValue.textContent = DEFAULTS.backgroundBlur;
@@ -656,6 +658,7 @@ function applyLocalization() {
 function setupTabs() {
   $.tabs?.forEach(tab => {
     tab.addEventListener('click', () => {
+      closeAllSelects();
       $.tabs.forEach(t => t.classList.remove('active'));
       $.panes.forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
@@ -741,6 +744,10 @@ function setupImportExport() {
         }
         if (data.disabledSites) data.disabledSites = AuroraExt.sites.all.filter(site => Array.isArray(data.disabledSites) && data.disabledSites.includes(site.id)).map(site => site.id);
         if (data.siteDefaultModels) data.siteDefaultModels = Object.fromEntries(AuroraExt.sites.all.filter(site => typeof data.siteDefaultModels[site.id] === 'string').map(site => [site.id, data.siteDefaultModels[site.id].slice(0, 120)]));
+        for (const site of AuroraExt.sites.all) {
+          const key = AuroraExt.preferences.siteKey(site.id);
+          if (parsed[key]) data[key] = AuroraExt.preferences.pickSiteSettings(parsed[key]);
+        }
         chrome.storage.sync.set(data, () => {
           $.importSettings.textContent = 'Imported!';
           setTimeout(() => {
@@ -758,7 +765,10 @@ function setupImportExport() {
 
 // --- Live Storage Listener (Keep popup in sync) ---
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync') {
+  if (area === 'local' && changes[currentSettings.customBgDataKey || 'customBgData']) {
+    AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'), true);
+  }
+  if (area === 'sync' || (area === 'local' && Object.keys(changes).some(key => key.startsWith('detectedTheme:')))) {
     chrome.runtime.sendMessage({ type: 'GET_SETTINGS_FULL' }, (response) => {
       if (response && !chrome.runtime.lastError) {
         const { settings, local } = response;

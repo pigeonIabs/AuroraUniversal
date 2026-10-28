@@ -4,7 +4,7 @@
   const A = window.AuroraExt;
   Object.assign(A.site, {
     appRoot: '#root, #__next',
-    isSupportedRoute: path => /^\/(?:new|chat|project|projects)(?:\/|$)/.test(path) || path === '/',
+    isSupportedRoute: () => true,
     isNewConversation: path => path === '/' || path === '/new' || /^\/project\/[^/]+\/?$/.test(path),
     // The message test ID belongs to its text. Its enclosing native fill owns
     // the bubble's padding and corners, including on incrementally added text.
@@ -28,6 +28,8 @@
       modelLabel: '[data-testid="model-name"], .truncate',
     },
     selectors: {
+      panel: '.bg-surface-1:has(> form), .bg-surface-1.border-border-300, [class~="[direction:ltr]"].rounded-3xl',
+      control: 'input.cds-input, form button, form [role="button"]',
       composer: '[data-cds="ChatComposer"] > .rounded-composer, :is([data-testid="chat-input"]:not([contenteditable]), [data-testid="composer"], [data-composer], fieldset:has([contenteditable="true"]), form:has(.ProseMirror)):not(:has([data-cds="ChatComposer"]))',
       editor: '.ProseMirror[contenteditable="true"], [contenteditable="true"][role="textbox"]',
       sidebar: 'nav[aria-label], aside, [data-testid="sidebar"], [data-testid="desktop-sidebar"]',
@@ -37,7 +39,7 @@
       avatar: '[data-testid="user-menu-button"] [data-cds="Avatar"], [data-testid="user-menu-button"] img, [data-testid="user-menu"] img, button[aria-label*="account" i] img',
       // CDS paints header ground and transcript backing separately from their
       // semantic wrappers. They are layout paint, never additional glass panes.
-      plane: 'main, #root, #__next, .dframe-header [data-cds-part="toolbar-ground"], .df-header-peek-cover, [data-testid="transcript-bottom-fade"], [data-testid="transcript-bottom-fade"] > div, [data-cds="ChatComposer"], [data-composer-card-holder]',
+      plane: 'main, #root, #__next, .min-h-screen.bg-surface-1, nav.fixed.bg-surface-1, .dframe-header [data-cds-part="toolbar-ground"], .df-header-peek-cover, [data-testid="transcript-bottom-fade"], [data-testid="transcript-bottom-fade"] > div, [data-cds="ChatComposer"], [data-composer-card-holder]',
       toolbar: 'header, .dframe-header, [data-testid="chat-header"], main .sticky.top-0',
       content: '[data-testid="conversation"], [data-testid="chat-messages"], main .mx-auto[class*="max-w-"]',
       code: 'pre, [data-testid="code-block"], .code-block',

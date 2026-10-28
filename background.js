@@ -4,16 +4,16 @@ const normalizeDefaultModel = preferences.normalizeDefaultModel;
 const normalizeSiteSettings = preferences.normalize;
 
 // One settings read serves every caller during a cold background-page start.
-// Large uploaded media is read only when a popup requests its local preview.
+// Uploaded media stays out of popup messages and is read by its website only.
 let settingsCache = null;
 let localCache = null;
 let localRequest = null;
 let localRevision = 0;
-const LOCAL_KEYS = ['customBgData', 'detectedTheme'];
+const LOCAL_KEYS = preferences.siteIds.map(id => `detectedTheme:${id}`);
 const pendingSettings = {};
 
 const settingsReady = new Promise(resolve => {
-  chrome.storage.sync.get({ ...DEFAULTS, extensionSettingsBackup: null }, stored => {
+  chrome.storage.sync.get(null, stored => {
     stored ||= {};
     const backup = stored.extensionSettingsBackup;
     const restored = backup && typeof backup === 'object'
@@ -38,6 +38,33 @@ const settingsReady = new Promise(resolve => {
     }
   });
 });
+
+// Serialize partial edits so rapid changes and different settings pages cannot
+// overwrite another website's overrides or an inherited setting change.
+let settingsWrites = Promise.resolve();
+async function saveSiteSettings(request) {
+  await settingsReady;
+  const site = request.site;
+  if (!preferences.siteIds.includes(site)) throw new Error('Choose a supported website');
+  const patch = Object.fromEntries(Object.entries(request.patch || {})
+    .filter(([key, next]) => Object.hasOwn(DEFAULTS, key) && next !== undefined));
+  const stored = await chrome.storage.sync.get(null);
+  const updates = preferences.planSettings(stored, site, patch, request.scope);
+  await chrome.storage.sync.set(updates);
+  Object.assign(settingsCache, updates);
+  // Remove a replaced upload only after every website's references have been
+  // considered. Legacy media remains available to unmigrated websites.
+  const previousKey = preferences.resolve(stored, site).customBgDataKey;
+  if (previousKey?.startsWith('customBgData:')) {
+    const next = { ...stored, ...updates };
+    const references = [next, next.sharedAppearance,
+      ...preferences.siteIds.map(id => next[preferences.siteKey(id)])];
+    if (!references.some(record => record?.customBgDataKey === previousKey)) {
+      await chrome.storage.local.remove(previousKey).catch(() => {});
+    }
+  }
+  return { ok: true, settings: settingsCache };
+}
 
 function getLocalData() {
   if (localCache) return Promise.resolve(localCache);
@@ -98,6 +125,12 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'SET_SITE_SETTINGS') {
+    const operation = settingsWrites.then(() => saveSiteSettings(request));
+    settingsWrites = operation.catch(() => {});
+    operation.then(sendResponse, error => sendResponse({ error: error.message }));
+    return true;
+  }
   if (request.type === 'GET_SETTINGS') {
     if (settingsCache) {
       sendResponse(settingsCache);
@@ -124,16 +157,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-chrome.commands.onCommand.addListener((command) => {
-  if (command === 'toggle-visibility') {
-    chrome.storage.sync.get('focusMode', (items) => {
-      // Toggle Focus Mode
-      chrome.storage.sync.set({ focusMode: !items.focusMode });
-    });
-  } else if (command === 'toggle-blur') {
-    chrome.storage.sync.get('blurChatHistory', (items) => {
-      // Toggle Streamer Mode (Blur)
-      chrome.storage.sync.set({ blurChatHistory: !items.blurChatHistory });
-    });
-  }
+chrome.commands.onCommand.addListener(async command => {
+  const key = command === 'toggle-visibility' ? 'focusMode' : command === 'toggle-blur' ? 'blurChatHistory' : null;
+  if (!key) return;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const site = window.AuroraExt.sites.fromUrl(tab?.url);
+  if (!site) return;
+  const operation = settingsWrites.then(async () => {
+    const stored = await chrome.storage.sync.get(null);
+    return saveSiteSettings({ site: site.id, patch: { [key]: !preferences.resolve(stored, site.id)[key] } });
+  });
+  settingsWrites = operation.catch(() => {});
+  await operation;
 });

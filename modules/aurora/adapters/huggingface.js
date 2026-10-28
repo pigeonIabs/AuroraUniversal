@@ -23,7 +23,7 @@
   const hubPanels = `${hub} .overview-card-wrapper, ${hub} main :is(div, a).border:is(.rounded-lg, .rounded-xl, .rounded-2xl), ${hub} main > .container > .flex-none, ${hubFiles}, ${hubDiscussion}, ${hubCollectionActions}, ${settingsPanels}`;
   Object.assign(A.site, {
     appRoot: `#app > .fixed.grid, ${hub}`,
-    isSupportedRoute: path => !/^\/(?:login|logout|join|oauth|auth|api)(?:\/|$)/.test(path) && !/^\/chat\/(?:login|logout|oauth|auth|api)(?:\/|$)/.test(path),
+    isSupportedRoute: () => true,
     isNewConversation: path => /^\/chat\/?$/.test(path),
     workflow: {
       editor: 'form textarea[role="combobox"][aria-autocomplete="list"]',

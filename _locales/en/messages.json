@@ -206,9 +206,6 @@
   "bgPresetOptionGpt5Animated": {
     "message": "Animated Gradient"
   },
-  "bgPresetOptionBlue": {
-    "message": "Blue Wallpaper"
-  },
   "bgPresetOptionGrokHorizon": {
     "message": "Grok Horizon"
   },
@@ -313,9 +310,6 @@
   },
   "welcomePresetHorizon": {
     "message": "Horizon"
-  },
-  "welcomePresetBlue": {
-    "message": "Blue"
   },
   "welcomeLabelGlassStyle": {
     "message": "Glass style"
@@ -595,5 +589,17 @@
   },
   "tooltipHideAIWarnings": {
     "message": "Hide AI accuracy and generated-content disclaimers on every supported website"
+  },
+  "bgPresetOptionDeepOcean": {
+    "message": "Deep Ocean"
+  },
+  "bgPresetOptionNorthernLights": {
+    "message": "Northern Lights"
+  },
+  "bgPresetOptionDawn": {
+    "message": "Dawn"
+  },
+  "bgPresetOptionEmber": {
+    "message": "Ember"
   }
 }

@@ -206,9 +206,6 @@
   "bgPresetOptionGpt5Animated": {
     "message": "Анимированный градиент"
   },
-  "bgPresetOptionBlue": {
-    "message": "Синие обои"
-  },
   "bgPresetOptionGrokHorizon": {
     "message": "Горизонт Grok"
   },
@@ -313,9 +310,6 @@
   },
   "welcomePresetHorizon": {
     "message": "Горизонт"
-  },
-  "welcomePresetBlue": {
-    "message": "Синий"
   },
   "welcomeLabelGlassStyle": {
     "message": "Стиль стекла"
@@ -592,5 +586,17 @@
   },
   "tooltipHideAIWarnings": {
     "message": "Скрывать предупреждения о точности и контенте ИИ на всех поддерживаемых сайтах"
+  },
+  "bgPresetOptionDeepOcean": {
+    "message": "Глубокий океан"
+  },
+  "bgPresetOptionNorthernLights": {
+    "message": "Северное сияние"
+  },
+  "bgPresetOptionDawn": {
+    "message": "Рассвет"
+  },
+  "bgPresetOptionEmber": {
+    "message": "Угли"
   }
 }

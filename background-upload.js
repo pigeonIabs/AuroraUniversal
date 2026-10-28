@@ -1,4 +1,6 @@
-const LOCAL_BG_KEY = 'customBgData';
+const targetSite = new URLSearchParams(location.search).get('site');
+const targetScope = new URLSearchParams(location.search).get('scope') === 'site' ? 'site' : 'auto';
+const preferences = window.AuroraExt.preferences;
 const MAX_FILE_SIZE_MB = 15;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -17,26 +19,25 @@ function setProgress(percent) {
   progressBar.style.width = `${percent}%`;
 }
 
-function saveBackground(dataUrl, fileName) {
+async function saveBackground(dataUrl, fileName) {
+  if (!preferences.siteIds.includes(targetSite)) {
+    setStatus('Choose a website in Aurora before uploading a background.', 'error');
+    return;
+  }
   setStatus(`Saving ${fileName}`);
   setProgress(78);
-
-  chrome.storage.local.set({ [LOCAL_BG_KEY]: dataUrl }, () => {
-    if (chrome.runtime.lastError) {
-      setStatus(`Aurora could not save this file. ${chrome.runtime.lastError.message}`, 'error');
-      return;
-    }
-
-    chrome.storage.sync.set({ customBgUrl: '__local__' }, () => {
-      if (chrome.runtime.lastError) {
-        setStatus(`Aurora saved the file but could not activate it. ${chrome.runtime.lastError.message}`, 'error');
-        return;
-      }
-
-      setProgress(100);
-      setStatus(`${fileName} is now your Aurora background. You can close this tab.`, 'success');
-    });
-  });
+  // Each upload has its own immutable media key. Shared appearances can refer
+  // to it without a later independent upload replacing their background.
+  const key = `customBgData:${targetSite}:${crypto.randomUUID()}`;
+  try {
+    await chrome.storage.local.set({ [key]: dataUrl });
+    await preferences.save({ customBgUrl: '__local__', customBgDataKey: key }, targetSite, undefined, targetScope);
+    setProgress(100);
+    setStatus(`${fileName} is now your Aurora background. You can close this tab.`, 'success');
+  } catch (error) {
+    await chrome.storage.local.remove(key);
+    setStatus(`Aurora could not save this background. ${error.message}`, 'error');
+  }
 }
 
 fileInput.addEventListener('change', () => {

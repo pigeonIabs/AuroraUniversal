@@ -16,7 +16,7 @@
     // The root is a zero-height mount around a viewport-positioned app.
     // Positioning the mount collapses its absolutely positioned children.
     appRoot: '#root > div, #app > div',
-    isSupportedRoute: path => path === '/' || /^\/(?:a\/chat|chat|share)(?:\/|$)/.test(path),
+    isSupportedRoute: () => true,
     isNewConversation: path => path === '/' || /^\/a\/chat\/?$/.test(path),
     workflow: {
       editor,
@@ -38,7 +38,7 @@
       plane: '#root, #app, #root > div, #root > div > div:has(textarea.ds-scroll-area), #root > div > div > div:has(textarea.ds-scroll-area), #root :is(._871cbca, .d72636e2, ._0fcaa63), #root ._189b4a0 ._6ffc3c9, main, [data-testid="chat-container"]',
       toolbar: '.the-header, [data-testid="chat-header"], main > header',
       // The collapsed navigation groups its icons in one painted control.
-      control: '#root ._5a20a69 .e5bf614e',
+      control: '#root ._5a20a69 .e5bf614e, #root .ds-input, #root .ds-button',
       // The compact message markers sit directly on the page. Only the
       // expanded hover list owns glass, following its native open class.
       material: '#root ._189b4a0 ._4ce999d',

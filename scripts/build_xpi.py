@@ -175,7 +175,7 @@ def package_bytes(path: str, source: Path) -> bytes:
     return data
 
 
-def build(output: Path) -> Tuple[int, str]:
+def build(output: Path, gecko_id: str | None = None) -> Tuple[int, str]:
     manifest_path = ROOT / "manifest.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -185,7 +185,15 @@ def build(output: Path) -> Tuple[int, str]:
     if not isinstance(version, str) or not version:
         raise ValueError("manifest.json must define a version string")
 
-    return write_archive(output, collect_files(manifest))
+    files = collect_files(manifest)
+    if gecko_id:
+        manifest['browser_specific_settings']['gecko']['id'] = gecko_id
+        with tempfile.TemporaryDirectory(prefix='aurora-manifest-') as temporary:
+            local_manifest = Path(temporary) / 'manifest.json'
+            local_manifest.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+            files['manifest.json'] = local_manifest
+            return write_archive(output, files)
+    return write_archive(output, files)
 
 
 def write_archive(output: Path, files: dict[str, Path]) -> Tuple[int, str]:
@@ -237,6 +245,7 @@ def main() -> int:
         type=Path,
         help="Output XPI path. Defaults to build/aurora-universal-<version>.xpi",
     )
+    parser.add_argument('--gecko-id', help='Override the Gecko ID for a local development installation')
     args = parser.parse_args()
 
     try:
@@ -247,7 +256,7 @@ def main() -> int:
         output = args.output or Path("build") / f"aurora-universal-{version}.xpi"
         if not output.is_absolute():
             output = ROOT / output
-        count, digest = build(output)
+        count, digest = build(output, args.gecko_id)
     except (OSError, ValueError, RuntimeError) as error:
         print(f"XPI build failed. {error}", file=sys.stderr)
         return 1

@@ -4,7 +4,7 @@
   const A = window.AuroraExt;
   Object.assign(A.site, {
     appRoot: '#root',
-    isSupportedRoute: path => path === '/' || /^\/(?:c|chat|s|share|project|projects|artifacts|settings|library)(?:\/|$)/.test(path) || /^\/community\/collections(?:\/|$)/.test(path),
+    isSupportedRoute: () => true,
     isNewConversation: path => path === '/' || path === '/chat' || path === '/chat/',
     workflow: {
       editor: '.message-input-container textarea.message-input-textarea',

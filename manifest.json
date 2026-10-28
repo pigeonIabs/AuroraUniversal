@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "background": {
     "scripts": [
+      "modules/aurora/sites.js",
       "modules/aurora/preferences.js",
       "background.js"
     ]
@@ -91,7 +92,8 @@
         "modules/aurora/sites.js"
       ],
       "css": [
-        "shared.css"
+        "shared.css",
+        "glass-control.css"
       ],
       "run_at": "document_start"
     },
@@ -242,7 +244,8 @@
         "modules/aurora/contrast.js",
         "modules/aurora/upgrade.js",
         "modules/aurora/interface.js",
-        "modules/aurora/ai-warnings.js"
+        "modules/aurora/ai-warnings.js",
+        "modules/aurora/glass-control.js"
       ],
       "run_at": "document_start"
     },
@@ -332,6 +335,7 @@
         "icons/*",
         "assets/grok-4.webp",
         "assets/space-stars.svg",
+        "assets/themes/*",
         "assets/health-zero-state-records-*.svg",
         "_locales/*/messages.json",
         "assets/fonts/*",

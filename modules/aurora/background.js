@@ -292,7 +292,8 @@
     // Completely clean a layer of all content and classes
     cleanLayer(layer) {
       if (!layer) return;
-      layer.classList.remove('active', 'gpt5-active', 'pure-black-active', 'space-active');
+      layer.classList.remove('active', 'gpt5-active', 'pure-black-active', 'space-active', 'scenic-active');
+      layer.querySelector('.scenic-bg')?.remove();
       const sky = layer.querySelector('.space-bg');
       if (sky) {
         spaceObservers.get(sky)?.disconnect();
@@ -408,12 +409,13 @@
       const container = this.getContainer();
       container.classList.toggle('pure-black-mode', url === '__pure_black__');
       container.classList.toggle('space-mode', url === '__space__');
+      container.classList.toggle('scenic-mode', !!A.preferences.scenicBackgrounds[url]);
       toLayer.classList.add('active');
       fromLayer.classList.remove('active');
     },
 
     async switchTo(url, force = false) {
-      url = url || '';
+      url = A.preferences.normalizeBackground(url || '');
       if (this.state === 'loading') {
         if (url === this.loadingUrl && !force) return;
         this.generation += 1;
@@ -446,12 +448,30 @@
         } else if (url === '__space__') {
           inactiveLayer.appendChild(makeSpaceBackground());
           inactiveLayer.classList.add('space-active');
+        } else if (A.preferences.scenicBackgrounds[url]) {
+          const name = A.preferences.scenicBackgrounds[url];
+          const scene = document.createElement('div');
+          scene.className = `scenic-bg scenic-${name}`;
+          const layers = await Promise.all(['base', 'light'].map(async part => {
+            const image = new Image();
+            image.src = chrome.runtime.getURL(`assets/themes/${name}-${part}.webp`);
+            await image.decode();
+            const paint = document.createElement('div');
+            paint.className = `scenic-${part}`;
+            paint.style.backgroundImage = `url("${image.src}")`;
+            return paint;
+          }));
+          if (generation !== this.generation) return;
+          scene.append(...layers);
+          inactiveLayer.appendChild(scene);
+          inactiveLayer.classList.add('scenic-active');
         } else if (url === '__local__') {
           if (chrome?.runtime?.id && chrome?.storage?.local) {
+            const localKey = A.getSettings().customBgDataKey || LOCAL_BG_KEY;
             const localData = await (A.startup?.takeLocalBackground?.() || new Promise((resolve) => {
-              chrome.storage.local.get(LOCAL_BG_KEY, (res) => {
-                if (chrome.runtime.lastError || !res || !res[LOCAL_BG_KEY]) resolve(null);
-                else resolve(res[LOCAL_BG_KEY]);
+              chrome.storage.local.get(localKey, (res) => {
+                if (chrome.runtime.lastError || !res || !res[localKey]) resolve(null);
+                else resolve(res[localKey]);
               });
             }));
 
@@ -533,6 +553,7 @@
   }
 
   A.background = A.background || {};
+  A.background.create = makeBgNode;
   A.background.restoreApp = restoreApp;
   A.background.ensureAppOnTop = ensureAppOnTop;
   A.background.manager = BackgroundManager;

@@ -1,15 +1,11 @@
 # Aurora Universal media
 
-Full-screen website captures and a 45 second product film for Aurora Universal 1.0.0.
+The launch film shows all eight supported websites at full frame with accelerating cuts, then closes on the Aurora Universal wordmark. It includes Space, Dawn, Northern Lights, Grok Horizon, Animated Gradient, Ember, Deep Ocean, Default Wallpaper, and Pure Black.
 
-Open `index.html` to view the gallery. The MP4 includes an original ambient score and can also play independently. PNG files are native 4K captures. WebP files are smaller web versions. The social image is 1200 × 630.
+Every website was captured signed out in an isolated Firefox profile with the actual extension installed. Claude, AI Studio, and DeepSeek show their native welcome or sign-in pages. No personal chats, account information, browser chrome, or desktop appear. No prompts were submitted.
 
-## Content
+`aurora-universal-launch.mp4` is the 1920 × 1080, 30 fps film. Its GIF counterpart loops automatically in the GitHub README. The separate Space timelapse and Animated Gradient videos use the extension's own background renderer. Space accelerates the three-hour starfield rotation into 24 seconds while retaining normal twinkle timing.
 
-Qwen and Grok are captured directly in Firefox with the Aurora 1.0.0 extension loaded. The film shows their native model menus and Aurora's on-page quick settings. Each website fills the frame throughout.
+Open `index.html` for the full gallery. PNG files are original website stills. WebP files are smaller copies for the README. `launch-timeline.json` records the edit, and `capture-details.json` records its sources. The older two-site film remains available as an earlier demonstration.
 
-Both websites are signed out. No prompts are submitted, and no personal profile, chats, account details, or desktop appear. The background is Aurora's built-in animated gradient. Camera movement and cursor emphasis follow the recorded controls.
-
-Website names and interfaces belong to their respective owners. The capture does not imply endorsement. The original ambient score and capture tooling are part of the AGPL-3.0-only project.
-
-Editable media sources and the renderer are included in the source package under `release/studio/`.
+Website interfaces and included third-party wallpapers belong to their respective owners. The captures do not imply endorsement. Background artwork, authoring code, and editing sources are included in this AGPL-3.0-only project.

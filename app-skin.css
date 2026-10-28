@@ -567,3 +567,25 @@ html:root.cgpt-ambient-on [role="switch"] * {
   --darkreader-border--color-control-thumb-on-accent: var(--color-control-thumb-on-accent) !important;
   --darkreader-bg--color-text: var(--color-text) !important;
 }
+/* Octane's signed-out shell uses StyleX material tokens rather than the
+ * authenticated app's surface utility classes. Only paint is replaced. */
+html.cgpt-ambient-on:has(#web-mobile-root),
+html.cgpt-ambient-on:has(#web-mobile-root) body {
+  --x1qg12x5: transparent !important;
+  --x38ouj3: transparent !important;
+  --lightningcss-light: initial !important;
+  --lightningcss-dark:  !important;
+  color-scheme: light !important;
+}
+html.cgpt-ambient-on:not(.cgpt-light-mode):has(#web-mobile-root),
+html.cgpt-ambient-on:not(.cgpt-light-mode):has(#web-mobile-root) body {
+  --lightningcss-light:  !important;
+  --lightningcss-dark: initial !important;
+  color-scheme: dark !important;
+}
+html.cgpt-ambient-on #web-mobile-root #ds-sidebar {
+  background: var(--aurora-sidebar-glass-fill) !important;
+  border-color: var(--sidebar-glass-stroke) !important;
+  backdrop-filter: var(--aurora-glass-backdrop) !important;
+}
+

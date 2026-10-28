@@ -9,6 +9,8 @@
   const isEnabled = () => (A.isEnabled ? A.isEnabled() : true);
 
   const GLASS_SELECTORS_FAST = [
+    // The signed-out Octane shell also runs at desktop widths.
+    '#web-mobile-root form[data-mobile-composer]',
     /* Popups, Menus, Dialogs */
     // Current floating product and source panels paint their native summary shell.
     '[data-summary-panel-variant]',

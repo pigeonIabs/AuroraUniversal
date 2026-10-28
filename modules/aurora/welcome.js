@@ -7,7 +7,6 @@
   A.welcome = A.welcome || {};
 
   const cfg = A.config || {};
-  const BLUE_WALLPAPER_URL = cfg.BLUE_WALLPAPER_URL || '';
   const GROK_HORIZON_URL = cfg.GROK_HORIZON_URL || '';
   const QS_BUTTON_ID = cfg.QS_BUTTON_ID || 'cgpt-qs-btn';
 
@@ -56,24 +55,16 @@
                 <div class="preview grok"></div>
                 <span>${escapeHtml(getMessage('welcomePresetHorizon'))}</span>
               </button>
-              <button class="preset-tile" data-bg-url="blue">
-                <div class="preview blue"></div>
-                <span>${escapeHtml(getMessage('welcomePresetBlue'))}</span>
+              <button class="preset-tile" data-bg-url="__deep_ocean__">
+                <div class="preview ocean" style="background-image:url('${escapeHtml(chrome.runtime.getURL('assets/themes/deep-ocean-preview.webp'))}')"></div>
+                <span>${escapeHtml(getMessage('bgPresetOptionDeepOcean'))}</span>
               </button>
             </div>
           </div>
 
           <div class="setup-section">
             <label class="section-label">${escapeHtml(getMessage('welcomeLabelGlassStyle'))}</label>
-            <div class="aurora-glass-switch" id="welcome-glass-switch" data-switch-state="0">
-              <div class="aurora-switch-glider"></div>
-              <button type="button" class="aurora-switch-btn" data-value="0" data-appearance="clear">${escapeHtml(
-                getMessage('welcomeGlassClear')
-              )}</button>
-              <button type="button" class="aurora-switch-btn" data-value="1" data-appearance="dimmed">${escapeHtml(
-                getMessage('welcomeGlassDimmed')
-              )}</button>
-            </div>
+            <div id="welcome-glass-control"></div>
           </div>
 
           <div class="progress-dots bar-dots">
@@ -117,7 +108,7 @@
 
     const finishWelcome = () => {
       tempSettings.hasSeenWelcomeScreen = true;
-      chrome.storage.sync.set(tempSettings, () => {
+      A.preferences.save({ ...A.preferences.pickAppearance(tempSettings), hasSeenWelcomeScreen: true }, A.site.id, () => {
         if (chrome.runtime.lastError) return;
 
         const successOverlay = document.getElementById('aurora-success-overlay');
@@ -170,7 +161,7 @@
         const bgChoice = tile.dataset.bgUrl;
         let newUrl = '';
 
-        if (bgChoice === 'blue') newUrl = BLUE_WALLPAPER_URL;
+        if (bgChoice === '__deep_ocean__') newUrl = '__deep_ocean__';
         else if (bgChoice === 'grokHorizon') newUrl = GROK_HORIZON_URL;
         else if (bgChoice === '__gpt5_animated__') newUrl = '__gpt5_animated__';
 
@@ -180,19 +171,12 @@
       });
     });
 
-    const glassSwitch = document.getElementById('welcome-glass-switch');
-    if (glassSwitch) {
-      glassSwitch.querySelectorAll('.aurora-switch-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const value = btn.dataset.value;
-          const appearanceChoice = btn.dataset.appearance;
-          glassSwitch.setAttribute('data-switch-state', value);
-          tempSettings.appearance = appearanceChoice;
-          settings.appearance = appearanceChoice;
-          if (typeof applyAllSettings === 'function') applyAllSettings();
-        });
-      });
-    }
+    const glassHost = document.getElementById('welcome-glass-control');
+    glassHost?.append(A.glassControl.create('welcome-glass-amount', settings, patch => {
+      Object.assign(tempSettings, patch);
+      Object.assign(settings, patch);
+      if (typeof applyAllSettings === 'function') applyAllSettings();
+    }, () => {}));
   }
 
   A.welcome.show = A.welcome.show || show;

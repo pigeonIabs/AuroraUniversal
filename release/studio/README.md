@@ -1,25 +1,29 @@
-# Live product capture
+# Aurora launch studio
 
-The release images and film show the real Qwen and Grok new-chat pages with Aurora Universal 1.0.0 applied. Both sites are signed out. No prompts are submitted, and no personal browser profile or conversations are used.
+The launch uses real signed-out pages with Aurora installed. Each website fills the frame. An isolated authoring profile under `work/universal-launch/` keeps personal browser data out of the footage.
 
-The interface fills the frame. Native model menus and Aurora's quick settings are operated during recording. Editing adds gentle camera movement, a visible cursor, a crossfade between websites, and original ambient audio. The images contain only the live website.
-
-## Capture and export
-
-Install Node.js, Python, FFmpeg, and the capture dependencies, then run from this folder.
+Install Node.js, Python, FFmpeg, and the dependencies, then build the development package from the repository root.
 
 ```sh
+python scripts/build_xpi.py --output build/aurora-universal-development.xpi
+cd release/studio
 npm ci
 npx playwright install firefox
 python -m pip install -r requirements.txt
-npm run capture
-npm run render
+node capture-launch.cjs
 ```
 
-Build the development XPI first with `python scripts/build_xpi.py --output build/aurora-universal-development.xpi` from the repository root.
+Run `node server.cjs` in a separate terminal. Then render the extension's own backgrounds and assemble the film.
 
-The capture uses a dedicated Firefox profile under `work/`, clears its cookies, and requires a visible sign-in control before recording. It loads the actual XPI through Firefox's temporary add-on support. The normal LibreWolf installation is not involved.
+```sh
+node render-scenes.cjs
+node assemble-launch.cjs
+```
 
-Screenshots are 3840 × 2160. The edited film is 1920 × 1080 at 30 fps. WebP copies are 1920 × 1080, and the social crop is 1200 × 630. Exports are in `release/media/`; raw takes and the capture receipt remain in ignored `work/`.
+The capture clears the isolated profile's cookies, applies explicit background settings, dismisses native cookie notices, and records 1080p footage. It never submits prompts or signs in. Set `CAPTURE_SITES` to a comma-separated list of site IDs to refresh selected footage. Raw recordings and inspection data remain in `work/`. Only selected exports belong in `release/media/`.
 
-`npm run preview` serves the gallery locally. `python scripts/prepare_release.py` refreshes the source package, press kit, and checksums without publishing.
+`scene.html` uses the production background renderer for standalone media and the closing title. `assemble-launch.cjs` defines the accelerating edit and creates the H.264 MP4 and looping GIFs. `capture.cjs` and `render.cjs` retain the earlier Qwen and Grok demonstration.
+
+The four scenic backgrounds can be regenerated with `python scripts/generate_theme_art.py` from the repository root using NumPy and Pillow. Runtime motion uses two baked WebP layers and CSS transforms.
+
+`python scripts/prepare_release.py` refreshes the XPI, source package, press kit, and checksums without publishing. The development XPI preserves the local LibreWolf identity. The versioned distribution XPI uses the public Aurora Universal identity.

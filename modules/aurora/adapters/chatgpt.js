@@ -3,7 +3,7 @@
   'use strict';
   const A = window.AuroraExt;
   Object.assign(A.site, {
-    appRoot: '#__next, #root',
+    appRoot: '#__next, #root, #web-mobile-root',
     selectors: {
       history: ':is(#app-shell-sidebar, #stage-slideover-sidebar, [data-testid="sidebar"]) :is(a[href^="/c/"], a[href*="/project/"], a[href*="/projects/"], [data-testid="history-item"], [data-testid="conversation-title"])',
     },
@@ -35,6 +35,6 @@
       },
     },
     isNewConversation: path => path === '/' || path === '/codex/cloud' || /^\/g\/[^/]+\/?$/.test(path),
-    isSupportedRoute: path => path.replace(/\/+$/, '') !== '/codex',
+    isSupportedRoute: () => true,
   });
 })();

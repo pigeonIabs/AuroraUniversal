@@ -65,7 +65,7 @@
       queueWhileGenerating: queue,
       defaultModel: !!A.dom.findModelSwitcher() && !!editor,
       hideRateLimitMessages: !!editor || !!document.querySelector('[data-aurora-rate-limit]'),
-      autoContrast: !['__pure_black__', '__gpt5_animated__'].includes(A.getSettings().customBgUrl) &&
+      autoContrast: !['__pure_black__', '__gpt5_animated__', ...Object.keys(A.preferences.scenicBackgrounds)].includes(A.getSettings().customBgUrl) &&
         !A.background?.manager?.isVideo?.(A.background.manager.currentUrl),
     };
     for (const key of Object.keys(result)) result[key] = supported && result[key] && A.sites.supports(A.site, key);

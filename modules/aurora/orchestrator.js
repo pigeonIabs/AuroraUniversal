@@ -52,6 +52,25 @@
         }
       })();
 
+      extensionApi.runtime.onConnect.addListener(port => {
+        if (port.name !== 'AURORA_PREVIEW_MATERIAL' || port.sender?.id !== extensionApi.runtime.id) return;
+        port.onMessage.addListener(request => {
+          if (request.site !== A.site.id || !isEnabled() || !this.isSupportedRoute()) return;
+          const patch = {};
+          if (Number.isFinite(Number(request.glassIntensity))) Object.assign(patch, A.preferences.glassPatch(100 - Number(request.glassIntensity)));
+          if (Number.isFinite(Number(request.backgroundBlur))) patch.backgroundBlur = String(Math.max(0, Math.min(150, Number(request.backgroundBlur))));
+          if (Number.isFinite(Number(request.motionBackgroundBlur))) patch.motionBackgroundBlur = String(A.preferences.blurRadius(request.motionBackgroundBlur, 0));
+          if (patch.glassIntensity !== undefined || patch.backgroundBlur !== undefined) A.rootFlags?.apply?.(patch);
+          if (patch.backgroundBlur !== undefined || patch.motionBackgroundBlur !== undefined) A.background?.applyStyles?.(patch);
+        });
+        // Closing the popup cannot strand a transient value on the page.
+        port.onDisconnect.addListener(() => {
+          if (!isEnabled() || !this.isSupportedRoute()) return;
+          A.rootFlags?.apply?.();
+          A.background?.applyStyles?.();
+        });
+      });
+
       // Fetch preferences while the host parses. Root material can be applied
       // immediately, and body-dependent features reconcile as soon as it mounts.
       this.startObservers();
@@ -153,6 +172,7 @@
       A.glass?.tagAll?.(document);
 
       A.textFrost?.start?.();
+      A.glassShadows?.start?.();
 
       A.defaultModel?.maybeApply?.();
 
@@ -251,6 +271,7 @@
       A.defaultModel?.maybeApply?.();
       A.queue?.schedulePulse?.(0);
       A.textFrost?.schedule?.();
+      A.glassShadows?.refresh?.(document);
     }
 
     isSupportedRoute() {
@@ -342,6 +363,7 @@
           if (!this.settingsLoaded || !A.isActive() || document.hidden) return;
           A.glass?.tagAll?.(document);
           A.textFrost?.refresh?.(document.body);
+          A.glassShadows?.refresh?.(document);
         });
       }, true);
 
@@ -356,9 +378,11 @@
       }
       for (const mutation of mutations || []) {
         if (mutation.type !== 'attributes') continue;
-        // Busy, checked, expanded and disabled state remain available to the
-        // queue and model picker without repainting the container's subtree.
-        if (!['data-state', 'hidden', 'aria-hidden', 'contenteditable', 'class', 'style', 'aria-label', 'title', 'href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control'].includes(mutation.attributeName)) continue;
+        const attribute = mutation.attributeName;
+        const discoveryState = ['aria-expanded', 'aria-checked', 'role', 'aria-haspopup', 'aria-pressed', 'aria-selected',
+          'aria-current', 'data-color', 'data-variant', 'popover', 'open'].includes(attribute) &&
+          A.glass?.tracksDiscoveryState?.(mutation.target);
+        if (!discoveryState && !['data-state', 'hidden', 'aria-hidden', 'contenteditable', 'class', 'style', 'aria-label', 'title', 'href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control'].includes(attribute)) continue;
         if (mutation.target.isConnected) this.pendingStateNodes.add(mutation.target);
       }
       // Resolve text owners once per frame, including removed and emptied
@@ -434,23 +458,17 @@
       // Reconcile the material in this same pre-paint frame as first-time tagging.
       if (nodes.length) A.textFrost?.refresh?.(nodes);
       if (states.length) A.textFrost?.refreshState?.(states);
+      if (nodes.length || states.length) A.glassShadows?.refresh?.([...nodes, ...states]);
       if (nodes.length || states.length) this.otherChecks();
       A.quickSettings?.refreshCapabilities?.();
     }
 
     observeTheme() {
-      const hostTheme = () => A.sites.readTheme() === 'light';
-      let lastHostLight = hostTheme();
       const themeObserver = new MutationObserver(() => {
         if (!this.settingsLoaded || !isEnabled() || !this.isSupportedRoute()) return;
-        const s = getSettings();
         const root = document.documentElement;
-        const hostLight = hostTheme();
-        const changed = hostLight !== lastHostLight;
-        lastHostLight = hostLight;
         if (!root.classList.contains(cfg.HTML_CLASS || 'cgpt-ambient-on') ||
-            !root.style.getPropertyValue('--aurora-glass-fill-opacity') ||
-            (s.theme === 'auto' && changed)) A.rootFlags?.apply?.();
+            !root.style.getPropertyValue('--aurora-glass-fill-opacity')) A.rootFlags?.apply?.();
       });
       themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-mode', 'data-theme', 'data-appearance-theme'] });
       let observedBody = null;
@@ -463,9 +481,6 @@
       };
       observeBody();
       A.centralObserver?.subscribe(observeBody);
-      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (isEnabled() && this.isSupportedRoute()) A.rootFlags?.apply?.();
-      });
     }
 
     onStorageChanged(changes, area) {
@@ -515,7 +530,6 @@
           'hideRateLimitMessages',
           'hideAIWarnings',
           'blockAds',
-          'theme',
           'customFont',
           'voiceColor',
           'appearance',
@@ -523,13 +537,14 @@
           'backgroundBlur',
           'cinemaMode',
           'glassUserMessages',
+          'geminiBloom',
         ];
         if (changedKeys.some((k) => rootFlagKeys.includes(k))) {
           A.rootFlags?.apply?.();
         }
         if (['cinemaMode', 'focusMode', 'blurChatHistory', 'blurAvatar'].some(key => changes[key] && settings[key])) A.interface?.tagElements?.(document);
 
-        if (changes.customBgUrl || changes.customBgDataKey || changes.backgroundBlur || changes.backgroundScaling) {
+        if (changes.customBgUrl || changes.customBgDataKey || changes.backgroundBlur || changes.motionBackgroundBlur || changes.backgroundScaling) {
           A.background?.update?.(!!changes.customBgDataKey);
           A.background?.applyStyles?.();
         }
@@ -554,7 +569,7 @@
           A.queue?.schedulePulse?.();
         }
         if (changes.autoContrast) this.applyContrast();
-        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'queueWhileGenerating', 'appearance', 'glassIntensity', 'dataMaskingEnabled'].includes(key))) A.quickSettings?.ensure?.();
+        if (!settings.hideQuickSettings && changedKeys.some(key => ['focusMode', 'blurChatHistory', 'blurAvatar', 'cinemaMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'queueWhileGenerating', 'appearance', 'glassIntensity', 'dataMaskingEnabled', 'geminiBloom'].includes(key))) A.quickSettings?.ensure?.();
 
         if (changes.soundEnabled || changes.soundVolume) {
           this.applyAudio();

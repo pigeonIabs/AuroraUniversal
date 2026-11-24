@@ -6,12 +6,15 @@
   // Ensure namespace exists early
   const A = (window.AuroraExt = window.AuroraExt || {});
   const ownUI = A.ownedUI;
+  const chatgptDiscoveryAttributes = ['class', 'style', 'role', 'aria-haspopup', 'aria-pressed', 'aria-selected',
+    'aria-current', 'data-color', 'data-variant', 'popover', 'open'];
 
   class AuroraCentralObserver {
     constructor() {
       this.callbacks = new Set();
       this.attributeScopes = new Map();
       this.observer = new MutationObserver(this.handleMutations.bind(this));
+      this.attributeObserver = new MutationObserver(this.handleMutations.bind(this));
       this.running = false;
     }
 
@@ -49,20 +52,35 @@
     }
 
     observeTargets() {
-      this.observer.observe(document.documentElement, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['data-state', 'contenteditable', 'hidden', 'aria-hidden', 'disabled', 'aria-disabled', 'aria-busy', 'aria-expanded', 'aria-checked', 'aria-valuenow', 'data-selected-reasoning-effort', 'aria-label', 'title', ...(A.site?.id === 'chatgpt' ? ['href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control'] : [])] });
-      for (const { target, attributes } of this.attributeScopes.values()) {
-        if (target.isConnected) this.observer.observe(target, { attributes: true, subtree: true, attributeFilter: attributes });
+      // ChatGPT discovery filters document-wide paint mutations to semantic
+      // surfaces. Other class/style subscriptions stay scoped to their owners.
+      this.observer.observe(document.documentElement, {
+        childList: true, characterData: true, subtree: true, attributes: true,
+        attributeFilter: ['data-state', 'contenteditable', 'hidden', 'aria-hidden', 'disabled', 'aria-disabled', 'aria-busy', 'aria-expanded', 'aria-checked', 'aria-valuenow', 'data-selected-reasoning-effort', 'aria-label', 'title', ...(A.site?.id === 'chatgpt' ? ['href', 'data-testid', 'data-assistant-ads', 'data-assistant-ads-unit', 'data-ad-card-root', 'data-partial-island', 'data-conversation-control', ...chatgptDiscoveryAttributes] : [])]
+      });
+      // observe() replaces options on an existing target. Merge shared scopes
+      // first so one feature cannot overwrite another feature's subscription.
+      const targets = new Map();
+      for (const { target, attributes, subtree } of this.attributeScopes.values()) {
+        if (!target.isConnected) continue;
+        const options = targets.get(target) || { attributes: true, subtree: false, attributeFilter: [] };
+        options.subtree ||= subtree;
+        options.attributeFilter = [...new Set([...options.attributeFilter, ...attributes])];
+        targets.set(target, options);
       }
+      for (const [target, options] of targets) this.attributeObserver.observe(target, options);
     }
 
-    setAttributeScope(name, target, attributes = [], filter = null) {
+    setAttributeScope(name, target, attributes = [], filter = null, subtree = true) {
       const previous = this.attributeScopes.get(name);
-      if (previous?.target === target || (!previous && !target)) return;
-      if (target) this.attributeScopes.set(name, { target, attributes, filter });
+      if ((previous?.target === target && previous.subtree === subtree &&
+          previous.attributes.join('|') === attributes.join('|')) || (!previous && !target)) return;
+      if (target) this.attributeScopes.set(name, { target, attributes, filter, subtree });
       else this.attributeScopes.delete(name);
       if (!this.running) return;
-      const pending = this.observer.takeRecords();
+      const pending = [...this.observer.takeRecords(), ...this.attributeObserver.takeRecords()];
       this.observer.disconnect();
+      this.attributeObserver.disconnect();
       this.observeTargets();
       if (pending.length) this.handleMutations(pending);
     }
@@ -80,6 +98,7 @@
     stop() {
       if (this.running) {
         this.observer.disconnect();
+        this.attributeObserver.disconnect();
         this.running = false;
       }
     }
@@ -98,6 +117,14 @@
       for (const m of mutations) {
         const target = m.target.nodeType === 1 ? m.target : m.target.parentElement;
         if (!target) continue;
+        if (m.type === 'attributes' && chatgptDiscoveryAttributes.includes(m.attributeName) &&
+            !A.glass?.tracksDiscoveryState?.(target)) {
+          const scoped = [...this.attributeScopes.values()].some(scope =>
+            scope.attributes.includes(m.attributeName) &&
+            (scope.target === target || (scope.subtree && scope.target.contains(target))) &&
+            (!scope.filter || scope.filter(target, m)));
+          if (!scoped) continue;
+        }
         if (!ownership.has(target)) ownership.set(target, !!target.closest(ownUI));
         if (ownership.get(target)) continue;
         if (m.type === 'childList') {
@@ -108,16 +135,6 @@
             !document.getElementById(A.config.ID) && A.isActive();
           if (!lostBackground && children.length && children.every(node => node.nodeType === 1 &&
               (node.matches(ownUI) || node.closest(ownUI)))) continue;
-        }
-        if (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'style')) {
-          let relevantScope = false;
-          for (const scope of this.attributeScopes.values()) {
-            if (scope.target.contains(target) && scope.attributes.includes(m.attributeName) && (!scope.filter || scope.filter(target))) {
-              relevantScope = true;
-              break;
-            }
-          }
-          if (!relevantScope) continue;
         }
         // Subscribers read the final DOM state. Repeated writes to one text
         // node or attribute in a host commit need one notification each.

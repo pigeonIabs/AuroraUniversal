@@ -42,10 +42,10 @@
     "message": "可见性"
   },
   "sectionBackground": {
-    "message": "背景"
+    "message": "主题"
   },
   "labelPreset": {
-    "message": "预设"
+    "message": "主题"
   },
   "placeholderBgUrl": {
     "message": "粘贴图片或视频URL"
@@ -118,6 +118,9 @@
   },
   "labelGlassStyle": {
     "message": "玻璃样式"
+  },
+  "labelGeminiBloom": {
+    "message": "辉光"
   },
   "labelGlassUserMessages": {
     "message": "用户消息玻璃效果"
@@ -198,7 +201,7 @@
     "message": "玛瑙黑"
   },
   "bgPresetOptionDefault": {
-    "message": "默认壁纸"
+    "message": "GPT-5"
   },
   "bgPresetOptionSpace": {
     "message": "太空"
@@ -297,13 +300,13 @@
     "message": "选择您的外观"
   },
   "welcomeDescriptionSetup": {
-    "message": "选择背景和样式以个性化您的体验。您可以随时更改。"
+    "message": "选择主题和玻璃样式，打造个性化体验。"
   },
   "welcomeLabelBgPreset": {
-    "message": "背景预设"
+    "message": "主题"
   },
   "welcomePresetDefault": {
-    "message": "默认"
+    "message": "GPT-5"
   },
   "welcomePresetAnimated": {
     "message": "动画"
@@ -556,5 +559,8 @@
   },
   "bgPresetOptionEmber": {
     "message": "余烬"
+  },
+  "labelThemePreviewBlur": {
+    "message": "预览模糊"
   }
 }

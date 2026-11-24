@@ -5,6 +5,8 @@
   Object.assign(A.site, {
     appRoot: '#__next, #root, #web-mobile-root',
     selectors: {
+      conversationTitle: 'button.text-conversation-title.px-conversation-title-inline',
+      pageTitle: 'textarea:is([data-page-title] *, [class*="PageTitle-"])',
       history: ':is(#app-shell-sidebar, #stage-slideover-sidebar, [data-testid="sidebar"]) :is(a[href^="/c/"], a[href*="/project/"], a[href*="/projects/"], [data-testid="history-item"], [data-testid="conversation-title"])',
     },
     config: {

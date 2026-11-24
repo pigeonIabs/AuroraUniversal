@@ -42,10 +42,10 @@
     "message": "Visibilité"
   },
   "sectionBackground": {
-    "message": "Arrière-plan"
+    "message": "Thèmes"
   },
   "labelPreset": {
-    "message": "Préréglage"
+    "message": "Thème"
   },
   "placeholderBgUrl": {
     "message": "Collez l'URL d'une image ou d'une vidéo"
@@ -118,6 +118,9 @@
   },
   "labelGlassStyle": {
     "message": "Style de verre"
+  },
+  "labelGeminiBloom": {
+    "message": "Halo"
   },
   "labelGlassUserMessages": {
     "message": "Verre sur vos messages"
@@ -198,7 +201,7 @@
     "message": "Onyx foncé"
   },
   "bgPresetOptionDefault": {
-    "message": "Fond d'écran par défaut"
+    "message": "GPT-5"
   },
   "bgPresetOptionSpace": {
     "message": "Espace"
@@ -297,13 +300,13 @@
     "message": "Choisissez votre apparence"
   },
   "welcomeDescriptionSetup": {
-    "message": "Sélectionnez un arrière-plan et un style pour personnaliser votre expérience. Vous pouvez toujours le modifier plus tard."
+    "message": "Choisissez un thème et un style de verre pour personnaliser votre expérience."
   },
   "welcomeLabelBgPreset": {
-    "message": "Préréglage d'arrière-plan"
+    "message": "Thème"
   },
   "welcomePresetDefault": {
-    "message": "Par défaut"
+    "message": "GPT-5"
   },
   "welcomePresetAnimated": {
     "message": "Animé"
@@ -556,5 +559,8 @@
   },
   "bgPresetOptionEmber": {
     "message": "Braises"
+  },
+  "labelThemePreviewBlur": {
+    "message": "Flou des aperçus"
   }
 }

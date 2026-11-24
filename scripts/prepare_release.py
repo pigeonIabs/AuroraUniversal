@@ -16,11 +16,12 @@ def prepare() -> None:
     destination = ROOT / 'build'
     package = destination / f'aurora-universal-{version}.xpi'
     build(package)
-    build(destination / 'aurora-universal-development.xpi', 'aurora-for-chatgpt-librewolf@local')
+    build(destination / 'aurora-universal-development.xpi')
 
     sources = collect_files(manifest)
     for name in ('.gitignore', '.gitattributes', 'README.md', 'DEVELOPMENT.md', 'amo-metadata.json',
-                 'scripts/build_xpi.py', 'scripts/prepare_release.py', 'scripts/generate_theme_art.py', 'release/index.html'):
+                 'scripts/build_xpi.py', 'scripts/shadow_rules.py', 'scripts/prepare_release.py',
+                 'scripts/generate_theme_art.py', 'release/index.html'):
         sources[name] = ROOT / name
     for pattern in ('release/*.md', 'release/studio/*', 'release/media/*'):
         for path in ROOT.glob(pattern):

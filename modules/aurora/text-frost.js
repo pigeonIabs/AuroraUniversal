@@ -4,7 +4,7 @@
   'use strict';
   const A = window.AuroraExt;
   const ATTRIBUTE = 'data-aurora-text-frost';
-  const FILTER = 'blur(48px)';
+  const FILTER = 'var(--aurora-glass-backdrop, blur(50px))';
   const PROPERTIES = ['backdrop-filter', '-webkit-backdrop-filter'];
   const SOURCE = '--aurora-backdrop-source';
   const IGNORE = 'script, style, noscript, template, #cgpt-ambient-bg';
@@ -90,8 +90,9 @@
         }
         if (surfaceNodes.has(target)) dirty.add(target);
       } else visibleNodes.delete(target);
-      // Only message paint is suspended. Native geometry and all UI stay intact.
-      if (target.closest(messageSelector) &&
+      // ChatGPT already culls its transcript in the native scroll frames.
+      // Keep its filter stable when a turn leaves and reenters the viewport.
+      if (A.site.id !== 'chatgpt' && target.closest(messageSelector) &&
           target.matches('[data-aurora-code-block], [data-aurora-glass], [data-aurora-surface="code"], [data-aurora-surface="message"], [data-user-message-bubble], .user-message-bubble-color')) {
         A.utils.toggleAttribute(target, 'data-aurora-offscreen', !isIntersecting);
       }

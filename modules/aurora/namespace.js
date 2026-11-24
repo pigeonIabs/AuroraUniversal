@@ -7,7 +7,7 @@
     const A = (window.AuroraExt = window.AuroraExt || {});
     A.ownedUI = ['cgpt-ambient-bg', 'cgpt-qs-panel', 'cgpt-qs-btn', 'aurora-queue-panel',
       'aurora-queue-btn', 'aurora-queue-toast', 'aurora-welcome-overlay', 'aurora-success-overlay',
-      'aurora-style-bar', 'aurora-support-screen'].map(id => `#${id}`).join(',');
+      'aurora-style-bar', 'aurora-support-screen', 'aurora-glass-shadows'].map(id => `#${id}`).concat('[data-aurora-shadow-plane]').join(',');
 
     A.state = A.state || {};
     A.state.settings = A.state.settings || {};

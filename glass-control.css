@@ -5,7 +5,7 @@
   min-width: 100px;
   color: var(--popup-text, var(--theme-text-primary));
 }
-.aurora-glass-range { position: relative; height: 28px; }
+.aurora-glass-range { position: relative; height: 28px; flex: 1; min-width: 100px; }
 .aurora-glass-range input[type="range"] {
   appearance: none;
   display: block;
@@ -29,36 +29,41 @@
   background: color-mix(in srgb, currentColor 22%, transparent);
 }
 .aurora-glass-range input::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: 0;
   background: transparent;
 }
 .aurora-glass-range input::-webkit-slider-thumb {
   appearance: none;
-  width: 24px;
-  height: 24px;
-  margin-top: -11px;
+  width: 20px;
+  height: 20px;
+  margin-top: -9px;
   border: 0;
   background: transparent;
 }
 .aurora-glass-thumb {
   position: absolute;
-  top: 2px;
+  top: 4px;
   left: calc(var(--glass-position, 0%) + var(--glass-offset, 0px));
   box-sizing: border-box;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--aurora-glass-border);
-  border-radius: 5px;
-  background: var(--aurora-glass-fill);
-  box-shadow: var(--aurora-glass-shadow);
+  width: 20px;
+  height: 20px;
+  border: 1px solid color-mix(in srgb, var(--composer-border) var(--aurora-glass-fill-opacity), var(--aurora-clear-border));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--aurora-glass-bg) var(--aurora-glass-fill-opacity), var(--aurora-clear-bg));
   backdrop-filter: var(--aurora-glass-backdrop, blur(var(--aurora-glass-blur, 24px)));
   pointer-events: none;
 }
-.aurora-glass-range:focus-within .aurora-glass-thumb {
-  outline: 2px solid currentColor;
-  outline-offset: 3px;
+:root[data-aurora-site] .aurora-glass-thumb {
+  --aurora-detail-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+  box-shadow: var(--aurora-cast-detail);
+}
+.aurora-glass-range input:focus-visible::-moz-range-track {
+  background: var(--primary-accent, #4f8cff);
+}
+.aurora-glass-range input:focus-visible::-webkit-slider-runnable-track {
+  background: var(--primary-accent, #4f8cff);
 }
 .aurora-glass-ends {
   display: flex;
@@ -68,3 +73,7 @@
   line-height: 18px;
   color: var(--popup-text, var(--theme-text-secondary));
 }
+
+.aurora-glass-range input:focus { outline: none; }
+.aurora-glass-range input::-moz-range-progress { background: transparent; height: 2px; }
+.aurora-glass-range input::-moz-focus-outer { border: 0; }

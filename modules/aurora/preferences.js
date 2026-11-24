@@ -4,10 +4,10 @@
   const A = (window.AuroraExt = window.AuroraExt || {});
   const defaults = Object.freeze({
     legacyComposer: false,
-    theme: 'auto',
     appearance: 'clear',
     glassIntensity: 100,
     glassUserMessages: true,
+    geminiBloom: false,
     hideUpgradeButtons: false,
     hideRateLimitMessages: false,
     hideAIWarnings: true,
@@ -18,7 +18,8 @@
     queueWhileGenerating: false,
     customBgUrl: '',
     customBgDataKey: 'customBgData',
-    backgroundBlur: '60',
+    backgroundBlur: '50',
+    motionBackgroundBlur: '0',
     backgroundScaling: 'cover',
     voiceColor: 'default',
     cuteVoiceUI: false,
@@ -59,6 +60,14 @@
     return typeof value === 'string' && value.startsWith('https://img.freepik.com/free-photo/abstract-luxury-gradient-blue-background-smooth-dark-blue-with-black-vignette-studio-banner_1258-54581.jpg')
       ? '__deep_ocean__' : value;
   }
+  function backgroundKind(url = '') {
+    if (scenicBackgrounds[url] || ['__space__', '__gpt5_animated__'].includes(url)) return 'motion';
+    return /^(?:data:video\/|data:image\/gif)|\.(?:mp4|webm|ogv|gif)(?:[?#]|$)/i.test(url) ? 'motion' : 'image';
+  }
+  function blurRadius(value, fallback = 50) {
+    const radius = Number(value ?? fallback);
+    return Number.isFinite(radius) ? Math.max(0, Math.min(150, radius)) : fallback;
+  }
   // Stored intensity remains transparency for compatibility with saved settings.
   // Every control presents the inverse, from clear on the left to dim on the right.
   function glassAmount(settings = {}) {
@@ -91,8 +100,8 @@
   }
 
   const appearanceKeys = [
-    'theme', 'appearance', 'glassIntensity', 'glassUserMessages', 'customBgUrl',
-    'customBgDataKey', 'backgroundBlur', 'backgroundScaling', 'customFont',
+    'appearance', 'glassIntensity', 'glassUserMessages', 'geminiBloom', 'customBgUrl',
+    'customBgDataKey', 'backgroundBlur', 'motionBackgroundBlur', 'backgroundScaling', 'customFont',
     'voiceColor', 'cuteVoiceUI', 'disableAnimations', 'autoContrast'
   ];
   const siteKey = id => `siteAppearance:${id}`;
@@ -173,5 +182,5 @@
 
   A.preferences = { defaults, normalize, value, normalizeDefaultModel, normalizeSitePreference, glassAmount, glassPatch,
     appearanceKeys, siteKeys, siteKey, pickAppearance, pickSiteSettings, siteOverrides, planSettings,
-    resolve, applyChanges, diff, save, siteIds: SITE_IDS, scenicBackgrounds, normalizeBackground };
+    resolve, applyChanges, diff, save, siteIds: SITE_IDS, scenicBackgrounds, normalizeBackground, backgroundKind, blurRadius };
 })();

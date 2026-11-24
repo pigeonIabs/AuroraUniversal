@@ -1,0 +1,410 @@
+/* Shared material takes priority over provider and color-transformer paint.
+ * Only existing Aurora paint owners are addressed. Scroll edges and offscreen
+ * suspension retain their earlier important layers and native geometry. */
+@layer aurora-conversation-title {
+  /* Space renders its heading in a textarea inside a search-highlight wrapper. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+    textarea:is([data-page-title] *, [class*="PageTitle-"]),
+    [data-page-title] .relative.w-full.min-w-0:has(> textarea[class*="PageTitle-"])
+  ) {
+    &, &::before, &::after {
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      --aurora-backdrop-source: initial !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      --darkreader-inline-bgcolor: transparent !important;
+      --darkreader-inline-bgimage: none !important;
+      --darkreader-inline-boxshadow: none !important;
+    }
+  }
+
+  /* In edge-scroll mode ChatGPT paints the toolbar child behind the title.
+   * Clear that wrapper independently of the button and its menu. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    [data-app-shell-header-toolbar] > div:has(button.text-conversation-title.px-conversation-title-inline) {
+    background-color: transparent !important;
+  }
+
+  /* Keep the title clear through native hover, open and responsive states.
+   * Run ahead of glass ownership rules so transient fill never becomes glass. */
+  :is(
+    html:root.cgpt-ambient-on :is(
+      [data-aurora-toolbar], [data-aurora-surface="toolbar"], [data-app-shell-titlebar],
+      [data-app-shell-header-obstacle], header, [role="banner"], [data-testid="chat-header"]
+    ) :is(
+      [data-thread-title-trigger],
+      [data-testid="chat-title-trigger"], [data-testid="conversation-title-trigger"],
+      [data-testid="chat-title-button"], [data-testid="conversation-title-button"],
+      :is(button, [role="button"], summary):has(> :is(
+        [data-thread-title], [data-testid="chat-title"], [data-testid="conversation-title"],
+        [data-test-id="conversation-title"], .chat-title, .conversation-title
+      )),
+      [data-testid="chat-title"], [data-testid="conversation-title"],
+      [data-test-id="conversation-title"], .chat-title, .conversation-title
+    ),
+    html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+      button.text-conversation-title.px-conversation-title-inline,
+      button[class~="px-1.75"][class~="font-[510]"]:has(> span.truncate + span[class~="size-3.5"]),
+      :is([data-app-shell-titlebar], [data-app-shell-header-obstacle], header#page-header)
+        button[aria-haspopup="menu"]:has(> span.truncate + span[class~="size-3.5"])
+    ),
+    html:root.cgpt-ambient-on[data-aurora-site="huggingface"] #app nav > div > [data-testid="chat-title"]
+  ):not(:where(
+    #app-shell-sidebar, #stage-slideover-sidebar, [data-aurora-surface="sidebar"],
+    [data-sidebar="sidebar"], [data-testid="sidebar"], [data-testid="desktop-sidebar"],
+    [role="menu"], [role="dialog"]
+  ) *) {
+    /* The saved-chat button uses secondary ghost paint. Clear its source
+     * tokens as well as the recolored variants used by Dark Reader. */
+    --color-background-secondary-ghost-hover: transparent !important;
+    --darkreader-bg--color-background-secondary-ghost-hover: transparent !important;
+    --darkreader-inline-bgcolor: transparent !important;
+    --darkreader-inline-bgimage: none !important;
+    --aurora-glass-backdrop: none !important;
+
+    &, &::before, &::after {
+      background: transparent !important;
+      border-color: transparent !important;
+      --aurora-backdrop-source: initial !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* Some title controls use a native box-shadow as the keyboard focus ring. */
+    &:not(:focus-visible), &::before, &::after {
+      --darkreader-inline-boxshadow: none !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
+/* Hover labels can open directly over page text. Apply frost to the painted
+ * box, including ChatGPT's native portaled box on its first visible frame. */
+@layer aurora-tooltip-material {
+  :is(
+    html:root.cgpt-ambient-on :is(
+      [role="tooltip"], [data-slot="tooltip-content"],
+      [data-side]:has(> [role="tooltip"]),
+      .bg-token-bg-tooltip[data-state*="open"], .bg-black[data-state*="open"],
+      .mat-mdc-tooltip-surface, .ds-tooltip
+    ):is(
+      [data-aurora-glass="true"], [data-aurora-discovered-surface="true"], [data-aurora-surface="menu"]
+    ),
+    html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+      [data-radix-popper-content-wrapper] > [role="tooltip"][data-side][data-state$="open"],
+      [role="tooltip"][data-side][class~="bg-(--color-background-tooltip)"],
+      [role="tooltip"][data-side][class~="bg-(--color-background-tooltip-classic)"]
+    ),
+    /* The selection toolbar paints either the segmented box or its buttons. */
+    html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+      .pointer-events-none.w-max:is(.fixed, .absolute)
+        [role="presentation"].pointer-events-auto.w-fit.rounded-lg.bg-surface-elevated-secondary:has(> button.rounded-none),
+      [popover][class*="_selectionPopover"] > .shadow-long.rounded-xl > button
+    )
+  ):not([data-aurora-plane]) {
+    --aurora-tooltip-tint: color-mix(in srgb, rgb(from var(--glass-bg) r g b) 70%, var(--aurora-glass-fill));
+    --aurora-tooltip-fill: var(--aurora-tooltip-tint);
+    --darkreader-bg--aurora-tooltip-fill: var(--aurora-tooltip-fill) !important;
+    --darkreader-inline-bgcolor: var(--aurora-tooltip-fill) !important;
+    --aurora-backdrop-source: blur(max(50px, var(--aurora-glass-blur, 50px))) !important;
+    background-color: var(--aurora-tooltip-fill) !important;
+    backdrop-filter: var(--aurora-backdrop-source) !important;
+    -webkit-backdrop-filter: var(--aurora-backdrop-source) !important;
+
+    /* Use a solid tint for labels and selection actions that cover text. */
+    &:where(
+      [data-aurora-site="chatgpt"] [role="tooltip"][data-side],
+      [data-aurora-site="chatgpt"] [role="presentation"].pointer-events-auto.w-fit,
+      [data-aurora-site="chatgpt"] [popover][class*="_selectionPopover"] > .shadow-long > button,
+      [data-aurora-zero-blur] *
+    ) {
+      --aurora-tooltip-fill: rgb(from var(--aurora-tooltip-tint) r g b);
+    }
+
+    &:where([data-aurora-zero-blur] *) {
+      --aurora-backdrop-source: none !important;
+    }
+
+    & [data-radix-popper-arrow] {
+      fill: var(--aurora-tooltip-fill) !important;
+    }
+  }
+}
+
+@layer aurora-glass-material {
+  /* ChatGPT's newer renderer paints a marked span for Markdown inline code. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+    [data-markdown-copy="inline-code"], .markdown code, .prose code
+  ):not(:where(pre *, [data-markdown-copy="code-block"] *, [data-aurora-code-block] *, [contenteditable] *)) {
+    background: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-glass-border) !important;
+    --darkreader-inline-bgcolor: var(--aurora-glass-fill) !important;
+    --aurora-control-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+    box-shadow: var(--aurora-cast-control) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-backdrop-source) !important;
+    -webkit-backdrop-filter: var(--aurora-backdrop-source) !important;
+
+    &:where(.cgpt-light-mode *) {
+      --aurora-control-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+    }
+  }
+
+  /* The media lightbox and the image preview dialog have their own scrims.
+   * In a modal preview the scrim supplies the only full-size glass surface. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is(
+    [data-testid="modal-image-gen-lightbox"],
+    .codex-dialog-overlay:has(+ [role="dialog"] [data-testid="image-preview-dismiss-area"]),
+    [role="dialog"][class~="!bg-black/90"]:has([data-testid="image-preview-dismiss-area"]):not(.codex-dialog-overlay + *)
+  ) {
+    background: var(--aurora-glass-fill) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    .codex-dialog-overlay + [role="dialog"]:has([data-testid="image-preview-dismiss-area"]) {
+    background: transparent !important;
+    --aurora-backdrop-source: initial !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* The current shell paints the pane and the tab stack with the same token.
+   * Use the outer painted element when both contain the active image tab. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    [class~="bg-[var(--app-shell-panel-background,var(--color-surface))]"]:has(
+      [data-app-shell-tab-panel-controller][data-tab-id^="image:"]:not([inert], [aria-hidden="true"])
+    ):not([data-app-shell-pane-frame], [data-app-shell-pane-frame] *) {
+    background: var(--aurora-glass-fill) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+
+    &:where([class~="bg-[var(--app-shell-panel-background,var(--color-surface))]"] *) {
+      background: transparent !important;
+      --aurora-backdrop-source: initial !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
+  /* The sticky header and its strip above the scroll edge share the panel glass. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] [class~="group/summary-panel"]
+    section > header.sticky.bg-surface-elevated-secondary,
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] [class~="group/summary-panel"]
+    section > header.sticky[class~="before:bg-surface-elevated-secondary"]::before {
+    background-color: var(--aurora-glass-fill) !important;
+  }
+
+  /* The titlebar's New Chat action paints its base fill on this wrapper.
+   * The pencil paths also identify the action when its label is localized. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] [data-app-shell-titlebar]
+    div.rounded-lg.bg-surface:has(
+      > button.rounded-lg[aria-label="New chat" i],
+      > button.rounded-lg[aria-label] svg path:is([d^="M8.16675 2.50115"], [d^="M6.33325 1.80775"])
+    ) {
+    background-color: var(--aurora-glass-fill) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+  }
+
+  /* The current project form paints the frame shared by the icon and input. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog)
+    .bg-primary-soft:has(> input#chatgpt-project-name) {
+    background: var(--aurora-clear-bg) !important;
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog)
+    .bg-primary-soft:has(> input#chatgpt-project-name):not(:focus-within, [aria-invalid="true"]) {
+    border-color: var(--aurora-glass-border) !important;
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog)
+    .bg-primary-soft > input#chatgpt-project-name {
+    background: transparent !important;
+  }
+
+  /* The older project form paints the input itself. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog) input#project-name {
+    background: var(--aurora-clear-bg) !important;
+    border-color: var(--aurora-glass-border) !important;
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog) input#project-name:focus {
+    border-color: color-mix(in srgb, var(--aurora-glass-border), currentColor 25%) !important;
+  }
+
+  /* The pet upload dialog combines a description with a PNG/WebP sprite sheet.
+   * The name input and the file input's native button each paint their own fill. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    :is([role="dialog"], dialog):has(textarea):has(input[type="file"][accept*="png" i][accept*="webp" i])
+    :is(input:not([type]), input[type="text" i]) {
+    background: var(--aurora-glass-fill) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+
+    &:not(:focus, [aria-invalid="true"]) {
+      border-color: var(--aurora-glass-border) !important;
+    }
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog):has(textarea)
+    input[type="file"][accept*="png" i][accept*="webp" i]::file-selector-button {
+    background: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-glass-border) !important;
+    box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
+    backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+    -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
+  }
+
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] :is([role="dialog"], dialog):has(textarea)
+    input[type="file"][accept*="png" i][accept*="webp" i]:enabled::file-selector-button:hover {
+    background-color: color-mix(in srgb, var(--aurora-glass-fill), currentColor 12%) !important;
+  }
+
+  /* ChatGPT Beacon banners paint the aside inside their responsive container. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] aside.surface-NbxhOL {
+    background-color: var(--aurora-glass-fill) !important;
+    outline-color: var(--aurora-glass-border) !important;
+    box-shadow: var(--aurora-cast-glass) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+  }
+
+  /* Voice feedback uses this painted div for both the prompt and confirmation. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    div.flex.w-full.border.border-token-border-light.bg-token-bg-primary[class~="rounded-[28px]"][class~="shadow-[0px_4px_16px_0px_rgba(0,0,0,0.05)]"] {
+    background-color: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-glass-border) !important;
+    box-shadow: var(--aurora-cast-glass) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+  }
+
+  /* The empty conversation notice paints its own direct child in the thread. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"]
+    [data-chatgpt-conversation-selection-target] > div.rounded-xl.border.border-default.p-4.text-codex-description[class~="bg-surface-secondary/92"] {
+    background-color: var(--aurora-glass-fill) !important;
+    background-image: none !important;
+    border-color: var(--aurora-glass-border) !important;
+    box-shadow: var(--aurora-cast-glass) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  /* Discovered surfaces keep native text, icons, clips and hit areas. */
+  html:root.cgpt-ambient-on :is([data-aurora-discovered-surface="true"], [data-aurora-data-surface="true"]):not([data-aurora-plane]) {
+    background-color: var(--aurora-glass-fill) !important;
+    box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, transparent), var(--aurora-cast-glass) !important;
+  }
+
+  html:root.cgpt-ambient-on :is([data-aurora-discovered-surface="true"], [data-aurora-data-surface="true"]):not([data-aurora-plane]):not(:where(
+    [data-aurora-discovered-surface], [data-aurora-data-surface], [data-aurora-glass], [data-aurora-code-block], [data-aurora-surface],
+    [data-aurora-image-viewer], [data-aurora-image-toolbar], [data-composer-surface-variant], .app-shell-left-panel
+  ) *) {
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  html:root.cgpt-ambient-on [data-aurora-editor="true"] {
+    box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-cast-glass) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+  }
+  html:root.cgpt-ambient-on :is(
+    [data-aurora-glass="true"], [data-aurora-code-block="true"],
+    [data-aurora-surface]:not([data-aurora-surface="toolbar"]):not([data-aurora-surface="overlay"]):not([data-aurora-surface="message"]),
+    [data-aurora-image-viewer="glass"], [data-aurora-image-toolbar="glass"],
+    [data-aurora-image-top-control="true"], .app-shell-left-panel:not(:where(
+      [data-app-shell-feature-navigation="true"] *, [data-slate-sidebar-peeking="true"]
+    ))
+  ):not([data-aurora-plane]):not([data-aurora-image-viewer="clear"]):not(:where(
+    [role="switch"], [role="checkbox"], [role="radio"], [role="menuitemcheckbox"],
+    [role="menuitemradio"], [role="tab"], [role="option"], [role="tablist"],
+    [role="radiogroup"], [aria-checked], [aria-pressed], [aria-selected], [aria-current],
+    input:is([type="checkbox" i], [type="radio" i], [type="range" i]),
+    [data-state="checked"], [data-state="unchecked"], [data-state="on"], [data-state="off"],
+    [data-state="active"], [data-state="inactive"], [data-model-picker-power-slider],
+    [role="group"]:has(> .bg-background-mode-toggle-track)
+  )):not(:where(
+    [role="switch"], [role="checkbox"], [role="radio"], [role="menuitemcheckbox"],
+    [role="menuitemradio"], [role="tab"], [role="option"], [role="tablist"],
+    [role="radiogroup"], [aria-checked], [aria-pressed], [aria-selected], [aria-current],
+    input:is([type="checkbox" i], [type="radio" i], [type="range" i]),
+    [data-state="checked"], [data-state="unchecked"], [data-state="on"], [data-state="off"],
+    [data-state="active"], [data-state="inactive"], [data-model-picker-power-slider],
+    [role="group"]:has(> .bg-background-mode-toggle-track)
+  ) *) {
+    background: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
+  }
+
+  /* Nested owners share the outer backdrop instead of stacking filters. */
+  html:root.cgpt-ambient-on :is(
+    [data-aurora-glass="true"], [data-aurora-code-block="true"],
+    [data-aurora-surface]:not([data-aurora-surface="toolbar"]):not([data-aurora-surface="overlay"]):not([data-aurora-surface="message"]),
+    [data-aurora-image-viewer="glass"], [data-aurora-image-toolbar="glass"],
+    [data-aurora-image-top-control="true"], .app-shell-left-panel:not(:where(
+      [data-app-shell-feature-navigation="true"] *, [data-slate-sidebar-peeking="true"]
+    ))
+  ):not([data-aurora-plane]):not([data-aurora-image-viewer="clear"]):not(:where(
+    [data-aurora-glass="true"], [data-aurora-code-block="true"], [data-aurora-surface],
+    [data-aurora-image-viewer="glass"], .app-shell-left-panel
+  ) :is([data-aurora-glass="true"], [data-aurora-code-block="true"], [data-aurora-surface])):not(:where([role="switch"], [role="checkbox"], [role="radio"],
+    [role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="option"],
+    [role="tablist"], [role="radiogroup"], [aria-checked], [aria-pressed],
+    [aria-selected], [aria-current], [data-state="checked"], [data-state="unchecked"],
+    [data-state="on"], [data-state="off"], [data-state="active"], [data-state="inactive"],
+    [data-model-picker-power-slider], [role="group"]:has(> .bg-background-mode-toggle-track))) {
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  html:root.cgpt-ambient-on.cgpt-glass-user-messages:not([data-aurora-site="chatgpt"]) :is(
+    [data-aurora-surface="message"],
+    [class~="bg-[var(--cds-bg-user-message)]"]
+  ) {
+    background: var(--aurora-glass-fill) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  /* The footer's flexible layout wrappers can span the empty space before the
+   * send control. They are not a separate surface, even when paint discovery
+   * encounters them while the composer changes between layout states. */
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] [data-composer-footer-responsive]:has(button:is(
+    [data-testid="send-button"], [data-testid="stop-button"], [data-testid*="stop-generating"],
+    [aria-label="Send prompt" i], [aria-label="Send message" i], [aria-label="Send" i],
+    [aria-label="Stop generating" i], [aria-label="Stop streaming" i], [aria-label="Stop response" i], [aria-label="Stop" i],
+    [aria-label="Start Voice" i]
+  )),
+  html:root.cgpt-ambient-on[data-aurora-site="chatgpt"] [data-composer-footer-responsive] :is(div, span):has(button:is(
+    [data-testid="send-button"], [data-testid="stop-button"], [data-testid*="stop-generating"],
+    [aria-label="Send prompt" i], [aria-label="Send message" i], [aria-label="Send" i],
+    [aria-label="Stop generating" i], [aria-label="Stop streaming" i], [aria-label="Stop response" i], [aria-label="Stop" i],
+    [aria-label="Start Voice" i]
+  )) {
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html:root.cgpt-ambient-on [data-aurora-library-header="true"]::before,
+  html:root.cgpt-ambient-on [data-sticky="true"]:has(#plugins-store-page-search)::before,
+  html:root.cgpt-ambient-on :is(#stage-slideover-sidebar, .stage-sidebar-pure-surface)::before {
+    background: var(--aurora-glass-fill) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+}
+

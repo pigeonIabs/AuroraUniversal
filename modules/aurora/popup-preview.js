@@ -7,20 +7,17 @@
   A.getSettings = () => settings;
   A.startupTimings = {};
 
-  function apply(next, isLight, refreshUpload = false) {
+  function apply(next, refreshUpload = false) {
     settings = next;
     const root = document.documentElement;
     root.classList.add('cgpt-ambient-on');
-    root.classList.toggle('cgpt-light-mode', isLight);
     root.classList.toggle('cgpt-appearance-clear', next.appearance === 'clear');
     root.classList.toggle('cgpt-animations-disabled', !!next.disableAnimations);
-    root.classList.toggle('theme-light', isLight);
-    root.style.colorScheme = isLight ? 'light' : 'dark';
     const rawIntensity = Number(next.glassIntensity);
     const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(100, rawIntensity)) : next.appearance === 'clear' ? 100 : 0;
     const rawBlur = Number(next.backgroundBlur);
-    const blur = Number.isFinite(rawBlur) ? Math.max(0, Math.min(150, rawBlur)) : 60;
-    const glassBlur = next.customBgUrl === '__space__' ? 0 : Math.round((14 + intensity / 10) * Math.min(1, blur / 60));
+    const blur = Number.isFinite(rawBlur) ? Math.max(0, Math.min(150, rawBlur)) : 50;
+    const glassBlur = blur;
     root.style.setProperty('--aurora-glass-fill-opacity', `${100 - intensity}%`);
     root.style.setProperty('--clear-blur', `${glassBlur}px`);
     root.style.setProperty('--aurora-glass-blur', `${glassBlur}px`);

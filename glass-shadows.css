@@ -1,0 +1,31 @@
+/* A message may paint its own shadow. Its children and pseudo-elements keep
+ * their own independent cast decisions. */
+@property --aurora-cast-glass {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 0 -101px transparent;
+}
+@property --aurora-cast-control {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 0 -105px transparent;
+}
+[data-aurora-self-shadow] {
+  --aurora-cast-glass: 0 0 0 -101px transparent, var(--aurora-glass-shadow);
+  --aurora-cast-control: 0 0 0 -105px transparent, var(--aurora-control-shadow, 0 0 transparent);
+}
+
+:root {
+  --aurora-cast-glass: 0 0 0 -101px transparent;
+  --aurora-cast-sidebar: 0 0 0 -102px transparent;
+  --aurora-cast-panel: 0 0 0 -103px transparent;
+  --aurora-cast-composer: 0 0 0 -104px transparent;
+  --aurora-cast-control: 0 0 0 -105px transparent;
+  --aurora-cast-detail: 0 0 0 -106px transparent;
+  --aurora-cast-switch: 0 0 0 -107px transparent;
+}
+
+#aurora-glass-shadows::backdrop {
+  background: none !important;
+  pointer-events: none !important;
+}

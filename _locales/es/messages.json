@@ -42,10 +42,10 @@
     "message": "Voz"
   },
   "sectionBackground": {
-    "message": "Fondo"
+    "message": "Temas"
   },
   "labelPreset": {
-    "message": "Predefinido"
+    "message": "Tema"
   },
   "placeholderBgUrl": {
     "message": "Pega la URL de una imagen o video"
@@ -189,7 +189,7 @@
     "message": "Ónix oscuro"
   },
   "bgPresetOptionDefault": {
-    "message": "Fondo predeterminado"
+    "message": "GPT-5"
   },
   "bgPresetOptionSpace": {
     "message": "Espacio"
@@ -263,6 +263,9 @@
   "labelGlassStyle": {
     "message": "Estilo de cristal"
   },
+  "labelGeminiBloom": {
+    "message": "Resplandor"
+  },
   "labelGlassUserMessages": {
     "message": "Cristal en tus mensajes"
   },
@@ -297,13 +300,13 @@
     "message": "Elige Tu Apariencia"
   },
   "welcomeDescriptionSetup": {
-    "message": "Selecciona un fondo y un estilo para personalizar tu experiencia. Siempre puedes cambiar esto más tarde."
+    "message": "Elige un tema y un estilo de vidrio para personalizar tu experiencia."
   },
   "welcomeLabelBgPreset": {
-    "message": "Fondo Predefinido"
+    "message": "Tema"
   },
   "welcomePresetDefault": {
-    "message": "Predeterminado"
+    "message": "GPT-5"
   },
   "welcomePresetAnimated": {
     "message": "Animado"
@@ -556,5 +559,8 @@
   },
   "bgPresetOptionEmber": {
     "message": "Ascuas"
+  },
+  "labelThemePreviewBlur": {
+    "message": "Desenfoque de vista previa"
   }
 }

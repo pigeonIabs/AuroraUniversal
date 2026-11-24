@@ -26,13 +26,17 @@ html.cgpt-ambient-on [data-aurora-surface],
 html.cgpt-ambient-on[data-aurora-site="deepseek"] #root .ds-textarea.cc852ac5,
 html.cgpt-ambient-on[data-aurora-site="deepseek"] #root ._189b4a0 ._4ce999d._7ae8ea4,
 html.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-site="claude"] [class~="bg-[var(--cds-bg-user-message)]"],
+html.cgpt-ambient-on[data-aurora-site="claude"] :is([role="dialog"], dialog):has(textarea[placeholder*="satisfying about this response" i]),
 html.cgpt-ambient-on[data-aurora-site="claude"] [data-cds="ChatComposer"] > .rounded-composer {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
-  color: var(--theme-text-primary) !important;
+
+  &:not(:where([data-aurora-site="claude"] :is([data-cds="ConfirmationDialog"], [data-aurora-surface="promotion"]))) {
+    color: var(--theme-text-primary) !important;
+  }
 }
 /* CDS paints this rounded message owner through a variable utility. Keep its
  * edge visible even at fully transparent fill and before incremental tagging. */
@@ -101,6 +105,27 @@ html.cgpt-ambient-on[data-aurora-site="claude"] body {
 html.cgpt-ambient-on[data-aurora-site="claude"] :is([data-aurora-surface="composer"], [data-cds="ChatComposer"] > .rounded-composer) :is(.bg-bg-000, .bg-bg-100, .bg-surface-1, .bg-surface-2) {
   background: transparent !important;
 }
+/* The floating selection actions paint their inner shell, not the positioner
+ * or the buttons. Keep enough frost to dissolve the transcript below them. */
+html.cgpt-ambient-on[data-aurora-site="claude"] [data-selection-tooltip="true"] > .backdrop-blur {
+  --aurora-claude-reply-fill: color-mix(in srgb, #24242b 70%, var(--aurora-glass-fill));
+  --aurora-backdrop-source: blur(max(50px, var(--aurora-glass-blur))) !important;
+  background-color: var(--aurora-claude-reply-fill) !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: var(--aurora-cast-glass) !important;
+  backdrop-filter: var(--aurora-backdrop-source) !important;
+  -webkit-backdrop-filter: var(--aurora-backdrop-source) !important;
+}
+html.cgpt-ambient-on[data-aurora-site="claude"][data-aurora-zero-blur] [data-selection-tooltip="true"] > .backdrop-blur {
+  --aurora-backdrop-source: none !important;
+  background-color: rgb(from var(--aurora-claude-reply-fill) r g b) !important;
+}
+/* The composer already filters its backdrop. Give the quote tile's native
+ * fill a solid base so transcript text cannot show through the excerpt. */
+html.cgpt-ambient-on[data-aurora-site="claude"] [data-cds="ChatComposer"] [data-cds="MessageAttachmentsQuote"] > [data-cds="Card"] > .cds-card-fill {
+  background-color: rgb(from var(--glass-bg) r g b) !important;
+  background-image: linear-gradient(155deg, var(--aurora-glass-fill), transparent) !important;
+}
 /* Native dock wrappers and backing strips can change paint without being
  * replaced. Clear that layout material directly, including before tagging.
  * The rounded composer and each painted notice keep their own glass. */
@@ -141,6 +166,20 @@ html.cgpt-ambient-on[data-aurora-site="claude"] [role="dialog"][data-aurora-surf
   background: transparent !important;
 }
 
+/* Both feedback forms paint their header and form independently of the shell. */
+html.cgpt-ambient-on[data-aurora-site="claude"] :is([role="dialog"], dialog):has(textarea[placeholder*="satisfying about this response" i]) :is(header, form, div, section):is(
+  .bg-bg-000, .bg-bg-100, .bg-bg-200, .bg-bg-300,
+  .bg-surface-0, .bg-surface-1, .bg-surface-2, .bg-surface-3
+):not([role="button"]):not([role="combobox"]):not([data-aurora-surface]) {
+  background: transparent !important;
+}
+html.cgpt-ambient-on[data-aurora-site="claude"] :is([role="dialog"], dialog):has(textarea[placeholder*="satisfying about this response" i]) :is(textarea, select, [role="combobox"]) {
+  background: var(--aurora-glass-fill) !important;
+  border-color: var(--aurora-glass-border) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
+  color: var(--theme-text-primary) !important;
+}
+
 /* Gemini's input-area-v2 host owns the native rounded composer surface.
  * Its inner text-input-field only arranges the editor and controls. */
 html.cgpt-ambient-on[data-aurora-site="gemini"],
@@ -167,12 +206,18 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] :is(
 html.cgpt-ambient-on[data-aurora-site="gemini"] input-area-v2 {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important;
   --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] :is(input-container, chat-window)::before,
 html.cgpt-ambient-on[data-aurora-site="gemini"] :is(input-container, chat-window)::after {
+  background: transparent !important;
+}
+/* Gemini paints its Chat/Task backdrop on this empty decorative layer.
+ * Clear both the masked color field and bloom without changing native geometry. */
+html.cgpt-ambient-on[data-aurora-site="gemini"]:not([data-aurora-gemini-bloom]) chat-window > .lm-glow::before,
+html.cgpt-ambient-on[data-aurora-site="gemini"]:not([data-aurora-gemini-bloom]) chat-window > .lm-glow::after {
   background: transparent !important;
 }
 /* The top action group only positions icons and blends into the page. */
@@ -185,6 +230,34 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] top-bar-actions {
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] [data-aurora-surface="composer"] .gem-button {
   background: transparent !important;
+}
+/* The native row uses --gem-sys-color--surface in an alpha mask. Keep that
+ * source opaque so glass tint cannot turn the whole selector into a fade.
+ * Paint only the existing moving selection, with no outer shadow or rail. */
+html.cgpt-ambient-on[data-aurora-site="gemini"] chat-spark-toggle gem-segmented-button-row {
+  --gem-sys-color--surface: rgb(from var(--aurora-glass-fill) r g b / 1);
+}
+html.cgpt-ambient-on[data-aurora-site="gemini"] chat-spark-toggle .gem-segmented-button-row-slider {
+  background: var(--aurora-glass-fill) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+}
+/* Dark mode duplicates the selection fill on the button. Let the moving
+ * native selection own the single glass layer beneath its foreground label. */
+html.cgpt-ambient-on[data-aurora-site="gemini"] chat-spark-toggle .gem-segmented-button-selected .gem-segmented-button-action {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  --aurora-backdrop-source: initial !important;
+}
+html.cgpt-ambient-on[data-aurora-site="gemini"] chat-spark-toggle gem-segmented-button:not(.gem-segmented-button-selected) .gem-segmented-button-action:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--aurora-glass-fill), var(--menu-item-hover) 30%) !important;
+  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 /* Chat/Spark navigation owns separate solid fills inside the glass sidebar.
  * Paint these native owners on insertion and keep the moving selection layer. */
@@ -216,7 +289,7 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] :is(
   image-card .image-card
 )[data-aurora-surface="panel"] {
   border-color: transparent !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-surface-edge, var(--aurora-glass-border)) 55%, transparent), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-surface-edge, var(--aurora-glass-border)) 55%, transparent), var(--aurora-cast-glass) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] library-list-item .list-item-container[data-aurora-surface="panel"]:not(.placeholder):is(:hover, :focus-within),
 html.cgpt-ambient-on[data-aurora-site="gemini"] library-item-card:is(:hover, :focus-within) .library-item-card[data-aurora-surface="panel"] {
@@ -261,7 +334,7 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] :is(
 )[data-aurora-surface="panel"] {
   background: var(--aurora-glass-fill) !important;
   border-color: transparent !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-glass-border) 55%, transparent), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-glass-border) 55%, transparent), var(--aurora-cast-glass) !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] extension-card child-card .child-card[data-aurora-surface="panel"] {
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-glass-border) 55%, transparent) !important;
@@ -277,7 +350,7 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] bot-experiment-badge .bot-status
 html.cgpt-ambient-on[data-aurora-site="gemini"] elicitations .elicitations-container > .elicitation-item[data-aurora-surface="panel"] {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
@@ -361,7 +434,7 @@ html.cgpt-ambient-on [data-aurora-surface="toolbar"] {
 }
 html.cgpt-ambient-on [data-aurora-surface="code"] {
   box-shadow: none !important;
-  background: color-mix(in srgb, var(--aurora-glass-fill), var(--composer-bg) 25%) !important;
+  background: var(--aurora-glass-fill) !important;
 }
 html.cgpt-ambient-on [data-aurora-surface="control"] {
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
@@ -400,21 +473,50 @@ html.cgpt-ambient-on[data-aurora-site="gemini"] [data-aurora-surface="code"] :is
   background: transparent !important;
 }
 html.cgpt-ambient-on[data-aurora-site="gemini"] body {
-  --lumi-sys-color--surface: var(--composer-bg);
-  --lumi-sys-color--surface-bright: var(--composer-bg);
-  --gem-sys-color--surface: var(--composer-bg);
+  --lumi-sys-color--surface: var(--aurora-glass-fill);
+  --lumi-sys-color--surface-bright: var(--aurora-glass-fill);
+  --gem-sys-color--surface: var(--aurora-glass-fill);
   --mat-menu-container-color: var(--aurora-glass-fill);
   --mat-dialog-container-color: var(--aurora-glass-fill);
 }
-html.cgpt-ambient-on[data-aurora-site="grok"] body {
-  --fg-primary: 0 0% 96%; --fg-secondary: 0 0% 73%; --fg-tertiary: 0 0% 61%;
-  --fg-invert: 0 0% 8%; --surface-base: 225 12% 10%; --surface-l1: 225 12% 13%;
-  --surface-l2: 225 12% 16%; --surface-l3: 225 12% 20%; --surface-elevated: 225 12% 18%;
+/* Grok now consumes complete colors, including a second token family on its
+ * local theme providers. Bare HSL channels invalidate the new declarations. */
+html.cgpt-ambient-on[data-aurora-site="grok"],
+html.cgpt-ambient-on[data-aurora-site="grok"] :is(body, [data-theme]) {
+  --fg-primary: var(--theme-text-primary);
+  --fg-secondary: var(--theme-text-secondary);
+  --fg-tertiary: color-mix(in srgb, var(--theme-text-primary) 60%, transparent);
+  --fg-invert: var(--theme-bg-color);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --x-fg-primary: var(--fg-primary);
+  --x-fg-secondary: var(--fg-secondary);
+  --x-fg-tertiary: var(--fg-tertiary);
+  --x-fg-inverted: var(--fg-invert);
+  --x-btn-primary: var(--theme-text-primary);
+  --x-btn-primary-hover: color-mix(in srgb, var(--theme-text-primary) 80%, transparent);
+  --x-btn-primary-pressed: color-mix(in srgb, var(--theme-text-primary) 70%, transparent);
+  --surface-base: hsl(225 12% 10%);
+  --surface-l1: hsl(225 12% 13%);
+  --surface-l2: hsl(225 12% 16%);
+  --surface-l3: hsl(225 12% 20%);
+  --surface-elevated: hsl(225 12% 18%);
 }
-html.cgpt-ambient-on.cgpt-light-mode[data-aurora-site="grok"] body {
-  --fg-primary: 0 0% 10%; --fg-secondary: 0 0% 34%; --fg-tertiary: 0 0% 44%;
-  --fg-invert: 0 0% 98%; --surface-base: 220 15% 98%; --surface-l1: 220 15% 95%;
-  --surface-l2: 220 15% 92%; --surface-l3: 220 15% 88%; --surface-elevated: 220 15% 96%;
+html.cgpt-ambient-on.cgpt-light-mode[data-aurora-site="grok"],
+html.cgpt-ambient-on.cgpt-light-mode[data-aurora-site="grok"] :is(body, [data-theme]) {
+  --surface-base: hsl(220 15% 98%);
+  --surface-l1: hsl(220 15% 95%);
+  --surface-l2: hsl(220 15% 92%);
+  --surface-l3: hsl(220 15% 88%);
+  --surface-elevated: hsl(220 15% 96%);
+}
+/* Clear the actual desktop shell fills before composer discovery, including
+ * routes without an editor. Only paint changes, never the native geometry. */
+html.cgpt-ambient-on[data-aurora-site="grok"] :is(
+  #grok-app-root, #grok-content-area,
+  div:has(> #grok-app-root), div:has(> #grok-content-area)
+) {
+  background: transparent !important;
 }
 
 /* Qwen's named color tokens serve both desktop and mobile components. */
@@ -498,7 +600,7 @@ html.cgpt-ambient-on[data-aurora-site="qwen"] :is(
 ) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: var(--aurora-glass-shadow) !important;
+  box-shadow: var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
@@ -693,7 +795,7 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
 ) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   color: var(--theme-text-primary) !important;
@@ -715,7 +817,7 @@ html.cgpt-ambient-on[data-aurora-site="aistudio"] :is(
 ) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, blur(14px))) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, blur(14px)) !important;
 }
@@ -1223,10 +1325,10 @@ html.cgpt-ambient-on[data-aurora-site="claude"] :is(body, .cds-root) {
   --cds-text-primary: var(--theme-text-primary);
   --cds-text-secondary: var(--theme-text-secondary);
   --cds-text-disabled: color-mix(in srgb, var(--theme-text-primary) 40%, transparent);
-  --cds-surface-0: var(--composer-bg);
-  --cds-surface-1: var(--composer-bg);
-  --cds-surface-2: var(--composer-bg);
-  --cds-surface-3: var(--composer-bg);
+  --cds-surface-0: var(--aurora-glass-fill);
+  --cds-surface-1: var(--aurora-glass-fill);
+  --cds-surface-2: var(--aurora-glass-fill);
+  --cds-surface-3: var(--aurora-glass-fill);
   --cds-surface-panel: var(--aurora-glass-fill);
   --cds-surface-popover: var(--aurora-glass-fill);
   --cds-border: var(--aurora-glass-border);

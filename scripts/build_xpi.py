@@ -13,6 +13,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 from typing import List, Set, Tuple
 
+from shadow_rules import rules_and_declarations, shadow_rules
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED_PARTS = {
@@ -46,6 +47,7 @@ TEXT_SUFFIXES = {
     ".xml",
 }
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+SHADOW_RENDERER = 'modules/aurora/glass-shadows.js'
 SOURCE_DIRECTORIES = ("_locales", "assets", "icons", "modules")
 ROOT_SUFFIXES = {".css", ".html", ".js"}
 PACKAGE_DOCUMENTS = ("LICENSE", "PRIVACY.md", "THIRD_PARTY_NOTICES.md")
@@ -175,6 +177,22 @@ def package_bytes(path: str, source: Path) -> bytes:
     return data
 
 
+def shadow_selectors(manifest: dict, files: dict[str, Path]) -> bytes:
+    by_host = {}
+    for entry in manifest.get('content_scripts', []):
+        for url in entry.get('matches', []):
+            host = url.split('/')[2]
+            by_host.setdefault(host, set()).update(entry.get('css', []))
+    marker_css = package_bytes('glass-shadows.css', files['glass-shadows.css']).decode('utf-8')
+    markers = {name for _, name, _, _ in rules_and_declarations(marker_css) if name.startswith('--aurora-cast-')}
+    css_paths = set().union(*by_host.values())
+    css_rules = {path: shadow_rules(path, package_bytes(path, files[path]).decode('utf-8'), markers)
+                 for path in sorted(css_paths)}
+    index = {host: {part: ','.join(sorted(set().union(*(css_rules[path][part] for path in paths))))
+                    for part in ('element', 'before', 'after')} for host, paths in by_host.items()}
+    return f'(window.AuroraExt ||= {{}}).shadowSelectors = {json.dumps(index, separators=(",", ":"))};\n'.encode()
+
+
 def build(output: Path, gecko_id: str | None = None) -> Tuple[int, str]:
     manifest_path = ROOT / "manifest.json"
     try:
@@ -185,22 +203,26 @@ def build(output: Path, gecko_id: str | None = None) -> Tuple[int, str]:
     if not isinstance(version, str) or not version:
         raise ValueError("manifest.json must define a version string")
 
+    if gecko_id == "aurora-for-chatgpt-librewolf@local":
+        raise ValueError("Aurora Universal must not use the legacy Aurora add-on ID")
     files = collect_files(manifest)
+    compiled = {SHADOW_RENDERER: shadow_selectors(manifest, files) + package_bytes(SHADOW_RENDERER, files[SHADOW_RENDERER])}
     if gecko_id:
         manifest['browser_specific_settings']['gecko']['id'] = gecko_id
         with tempfile.TemporaryDirectory(prefix='aurora-manifest-') as temporary:
             local_manifest = Path(temporary) / 'manifest.json'
             local_manifest.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
             files['manifest.json'] = local_manifest
-            return write_archive(output, files)
-    return write_archive(output, files)
+            return write_archive(output, files, compiled)
+    return write_archive(output, files, compiled)
 
 
-def write_archive(output: Path, files: dict[str, Path]) -> Tuple[int, str]:
+def write_archive(output: Path, files: dict[str, Path], compiled: dict[str, bytes] | None = None) -> Tuple[int, str]:
     """Write an atomic, reproducible archive and return its file count and hash."""
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.resolve() in (source.resolve() for source in files.values()):
         raise ValueError("The output path must not overwrite a package input")
+    compiled = compiled or {}
 
     temporary_path = None
     try:
@@ -224,7 +246,7 @@ def write_archive(output: Path, files: dict[str, Path]) -> Tuple[int, str]:
                 info.comment = b""
                 archive.writestr(
                     info,
-                    package_bytes(package_path, files[package_path]),
+                    compiled.get(package_path) or package_bytes(package_path, files[package_path]),
                     compress_type=zipfile.ZIP_DEFLATED,
                     compresslevel=9,
                 )

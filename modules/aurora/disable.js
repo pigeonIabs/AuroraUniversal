@@ -20,6 +20,7 @@
 
   function disableAllFeatures() {
     A.textFrost?.stop?.();
+    A.glassShadows?.stop?.();
     const root = document.documentElement;
 
     root.classList.remove(
@@ -45,7 +46,9 @@
 
     root.removeAttribute('data-aurora-site');
     root.removeAttribute('data-aurora-hub-settings');
+    root.removeAttribute('data-aurora-gemini-bloom');
     A.embeddedGems?.sync?.();
+    A.chatGPTDataWidgets?.sync();
     root.removeAttribute('data-custom-font');
     root.removeAttribute('data-voice-color');
     root.style.removeProperty('--cgpt-bg-blur-radius');
@@ -57,6 +60,8 @@
     root.removeAttribute('data-glass-intensity');
     root.removeAttribute('data-aurora-zero-blur');
     root.removeAttribute('data-aurora-codex');
+    root.removeAttribute('data-aurora-space');
+    root.removeAttribute('data-aurora-chatgpt-settings');
     root.removeAttribute('data-aurora-temporary-chat');
     ['--aurora-glass-saturate', '--sidebar-glass-blur', '--clear-blur', '--composer-blur', '--glass-blur'].forEach(name => root.style.removeProperty(name));
     A.defaultModel?.cancel?.();

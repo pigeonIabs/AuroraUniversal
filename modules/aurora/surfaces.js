@@ -76,6 +76,8 @@
     const editors = A.utils.matchingElements(root, selectors.editor);
     const composers = editors.map(editor => selectors.composer && editor.closest(selectors.composer)).filter(Boolean);
     const paintCandidates = [...composers];
+    const editSurfaces = A.material.editorCandidates(root);
+    paintCandidates.push(...editSurfaces.flat());
     for (const [role, nodes] of groups) {
       if (role === 'toolbar' || role === 'overlay') continue;
       for (const node of nodes) {
@@ -93,6 +95,7 @@
       const composer = selectors.composer && editor.closest(selectors.composer);
       if (composer) tagSurface(composer, 'composer');
     });
+    A.material.tagEditors(editSurfaces);
     A.upgrade?.tagElements?.(root);
   }
 
@@ -101,7 +104,7 @@
     tagAll: tagFast,
     untag() {
       const attrs = ['data-aurora-surface', 'data-aurora-surface-edge', 'data-aurora-plane', 'data-aurora-history', 'data-aurora-avatar', 'data-aurora-content', 'data-aurora-upgrade'];
-      A.material.clear(document, attrs);
+      A.material.clear(document, [...attrs, 'data-aurora-editor', 'data-aurora-glass']);
     },
   };
 })();

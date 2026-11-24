@@ -57,6 +57,8 @@
   const guest = location.origin === GUEST && /^\/_app\//.test(location.pathname) && query.get('lite') === 'true';
   if (window === window.top || query.get('origin') !== GEMINI || (!shell && !guest)) return;
   const parentOrigin = shell ? GEMINI : SHELL;
+  const glassShadows = guest ? window.AuroraExt?.createGlassShadows?.() : null;
+  const boardSelector = '.board, #no-projects-panel, #no-create-panel';
   let appearance = null;
   const hosts = new Set();
   const styles = new WeakMap();
@@ -75,10 +77,10 @@
     :host([data-aurora-opal-active]) :is(#home, #board-listing, #content, #boards, #boards-inner) {
       background: transparent !important;
     }
-    :host([data-aurora-opal-active]) :is(.board, #no-projects-panel, #no-create-panel) {
+    :host([data-aurora-opal-active]) :is(${boardSelector}) {
       background: var(--aurora-glass-fill) !important;
       border-color: transparent !important;
-      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-glass-border) 55%, transparent), var(--aurora-glass-shadow) !important;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--aurora-glass-border) 55%, transparent), var(--aurora-cast-glass) !important;
       backdrop-filter: var(--aurora-glass-backdrop) !important;
       -webkit-backdrop-filter: var(--aurora-glass-backdrop) !important;
       color: var(--theme-text-primary) !important;
@@ -147,6 +149,7 @@
         observer.observe(shadow, { childList: true, subtree: true });
       }
       updateHost(host);
+      glassShadows?.observeShadowRoot(shadow, { element: boardSelector });
       scan(shadow);
     }
   }
@@ -160,7 +163,11 @@
     if (next.enabled) root.style.setProperty('color-scheme', next.light ? 'light' : 'dark');
     else root.style.removeProperty('color-scheme');
     hosts.forEach(updateHost);
-    if (guest) scan(document);
+    if (guest) {
+      if (next.enabled) glassShadows?.start();
+      else glassShadows?.stop();
+      scan(document);
+    }
     if (shell) forward(next, GUEST);
   }
 

@@ -240,14 +240,15 @@ html.theme-light .tab-link.active {
 .label { font-size: 13px; white-space: nowrap; }
 .glass-control-host { flex: 1; min-width: 0; }
 .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
-.switch input { display: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; margin: 0; }
+.switch input:focus-visible + .track { outline: 2px solid var(--primary-accent); outline-offset: 2px; }
 .track {
-  position: absolute; inset: 0; border-radius: 6px;
+  position: absolute; inset: 0; border-radius: 999px;
   background-color: rgba(255, 255, 255, 0.1); /* Glassy base */
   border: 1px solid rgba(255, 255, 255, 0.12); /* Subtle border */
   transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
-input:checked + .track {
+.switch input:checked + .track {
   background-color: rgba(79, 140, 255, 0.6); /* Aurora Blue */
   border-color: rgba(79, 140, 255, 0.8);
   box-shadow: 0 0 10px rgba(79, 140, 255, 0.4); /* Glow effect */
@@ -261,7 +262,7 @@ html.theme-light .track {
   top: 0; 
   bottom: 0;
   margin: auto 0;
-  left: 2px;
+  left: 1px;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -368,10 +369,10 @@ html.theme-light .select-trigger:hover {
   max-height: 200px;
   overflow-y: auto;
   display: none; /* Hidden by default */
-  background: var(--popup-dropdown-bg);
-  border: 1px solid var(--popup-dropdown-border);
-  -webkit-backdrop-filter: blur(96px) saturate(140%);
-  backdrop-filter: blur(96px) saturate(140%);
+  background: var(--aurora-glass-fill);
+  border: 1px solid var(--aurora-glass-border);
+  -webkit-backdrop-filter: var(--aurora-glass-backdrop, none);
+  backdrop-filter: var(--aurora-glass-backdrop, none);
 }
 .select-options.open-up {
   top: auto;
@@ -476,16 +477,7 @@ html.cgpt-ambient-on {
   --popup-inner-highlight: var(--aurora-glass-glow);
   isolation: isolate;
 }
-html.cgpt-ambient-on::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--aurora-glass-fill);
-  -webkit-backdrop-filter: blur(var(--aurora-glass-blur));
-  backdrop-filter: blur(var(--aurora-glass-blur));
-}
+/* The shared background's overlay supplies the pane's glass tint once. */
 html.cgpt-ambient-on #cgpt-ambient-bg { z-index: -2 !important; }
 @supports not (backdrop-filter: blur(1px)) {
   .select-options { background: var(--popup-bg); }
@@ -494,3 +486,75 @@ html.cgpt-ambient-on #cgpt-ambient-bg { z-index: -2 !important; }
 .site-controls select:focus-visible, .site-model-controls select:focus-visible { outline: 2px solid var(--primary-accent); outline-offset: 2px; }
 
 .select-option:focus-visible { outline: 2px solid var(--primary-accent); outline-offset: -2px; background: var(--popup-option-hover-bg); }
+
+/* Theme images are the controls. Labels sit outside the artwork. */
+.row.theme-picker-row { display: block; padding: 8px 4px 12px; }
+.theme-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 9px; }
+.theme-grid .theme-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: stretch;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--popup-text);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: left;
+  box-shadow: none;
+  transform: none;
+  will-change: auto;
+}
+.theme-grid .theme-choice:hover { background: transparent; box-shadow: none; transform: none; }
+.theme-choice:focus-visible { outline: 2px solid var(--primary-accent); outline-offset: 3px; }
+.theme-thumbnail {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 5px;
+  background-color: #010102;
+  background-position: center;
+  background-size: cover;
+}
+.theme-choice[aria-pressed="true"] .theme-thumbnail { outline: 2px solid var(--primary-accent); outline-offset: 2px; }
+/* A full website viewport is reduced as one scene. The blur scales with it;
+ * it never changes the website's image resolution, crop, or geometry. */
+html.cgpt-ambient-on :is(#cgpt-ambient-bg, .aurora-theme-preview).aurora-theme-preview {
+  position: absolute;
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  width: var(--preview-width);
+  height: var(--preview-height);
+  z-index: 0;
+  transform: translate(-50%, -50%) scale(var(--preview-scale));
+  transform-origin: center;
+}
+.theme-thumbnail { isolation: isolate; }
+#backgroundFileStatus { font-size: 12px; padding: 2px 4px; }
+
+[data-aurora-dropdown-occluded] { clip-path: var(--aurora-dropdown-cutout); }
+
+.site-controls .custom-select-wrapper { flex: 1; min-width: 0; }
+.site-model-controls .custom-select-wrapper { min-width: 0; }
+.select-trigger, #settingsSearch, input[type="text"], .settings-json-textarea {
+  backdrop-filter: var(--aurora-glass-backdrop, none);
+}
+
+/* Small stars need a minimum visible footprint in the gallery. This does not
+ * alter the website's resolution, starfield, motion, or shooting-star cadence. */
+.aurora-theme-preview .space-firmament { filter: brightness(2); }
+.aurora-theme-preview .space-twinkle {
+  min-width: calc(0.55px / var(--preview-scale));
+  min-height: calc(0.55px / var(--preview-scale));
+}
+.aurora-theme-preview .space-meteor { min-height: calc(0.65px / var(--preview-scale)); }
+.aurora-glass-thumb {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+}

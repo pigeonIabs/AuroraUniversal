@@ -42,10 +42,10 @@
     "message": "Видимость"
   },
   "sectionBackground": {
-    "message": "Фон"
+    "message": "Темы"
   },
   "labelPreset": {
-    "message": "Пресет"
+    "message": "Тема"
   },
   "placeholderBgUrl": {
     "message": "Вставьте URL изображения или видео"
@@ -118,6 +118,9 @@
   },
   "labelGlassStyle": {
     "message": "Стиль стекла"
+  },
+  "labelGeminiBloom": {
+    "message": "Свечение"
   },
   "labelGlassUserMessages": {
     "message": "Стекло в ваших сообщениях"
@@ -198,7 +201,7 @@
     "message": "Тёмный оникс"
   },
   "bgPresetOptionDefault": {
-    "message": "Обои по умолчанию"
+    "message": "GPT-5"
   },
   "bgPresetOptionSpace": {
     "message": "Космос"
@@ -297,13 +300,13 @@
     "message": "Выберите свой стиль"
   },
   "welcomeDescriptionSetup": {
-    "message": "Выберите фон и стиль для персонализации вашего опыта. Вы всегда можете изменить это позже."
+    "message": "Выберите тему и стиль стекла для персонализации."
   },
   "welcomeLabelBgPreset": {
-    "message": "Пресет фона"
+    "message": "Тема"
   },
   "welcomePresetDefault": {
-    "message": "По умолчанию"
+    "message": "GPT-5"
   },
   "welcomePresetAnimated": {
     "message": "Анимированный"
@@ -598,5 +601,8 @@
   },
   "bgPresetOptionEmber": {
     "message": "Угли"
+  },
+  "labelThemePreviewBlur": {
+    "message": "Размытие предпросмотра"
   }
 }

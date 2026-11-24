@@ -86,6 +86,11 @@
         'bard-sidenav-content', 'mat-sidenav-container', 'mat-sidenav-content', '.mat-drawer-content',
         'chat-window', 'chat-window-content', 'input-container', 'infinite-scroller.chat-history',
         'top-bar-actions', 'side-navigation-content',
+        // Chat/Task layout is transparent. Only the native moving selection
+        // and each button's hover fill own paint, never their shared wrapper.
+        'chat-spark-toggle', 'chat-spark-toggle gem-segmented-button-row',
+        'chat-spark-toggle .gem-segmented-button-row-channel',
+        'chat-spark-toggle gem-segmented-button',
         'search-window', 'search-window .search-window-container', 'search-zero-state', 'search-results',
         'your-day-viewer', 'your-day-viewer :is(.your-day-page, .your-day-content-wrapper, .your-day-feed-view)',
         'learn-landing-page', 'learn-landing-page :is(.learn-page-container, .learn-page-chat-window)',

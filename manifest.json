@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.1",
+  "version": "1.0.11.16",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "background": {
@@ -23,6 +23,7 @@
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
+    "https://*.web-sandbox.oaiusercontent.com/*",
     "https://claude.ai/*",
     "https://gemini.google.com/*",
     "https://opal.google.com/_gemini*",
@@ -92,6 +93,7 @@
         "modules/aurora/sites.js"
       ],
       "css": [
+        "theme-background.css",
         "shared.css",
         "glass-control.css"
       ],
@@ -212,12 +214,16 @@
         "https://chat.deepseek.com/*",
         "https://huggingface.co/*"
       ],
+      "css": ["glass-material.css", "glass-shadows.css"],
       "js": [
         "modules/aurora/namespace.js",
         "modules/aurora/preferences.js",
         "modules/aurora/config.js",
         "modules/aurora/utils.js",
         "modules/aurora/root-flags.js",
+        "modules/aurora/wallpaper-renderer.js",
+        "modules/aurora/northern-lights.js",
+        "modules/aurora/deep-ocean.js",
         "modules/aurora/background.js",
         "modules/aurora/startup.js"
       ],
@@ -238,6 +244,7 @@
         "modules/aurora/dom.js",
         "modules/aurora/central-observer.js",
         "modules/aurora/material.js",
+        "modules/aurora/glass-shadows.js",
         "modules/aurora/text-frost.js",
         "modules/aurora/i18n.js",
         "modules/aurora/fonts.js",
@@ -256,12 +263,20 @@
       "js": [
         "modules/aurora/chatgpt-ads.js",
         "modules/aurora/glass.js",
+        "modules/aurora/chatgpt-data-widgets.js",
         "modules/aurora/default-model.js",
         "modules/aurora/quick-settings.js",
         "modules/aurora/audio.js",
         "modules/aurora/masking.js",
         "modules/aurora/welcome.js"
       ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://*.web-sandbox.oaiusercontent.com/*"],
+      "css": ["glass-shadows.css"],
+      "js": ["modules/aurora/glass-shadows.js", "modules/aurora/chatgpt-data-widgets.js"],
+      "all_frames": true,
       "run_at": "document_start"
     },
     {
@@ -320,10 +335,12 @@
         "https://opal.google/_app/*"
       ],
       "js": [
+        "modules/aurora/glass-shadows.js",
         "modules/aurora/gemini-gems.js"
       ],
       "css": [
-        "gemini-gems.css"
+        "gemini-gems.css",
+        "glass-shadows.css"
       ],
       "all_frames": true,
       "run_at": "document_start"
@@ -339,6 +356,7 @@
         "assets/health-zero-state-records-*.svg",
         "_locales/*/messages.json",
         "assets/fonts/*",
+        "modules/aurora/wallpaper-frame.html",
         "modules/message-queue.js",
         "data-masking.js"
       ],

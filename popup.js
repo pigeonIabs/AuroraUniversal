@@ -13,8 +13,8 @@ const DEFAULTS = window.AuroraExt.preferences.defaults;
 const TOGGLE_KEYS = [
   'legacyComposer', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'disableAnimations',
   'focusMode', 'hideQuickSettings', 'queueWhileGenerating', 'blurChatHistory',
-  'blurAvatar', 'soundEnabled', 'autoContrast', 'dataMaskingEnabled',
-  'maskingRandomMode', 'cuteVoiceUI', 'cinemaMode', 'glassUserMessages'
+  'blurAvatar', 'soundEnabled', 'dataMaskingEnabled',
+  'maskingRandomMode', 'autoContrast', 'cuteVoiceUI', 'cinemaMode', 'glassUserMessages', 'geminiBloom'
 ];
 
 // --- Element Cache (populated once on DOMContentLoaded) ---
@@ -23,6 +23,7 @@ let listenersAttached = false;
 let selectedSite = AuroraExt.sites.all[0];
 let activeSiteTab = null;
 let currentSettings = DEFAULTS;
+let materialDraft = {};
 let storedSettings = DEFAULTS;
 let detectedThemes = {};
 let siteSelectedByUser = false;
@@ -34,10 +35,114 @@ const getMessage = (key, substitutions) => chrome?.i18n?.getMessage(key, substit
 
 function saveSettings(patch, site = selectedSite.id, scope = siteSelectedByUser ? 'site' : 'auto') {
   return AuroraExt.preferences.save(patch, site, undefined, scope).then(result => {
+    if (site === selectedSite.id) for (const [key, value] of Object.entries(patch)) {
+      if (materialDraft[key] === value) delete materialDraft[key];
+      if (previewPatch[key] === value) delete previewPatch[key];
+    }
     if (result?.settings) renderUi(result.settings, detectedThemes);
     return result;
   });
 }
+
+// Keep one connection per open website. Pointer input updates the material once
+// per frame without querying every tab or writing storage on every movement.
+let previewFrame = 0;
+let previewPatch = {};
+let previewTargets;
+let previewEpoch = 0;
+function resetMaterialPreview() {
+  previewEpoch += 1;
+  if (previewFrame) cancelAnimationFrame(previewFrame);
+  previewFrame = 0;
+  previewPatch = {};
+  materialDraft = {};
+  const previous = previewTargets;
+  previewTargets = null;
+  previous?.then(targets => targets.forEach(({ port }) => port.disconnect()));
+}
+function previewMaterial(patch) {
+  Object.assign(materialDraft, patch);
+  Object.assign(previewPatch, patch);
+  if (previewFrame) return;
+  const epoch = previewEpoch;
+  previewFrame = requestAnimationFrame(async () => {
+    previewFrame = 0;
+    previewTargets ||= chrome.tabs.query({}).then(tabs => tabs.flatMap(tab => {
+      const site = AuroraExt.sites.fromUrl(tab.url);
+      if (!site || !tab.id) return [];
+      const target = { site, alive: true, port: chrome.tabs.connect(tab.id, { name: 'AURORA_PREVIEW_MATERIAL' }) };
+      target.port.onDisconnect.addListener(() => { target.alive = false; });
+      return [target];
+    })).catch(() => []);
+    const targets = await previewTargets;
+    if (epoch !== previewEpoch) return;
+    const scope = siteSelectedByUser ? 'site' : 'auto';
+    const planned = { ...storedSettings, ...AuroraExt.preferences.planSettings(storedSettings, selectedSite.id, previewPatch, scope) };
+    for (const target of targets) {
+      if (!target.alive) continue;
+      const resolved = AuroraExt.preferences.resolve(planned, target.site.id);
+      const message = { site: target.site.id };
+      for (const key of Object.keys(previewPatch)) message[key] = resolved[key];
+      try { target.port.postMessage(message); } catch { target.alive = false; }
+    }
+  });
+}
+
+const themePreviews = [];
+function syncBackgroundBlurControl() {
+  if (!$.blurSlider) return;
+  const manager = AuroraExt.background.manager;
+  const kind = manager.currentUrl === (currentSettings.customBgUrl || '')
+    ? manager.getActiveLayer()?.dataset.backgroundKind
+    : AuroraExt.preferences.backgroundKind(currentSettings.customBgUrl);
+  const key = kind === 'motion' ? 'motionBackgroundBlur' : 'backgroundBlur';
+  $.blurSlider.dataset.setting = key;
+  const value = AuroraExt.preferences.blurRadius(currentSettings[key], key === 'motionBackgroundBlur' ? 0 : 50);
+  $.blurSlider.value = value;
+  $.blurValue.textContent = value;
+  $.blurRange?.syncRange();
+}
+document.addEventListener('aurora-background-ready', syncBackgroundBlurControl);
+
+let previewViewport = { width: window.screen.availWidth || 1920, height: window.screen.availHeight || 1080 };
+function updateThemePreviews() {
+  const viewport = siteState.viewport || previewViewport;
+  const width = Math.max(1, Number(viewport.width) || previewViewport.width);
+  const height = Math.max(1, Number(viewport.height) || previewViewport.height);
+  previewViewport = { width, height };
+  const layouts = themePreviews.map(({ thumbnail, scene }) => ({ scene, rect: thumbnail.getBoundingClientRect() }));
+  for (const { scene, rect } of layouts) {
+    if (!rect.width || !rect.height) continue;
+    const scale = Math.max(rect.width / width, rect.height / height);
+    scene.style.setProperty('--preview-width', `${width}px`);
+    scene.style.setProperty('--preview-height', `${height}px`);
+    scene.style.setProperty('--preview-scale', String(scale));
+    scene.style.setProperty('--aurora-scene-vw', `${width / 100}px`);
+    scene.style.setProperty('--aurora-scene-vh', `${height / 100}px`);
+    scene.style.setProperty('--aurora-scene-vmax', `${Math.max(width, height) / 100}px`);
+    scene.style.setProperty('--cgpt-object-fit', currentSettings.backgroundScaling === 'contain' ? 'contain' : 'cover');
+    scene.refresh();
+  }
+}
+function createThemePreviews() {
+  for (const button of document.querySelectorAll('#themeGrid .theme-choice')) {
+    const thumbnail = button.querySelector('.theme-thumbnail');
+    const url = button.dataset.themeValue === 'grokHorizon' ? GROK_HORIZON_URL : button.dataset.themeValue;
+    const scene = AuroraExt.background.createThemePreview(url);
+    thumbnail.replaceChildren(scene);
+    themePreviews.push({ thumbnail, scene });
+  }
+  updateThemePreviews();
+  for (const { scene } of themePreviews) scene.prepare().catch(error => console.error('Theme preview could not load', error));
+  const observer = new ResizeObserver(updateThemePreviews);
+  for (const { thumbnail } of themePreviews) observer.observe(thumbnail);
+  window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
+}
+function applyPopupAppearance(refreshUpload = false) {
+  AuroraExt.popupPreview.apply(currentSettings, refreshUpload);
+  updateThemePreviews();
+}
+document.addEventListener('aurora-background-palette', updateThemePreviews);
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,11 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('main').inert = true;
 
   applyLocalization();
+  upgradeNativeSelects();
   const siteScopeReady = applySiteScope();
   
   setupTabs();
   
-  renderUi(DEFAULTS, { detectedTheme: 'dark' });
+  renderUi(DEFAULTS, {});
+  createThemePreviews();
   
   chrome.runtime.sendMessage({ type: 'GET_SETTINGS_FULL' }, (response) => {
     if (chrome.runtime.lastError) {
@@ -81,6 +188,7 @@ async function applySiteScope() {
   const select = document.getElementById('websiteSelect');
   for (const site of AuroraExt.sites.all) select.add(new Option(site.name, site.id));
   select.addEventListener('change', () => {
+    resetMaterialPreview();
     closeAllSelects();
     siteSelectedByUser = true;
     selectedSite = AuroraExt.sites.all.find(site => site.id === select.value);
@@ -173,6 +281,7 @@ async function refreshSiteControls() {
     const snapshot = await chrome.tabs.sendMessage(tab.id, { type: 'GET_SITE_STATE' });
     if (revision !== siteRequestRevision || snapshot?.site !== site.id) return;
     siteState = snapshot;
+    updateThemePreviews();
     renderSiteSettings();
     filterSiteControls();
   } catch { /* Saved model choices also work while a site is closed. */ }
@@ -192,6 +301,7 @@ function renderSiteSettings() {
   current.hidden = !siteState.currentModel || siteState.currentModel === chosen;
   current.disabled = !siteState.currentModel || siteState.currentModel === chosen;
   current.title = siteState.currentModel || getMessage('openSiteForModel');
+  initOrUpdateSelects(currentSettings);
 }
 
 function hydrateWithRealData(settings, localData) {
@@ -222,10 +332,12 @@ function cacheElements() {
   // Individual elements
   $.blurSlider = document.getElementById('blurSlider');
   $.blurValue = document.getElementById('blurValue');
+  $.blurRange = AuroraExt.glassControl.styleRange($.blurSlider);
   $.glassControl = AuroraExt.glassControl.create('glassIntensitySlider', DEFAULTS, patch => {
     currentSettings = { ...currentSettings, ...patch };
-    AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'));
-  }, patch => saveSettings(patch));
+    applyPopupAppearance();
+    previewMaterial(patch);
+  }, patch => { previewMaterial(patch); saveSettings(patch); });
   document.getElementById('glassControlHost').append($.glassControl);
   $.bgUrl = document.getElementById('bgUrl');
   $.bgFile = document.getElementById('bgFile');
@@ -250,9 +362,7 @@ function cacheElements() {
   
   // Custom selects (containers)
   $.selects = {
-    bgPreset: document.getElementById('bgPreset'),
     bgScalingSelector: document.getElementById('bgScalingSelector'),
-    themeSelector: document.getElementById('themeSelector'),
     fontSelector: document.getElementById('fontSelector'),
     voiceColorSelector: document.getElementById('voiceColorSelector'),
     defaultModelSelector: document.getElementById('defaultModelSelector')
@@ -263,17 +373,11 @@ function cacheElements() {
 function renderUi(stored, localData = {}) {
   storedSettings = stored;
   detectedThemes = localData;
-  const settings = AuroraExt.preferences.resolve(stored, selectedSite.id);
+  const settings = { ...AuroraExt.preferences.resolve(stored, selectedSite.id), ...materialDraft };
   currentSettings = settings;
   renderSiteSettings();
   filterSiteControls();
-  // Theme Toggle
-  let isLightTheme = settings.theme === 'light';
-  if (settings.theme === 'auto') {
-    isLightTheme = (localData[`detectedTheme:${selectedSite.id}`] ||
-      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'light';
-  }
-  AuroraExt.popupPreview.apply(settings, isLightTheme);
+  applyPopupAppearance();
 
   // Boolean Toggles (uses cached elements)
   TOGGLE_KEYS.forEach(key => {
@@ -290,87 +394,32 @@ function renderUi(stored, localData = {}) {
   }
 
   // Range Sliders
-  if ($.blurSlider && $.blurValue) {
-    $.blurSlider.value = settings.backgroundBlur;
-    $.blurValue.textContent = settings.backgroundBlur;
-  }
+  syncBackgroundBlurControl();
   $.glassControl?.syncGlass(settings);
 
-  // Text Inputs
-  if ($.bgUrl) {
-    if (SCENIC_BACKGROUNDS[settings.customBgUrl]) {
-      $.bgUrl.value = getMessage(SCENIC_BACKGROUNDS[settings.customBgUrl]);
-      $.bgUrl.disabled = true;
-    } else if (settings.customBgUrl === '__space__') {
-      $.bgUrl.value = getMessage('bgPresetOptionSpace') || 'Space';
-      $.bgUrl.disabled = true;
-    } else if (settings.customBgUrl === '__gpt5_animated__') {
-      $.bgUrl.value = getMessage('statusAnimatedBackground') || 'Animated Active';
-      $.bgUrl.disabled = true;
-    } else if (settings.customBgUrl === '__local__') {
-      $.bgUrl.value = getMessage('statusLocalFileInUse') || 'Local File Active';
-      $.bgUrl.disabled = true;
-    } else if (document.activeElement !== $.bgUrl) {
-      const presets = [GROK_HORIZON_URL, PURE_BLACK_BACKGROUND];
-      $.bgUrl.value = presets.includes(settings.customBgUrl) ? '' : settings.customBgUrl;
-      $.bgUrl.disabled = false;
-    }
+  // Keep the URL field available for a custom source regardless of the selected theme.
+  if ($.bgUrl && document.activeElement !== $.bgUrl) {
+    const value = settings.customBgUrl || '';
+    $.bgUrl.value = value.startsWith('__') || value === GROK_HORIZON_URL ? '' : value;
   }
 
+  document.querySelectorAll('#themeGrid .theme-choice').forEach(button => {
+    const value = button.dataset.themeValue === 'grokHorizon' ? GROK_HORIZON_URL : button.dataset.themeValue;
+    button.setAttribute('aria-pressed', String(value === settings.customBgUrl));
+  });
+
   // Initialize/Update Custom Selects (Optimized: builds once, updates only values)
-  initOrUpdateSelects(settings);
   const soundVolume = document.getElementById('soundVolume');
   if (soundVolume) soundVolume.value = settings.soundVolume || 'low';
+  initOrUpdateSelects(settings);
 }
 
 // --- Custom Selects (Single-Pass Initialization) ---
 const SELECT_CONFIGS = [
-  {
-    id: 'bgPreset', key: 'customBgUrl',
-    options: [
-      { value: 'default', labelKey: 'bgPresetOptionDefault' },
-      { value: PURE_BLACK_BACKGROUND, label: 'Pure Black' },
-      { value: '__space__', labelKey: 'bgPresetOptionSpace' },
-      { value: '__gpt5_animated__', labelKey: 'bgPresetOptionGpt5Animated' },
-      { value: 'grokHorizon', labelKey: 'bgPresetOptionGrokHorizon' },
-      ...Object.entries(SCENIC_BACKGROUNDS).map(([value, labelKey]) => ({ value, labelKey })),
-      { value: 'custom', labelKey: 'bgPresetOptionCustom', hidden: true }
-    ],
-    mapVal: (v) => {
-      if (!v) return 'default';
-      if (SCENIC_BACKGROUNDS[v]) return v;
-      if (v === GROK_HORIZON_URL) return 'grokHorizon';
-      if (v === PURE_BLACK_BACKGROUND) return PURE_BLACK_BACKGROUND;
-      if (v === '__space__') return '__space__';
-      if (v === '__gpt5_animated__') return '__gpt5_animated__';
-      return 'custom';
-    },
-    onSelect: (val) => {
-      let url = '';
-      if (SCENIC_BACKGROUNDS[val]) url = val;
-      else if (val === 'grokHorizon') url = GROK_HORIZON_URL;
-      else if (val === PURE_BLACK_BACKGROUND) url = PURE_BLACK_BACKGROUND;
-      else if (val === '__space__') url = '__space__';
-      else if (val === '__gpt5_animated__') url = '__gpt5_animated__';
-      // Space preserves the uploaded background and changes only the selection.
-      saveSettings({ customBgUrl: url });
-    }
-  },
-  {
-    id: 'bgScalingSelector', key: 'backgroundScaling',
-    options: [
-      { value: 'contain', labelKey: 'bgScalingOptionContain' },
-      { value: 'cover', labelKey: 'bgScalingOptionCover' }
-    ]
-  },
-  {
-    id: 'themeSelector', key: 'theme',
-    options: [
-      { value: 'auto', labelKey: 'themeOptionAuto' },
-      { value: 'light', labelKey: 'themeOptionLight' },
-      { value: 'dark', labelKey: 'themeOptionDark' }
-    ]
-  },
+  { id: 'bgScalingSelector', key: 'backgroundScaling', options: [
+    { value: 'contain', labelKey: 'bgScalingOptionContain' },
+    { value: 'cover', labelKey: 'bgScalingOptionCover' }
+  ] },
   {
     id: 'fontSelector', key: 'customFont',
     options: [
@@ -405,123 +454,146 @@ const SELECT_CONFIGS = [
   }
 ];
 
+function upgradeNativeSelects() {
+  for (const nativeId of ['websiteSelect', 'siteDefaultModel', 'soundVolume']) {
+    const native = document.getElementById(nativeId);
+    if (!native) continue;
+    const container = $.selects.fontSelector.cloneNode(true);
+    container.id = `${nativeId}Menu`;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper';
+    wrapper.appendChild(container);
+    native.after(wrapper);
+    const title = native.labels?.[0]?.textContent || native.getAttribute('aria-label') || nativeId;
+    const trigger = container.querySelector('.select-trigger');
+    trigger.id = `${nativeId}Trigger`;
+    trigger.setAttribute('aria-label', title);
+    trigger.removeAttribute('data-i18n-aria-label');
+    const options = container.querySelector('.select-options');
+    options.setAttribute('aria-label', title);
+    options.removeAttribute('data-i18n-aria-label');
+    native.classList.add('sr-only');
+    native.tabIndex = -1;
+    native.setAttribute('aria-hidden', 'true');
+    for (const label of native.labels || []) label.addEventListener('click', event => {
+      event.preventDefault();
+      trigger.focus();
+    });
+    $.selects[container.id] = container;
+    SELECT_CONFIGS.push({ id: container.id, nativeId, options: [] });
+  }
+}
+
 function initOrUpdateSelects(settings) {
   SELECT_CONFIGS.forEach(cfg => {
     const container = $.selects[cfg.id];
     if (!container) return;
-    
+    const native = cfg.nativeId && document.getElementById(cfg.nativeId);
+    if (native) cfg.options = [...native.options].map(option => ({ value: option.value, label: option.textContent }));
     const trigger = container.querySelector('.select-trigger');
     const label = container.querySelector('.select-label');
-    const optsContainer = container.querySelector('.select-options');
-    const dot = trigger?.querySelector('.color-dot');
-    
-    if (!trigger || !optsContainer) return;
-    
-    const val = settings[cfg.key];
-    const effectiveVal = cfg.mapVal ? cfg.mapVal(val) : val;
-    const activeOpt = cfg.options.find(o => o.value === effectiveVal) || cfg.options[0];
-    
-    // Update trigger label
-    if (label) {
-      label.textContent = activeOpt.labelKey ? getMessage(activeOpt.labelKey) : (activeOpt.label || activeOpt.value);
-    }
-    
-    // Update color dot if present
+    const options = container.querySelector('.select-options');
+    const dot = trigger.querySelector('.color-dot');
+    const value = native ? native.value : settings[cfg.key];
+    const active = cfg.options.find(option => option.value === value) || cfg.options[0];
+    const optionText = option => option.labelKey ? getMessage(option.labelKey) : (option.label || option.value);
+    label.textContent = active ? optionText(active) : '';
+    trigger.disabled = !!native?.disabled;
     if (dot) {
-      dot.style.display = activeOpt.color ? 'block' : 'none';
-      if (activeOpt.color) dot.style.backgroundColor = activeOpt.color;
+      dot.style.display = active?.color ? 'block' : 'none';
+      if (active?.color) dot.style.backgroundColor = active.color;
     }
-    
-    // Build options ONLY ONCE (check if already built)
-    if (!container.dataset.built) {
-      container.dataset.built = 'true';
-      
-      // Build option nodes without interpreting labels or values as markup.
-      const optionNodes = cfg.options.filter(o => !o.hidden).map(opt => {
-        const txt = opt.labelKey ? getMessage(opt.labelKey) : (opt.label || opt.value);
-        const optionEl = document.createElement('div');
-        optionEl.className = 'select-option';
-        optionEl.setAttribute('role', 'option');
-        optionEl.tabIndex = -1;
-        optionEl.dataset.value = opt.value;
-
-        if (opt.color) {
-          const optionDot = document.createElement('span');
-          optionDot.className = 'color-dot';
-          optionDot.style.backgroundColor = opt.color;
-          optionDot.style.display = 'block';
-          optionEl.appendChild(optionDot);
+    const signature = JSON.stringify(cfg.options);
+    if (container.dataset.options !== signature) {
+      container.dataset.options = signature;
+      options.replaceChildren(...cfg.options.map(option => {
+        const node = document.createElement('div');
+        node.className = 'select-option';
+        node.setAttribute('role', 'option');
+        node.tabIndex = -1;
+        node.dataset.value = option.value;
+        if (option.color) {
+          const color = document.createElement('span');
+          color.className = 'color-dot';
+          color.style.backgroundColor = option.color;
+          color.style.display = 'block';
+          node.append(color);
         }
-
-        const optionLabel = document.createElement('span');
-        optionLabel.textContent = txt;
-        optionEl.appendChild(optionLabel);
-        return optionEl;
-      });
-      optsContainer.replaceChildren(...optionNodes);
-      optsContainer.id ||= `${cfg.id}-options`;
-      trigger.setAttribute('aria-controls', optsContainer.id);
-      const focusOption = () => (optsContainer.querySelector('[aria-selected="true"]') || optionNodes[0])?.focus();
-      trigger.addEventListener('keydown', event => {
-        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-        event.preventDefault();
-        trigger.click();
-        focusOption();
-      });
-      optsContainer.addEventListener('keydown', event => {
-        const index = optionNodes.indexOf(document.activeElement);
-        let next = index;
-        if (event.key === 'ArrowDown') next = (index + 1) % optionNodes.length;
-        else if (event.key === 'ArrowUp') next = (index - 1 + optionNodes.length) % optionNodes.length;
-        else if (event.key === 'Home') next = 0;
-        else if (event.key === 'End') next = optionNodes.length - 1;
-        else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); document.activeElement.click(); trigger.focus(); return; }
-        else if (event.key === 'Escape') { event.preventDefault(); closeAllSelects(); trigger.focus(); return; }
-        else if (event.key === 'Tab') { closeAllSelects(); return; }
-        else return;
-        event.preventDefault();
-        optionNodes[next]?.focus();
-      });
-      
-      // Attach trigger click listener ONCE
-      trigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const wasOpen = container.classList.contains('is-open');
-        closeAllSelects();
-        if (wasOpen) return;
-        container.classList.add('is-open');
-        optsContainer.style.display = 'block';
-        trigger.setAttribute('aria-expanded', 'true');
-        positionSelectOptions(trigger, optsContainer);
-        focusOption();
-      });
-      
-      // Attach option click listeners ONCE using event delegation
-      optsContainer.addEventListener('click', (e) => {
-        const option = e.target.closest('.select-option');
-        if (!option) return;
-        
-        const selectedVal = option.dataset.value;
-        if (cfg.onSelect) {
-          cfg.onSelect(selectedVal);
-        } else {
-          saveSettings({ [cfg.key]: selectedVal });
-        }
-        
-        // Update label immediately (optimistic)
-        if (label) label.textContent = option.textContent.trim();
-        closeAllSelects();
-      });
+        const text = document.createElement('span');
+        text.textContent = optionText(option);
+        node.append(text);
+        return node;
+      }));
     }
-    
-    // Update selected state on options
-    optsContainer.querySelectorAll('.select-option').forEach(el => {
-      el.setAttribute('aria-selected', el.dataset.value === effectiveVal);
+    for (const option of options.children) option.setAttribute('aria-selected', String(option.dataset.value === value));
+    if (container.dataset.built) return;
+    container.dataset.built = 'true';
+    options.id = `${cfg.id}-options`;
+    trigger.setAttribute('aria-controls', options.id);
+    const open = () => {
+      closeAllSelects();
+      container.classList.add('is-open');
+      options.style.display = 'block';
+      trigger.setAttribute('aria-expanded', 'true');
+      positionSelectOptions(trigger, options);
+      (options.querySelector('[aria-selected="true"]') || options.firstElementChild)?.focus({ preventScroll: true });
+    };
+    trigger.addEventListener('click', event => {
+      event.stopPropagation();
+      if (container.classList.contains('is-open')) closeAllSelects();
+      else open();
+    });
+    trigger.addEventListener('keydown', event => {
+      if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+      event.preventDefault();
+      open();
+    });
+    options.addEventListener('click', event => {
+      const option = event.target.closest('.select-option');
+      if (!option) return;
+      event.stopPropagation();
+      const next = option.dataset.value;
+      closeAllSelects();
+      label.textContent = option.textContent.trim();
+      if (native) {
+        native.value = next;
+        native.dispatchEvent(new Event('change', { bubbles: true }));
+      } else saveSettings({ [cfg.key]: next });
+      trigger.focus({ preventScroll: true });
+    });
+    options.addEventListener('keydown', event => {
+      const nodes = [...options.children];
+      const index = nodes.indexOf(document.activeElement);
+      let next;
+      if (event.key === 'ArrowDown') next = (index + 1) % nodes.length;
+      else if (event.key === 'ArrowUp') next = (index - 1 + nodes.length) % nodes.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = nodes.length - 1;
+      else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        document.activeElement.click();
+        return;
+      } else if (event.key === 'Escape' || event.key === 'Tab') {
+        if (event.key === 'Escape') event.preventDefault();
+        closeAllSelects();
+        trigger.focus({ preventScroll: true });
+        return;
+      } else return;
+      event.preventDefault();
+      nodes[next]?.focus();
     });
   });
 }
 
+function clearDropdownMasks() {
+  document.querySelectorAll('[data-aurora-dropdown-occluded]').forEach(node => {
+    node.removeAttribute('data-aurora-dropdown-occluded');
+    node.style.removeProperty('--aurora-dropdown-cutout');
+  });
+}
+
 function closeAllSelects() {
+  clearDropdownMasks();
   Object.values($.selects).forEach(el => {
     if (!el) return;
     el.classList.remove('is-open');
@@ -536,26 +608,59 @@ function closeAllSelects() {
   });
 }
 
+function maskDropdownOverlap(trigger, options) {
+  clearDropdownMasks();
+  if (!trigger.closest('.custom-select')?.classList.contains('is-open')) return;
+  const bounds = options.getBoundingClientRect();
+  const owner = trigger.closest('.row');
+  document.querySelectorAll('.tab-pane.active > .row, .tab-pane.active > .section-header, .master-toggle-row, .site-controls, .search-wrapper, .tab-nav, .popup-header').forEach(node => {
+    if (node === owner || node.contains(options)) return;
+    const rect = node.getBoundingClientRect();
+    const left = Math.max(0, bounds.left - rect.left);
+    const top = Math.max(0, bounds.top - rect.top);
+    const right = Math.min(rect.width, bounds.right - rect.left);
+    const bottom = Math.min(rect.height, bounds.bottom - rect.top);
+    if (right <= left || bottom <= top) return;
+    // Remove only the pixels directly behind the menu, leaving the rest of each
+    // row visible and its layout untouched. The glass then samples the background.
+    const hole = `M0 0 H${rect.width} V${rect.height} H0 Z M${left} ${top} H${right} V${bottom} H${left} Z`;
+    node.style.setProperty('--aurora-dropdown-cutout', `path(evenodd, "${hole}")`);
+    node.setAttribute('data-aurora-dropdown-occluded', '');
+  });
+}
+
 function positionSelectOptions(trigger, options) {
   requestAnimationFrame(() => {
+    if (!trigger.closest('.custom-select')?.classList.contains('is-open')) return;
     const triggerRect = trigger.getBoundingClientRect();
     const spaceBelow = window.innerHeight - triggerRect.bottom - 8;
     const spaceAbove = triggerRect.top - 8;
     const preferredHeight = Math.min(options.scrollHeight, 240);
     const openUp = spaceBelow < Math.min(preferredHeight, 120) && spaceAbove > spaceBelow;
     const availableSpace = Math.max(96, Math.floor((openUp ? spaceAbove : spaceBelow) - 4));
-
     options.classList.toggle('open-up', openUp);
     options.style.maxHeight = `${Math.min(preferredHeight, availableSpace)}px`;
     options.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+    maskDropdownOverlap(trigger, options);
   });
 }
+
+document.addEventListener('scroll', () => {
+  const open = document.querySelector('.custom-select.is-open');
+  if (open) maskDropdownOverlap(open.querySelector('.select-trigger'), open.querySelector('.select-options'));
+}, true);
 
 // Close selects on outside click
 document.addEventListener('click', closeAllSelects);
 
 // --- Event Listeners (Setup ONCE) ---
 function setupChangeListeners() {
+  document.getElementById('themeGrid')?.addEventListener('click', event => {
+    const button = event.target.closest('.theme-choice');
+    if (!button) return;
+    const customBgUrl = button.dataset.themeValue === 'grokHorizon' ? GROK_HORIZON_URL : button.dataset.themeValue;
+    saveSettings({ customBgUrl });
+  });
   document.getElementById('soundVolume')?.addEventListener('change', event => saveSettings({ soundVolume: event.target.value }));
   // Toggles - event delegation on body
   TOGGLE_KEYS.forEach(key => {
@@ -564,7 +669,8 @@ function setupChangeListeners() {
       el.addEventListener('change', () => {
         currentSettings = { ...currentSettings, [key]: el.checked };
         filterSiteControls();
-        saveSettings({ [key]: el.checked });
+        if (key === 'geminiBloom') saveSettings({ [key]: el.checked }, selectedSite.id, 'site');
+        else saveSettings({ [key]: el.checked });
       });
     }
   });
@@ -575,23 +681,21 @@ function setupChangeListeners() {
     });
   }
 
-  // Slider with debounce
+  // Preview while dragging and persist the final value immediately on release.
   if ($.blurSlider) {
-    let sliderTimeout;
     $.blurSlider.addEventListener('input', () => {
       $.blurValue.textContent = $.blurSlider.value;
-      currentSettings = { ...currentSettings, backgroundBlur: $.blurSlider.value };
-      AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'));
-      clearTimeout(sliderTimeout);
-      const site = selectedSite.id;
-      const scope = siteSelectedByUser ? 'site' : 'auto';
-      const value = $.blurSlider.value;
-      sliderTimeout = setTimeout(() => {
-        saveSettings({ backgroundBlur: value }, site, scope);
-      }, 150);
+      const patch = { [$.blurSlider.dataset.setting]: $.blurSlider.value };
+      currentSettings = { ...currentSettings, ...patch };
+      applyPopupAppearance();
+      previewMaterial(patch);
+    });
+    $.blurSlider.addEventListener('change', () => {
+      const patch = { [$.blurSlider.dataset.setting]: $.blurSlider.value };
+      previewMaterial(patch);
+      saveSettings(patch);
     });
   }
-
 
   // BG URL
   if ($.bgUrl) {
@@ -601,15 +705,42 @@ function setupChangeListeners() {
     });
   }
 
-  // BG File
+  // Open the native picker directly from the popup and store media locally.
   if ($.bgFile) {
-    $.bgFile.addEventListener('click', () => {
-      const uploadUrl = `${chrome.runtime.getURL('background-upload.html')}?site=${encodeURIComponent(selectedSite.id)}&scope=${siteSelectedByUser ? 'site' : 'auto'}`;
-      chrome.tabs.create({ url: uploadUrl }, () => {
-        if (chrome.runtime.lastError) {
-          window.open(uploadUrl, '_blank');
-        }
-      });
+    const input = document.getElementById('backgroundFile');
+    const status = document.getElementById('backgroundFileStatus');
+    $.bgFile.addEventListener('click', () => input.click());
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const site = selectedSite.id;
+      const scope = siteSelectedByUser ? 'site' : 'auto';
+      status.hidden = false;
+      if (file.size > 15 * 1024 * 1024) {
+        status.textContent = 'Choose a file smaller than 15 MB.';
+        input.value = '';
+        return;
+      }
+      status.textContent = `Saving ${file.name}`;
+      let key;
+      try {
+        const data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error || new Error('Could not read the file'));
+          reader.readAsDataURL(file);
+        });
+        if (typeof data !== 'string' || !data.startsWith('data:')) throw new Error('Could not read the file');
+        key = `customBgData:${site}:${crypto.randomUUID()}`;
+        await chrome.storage.local.set({ [key]: data });
+        await saveSettings({ customBgUrl: '__local__', customBgDataKey: key }, site, scope);
+        status.textContent = `${file.name} selected`;
+      } catch (error) {
+        if (key) await chrome.storage.local.remove(key);
+        status.textContent = `Could not save the background. ${error.message}`;
+      } finally {
+        input.value = '';
+      }
     });
   }
 
@@ -620,11 +751,13 @@ function setupChangeListeners() {
         customBgUrl: DEFAULTS.customBgUrl,
         customBgDataKey: DEFAULTS.customBgDataKey,
         backgroundBlur: DEFAULTS.backgroundBlur,
+        motionBackgroundBlur: DEFAULTS.motionBackgroundBlur,
         backgroundScaling: DEFAULTS.backgroundScaling
       });
       if ($.blurSlider) {
         $.blurSlider.value = DEFAULTS.backgroundBlur;
         $.blurValue.textContent = DEFAULTS.backgroundBlur;
+        $.blurRange.syncRange();
       }
       if ($.bgUrl) $.bgUrl.value = '';
     });
@@ -682,6 +815,7 @@ function buildSearchableData() {
 }
 
 function handleSearch() {
+  closeAllSelects();
   const query = $.settingsSearch?.value.toLowerCase().trim() || '';
   if ($.clearSearchBtn) $.clearSearchBtn.hidden = !query;
 
@@ -766,7 +900,7 @@ function setupImportExport() {
 // --- Live Storage Listener (Keep popup in sync) ---
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes[currentSettings.customBgDataKey || 'customBgData']) {
-    AuroraExt.popupPreview.apply(currentSettings, document.documentElement.classList.contains('theme-light'), true);
+    applyPopupAppearance(true);
   }
   if (area === 'sync' || (area === 'local' && Object.keys(changes).some(key => key.startsWith('detectedTheme:')))) {
     chrome.runtime.sendMessage({ type: 'GET_SETTINGS_FULL' }, (response) => {

@@ -120,49 +120,50 @@
     if (!app.style.zIndex || parseInt(app.style.zIndex || '0', 10) < 0) set('z-index', '0');
   }
 
+  function createLayer(layerId, active = false) {
+    const layer = document.createElement('div');
+    layer.className = `media-layer${active ? ' active' : ''}`;
+    layer.dataset.layerId = layerId;
+
+    const animatedBg = document.createElement('div');
+    animatedBg.className = 'animated-bg';
+    for (let index = 0; index < 3; index += 1) {
+      const blob = document.createElement('div');
+      blob.className = 'blob';
+      animatedBg.appendChild(blob);
+    }
+
+    const video = document.createElement('video');
+    video.playsInline = true;
+    video.autoplay = true;
+    video.muted = true;
+    video.loop = true;
+
+    const picture = document.createElement('picture');
+    const source = document.createElement('source');
+    source.type = 'image/webp';
+    const image = document.createElement('img');
+    image.alt = '';
+    image.setAttribute('aria-hidden', 'true');
+    image.sizes = '100vw';
+    image.loading = 'eager';
+    image.setAttribute('fetchpriority', 'high');
+    picture.append(source, image);
+
+    layer.append(animatedBg, video, picture);
+    return layer;
+  }
+
   function makeBgNode() {
     // A distinct tag cannot be mistaken for the host's first server-rendered div.
     const wrap = document.createElement('aurora-background');
     wrap.id = ID;
     wrap.className = 'bg-visible';
     wrap.setAttribute('aria-hidden', 'true');
-    wrap.style.setProperty('--cgpt-bg-blur-radius', '60px');
+    wrap.style.setProperty('--cgpt-bg-blur-radius', '50px');
     wrap.style.setProperty('--cgpt-object-fit', 'cover');
     Object.assign(wrap.style, { position: 'fixed', inset: '0', zIndex: '-1', pointerEvents: 'none', overflow: 'hidden' });
 
-    const createLayer = (layerId, active = false) => {
-      const layer = document.createElement('div');
-      layer.className = `media-layer${active ? ' active' : ''}`;
-      layer.dataset.layerId = layerId;
-
-      const animatedBg = document.createElement('div');
-      animatedBg.className = 'animated-bg';
-      for (let index = 0; index < 3; index += 1) {
-        const blob = document.createElement('div');
-        blob.className = 'blob';
-        animatedBg.appendChild(blob);
-      }
-
-      const video = document.createElement('video');
-      video.playsInline = true;
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-
-      const picture = document.createElement('picture');
-      const source = document.createElement('source');
-      source.type = 'image/webp';
-      const image = document.createElement('img');
-      image.alt = '';
-      image.setAttribute('aria-hidden', 'true');
-      image.sizes = '100vw';
-      image.loading = 'eager';
-      image.setAttribute('fetchpriority', 'high');
-      picture.append(source, image);
-
-      layer.append(animatedBg, video, picture);
-      return layer;
-    };
 
     const haze = document.createElement('div');
     haze.className = 'haze';
@@ -190,7 +191,7 @@
     else document.body.appendChild(node);
   }
 
-  function makeSpaceBackground() {
+  function makeSpaceBackground(preview = false) {
     // Start the existing asset request before CSS layout or the host body.
     // CSS shares this resource. No canvas, resampling or extra raster is used.
     if (!spaceImage) {
@@ -227,7 +228,7 @@
       star.style.left = `${Math.random() * 100}%`;
       star.style.top = `${Math.random() * 100}%`;
       star.style.setProperty('--twinkle-size', `${0.85 + Math.random() * 0.9}px`);
-      star.style.setProperty('--twinkle-duration', `${4.5 + Math.random() * 7}s`);
+      star.style.setProperty('--twinkle-duration', `${3.8 + Math.random() * 6}s`);
       star.style.setProperty('--twinkle-delay', `${-Math.random() * 12}s`);
       firmament.appendChild(star);
     }
@@ -244,8 +245,8 @@
         meteor.style.setProperty('--meteor-distance', `${170 + Math.random() * 210}px`);
       };
       place();
-      meteor.style.animationDuration = `${70 + Math.random() * 35}s`;
-      meteor.style.animationDelay = `${30 + Math.random() * 35}s`;
+      meteor.style.animationDuration = `${65 + Math.random() * 35}s`;
+      meteor.style.animationDelay = preview ? `${2 + Math.random() * 6}s` : `${30 + Math.random() * 35}s`;
       meteor.addEventListener('animationiteration', place);
       sky.appendChild(meteor);
     }
@@ -253,6 +254,115 @@
   }
 
   // ========================================================================
+  async function populatePreset(layer, url, preview = false, isCurrent = () => true) {
+    layer.dataset.backgroundKind = A.preferences.backgroundKind(url);
+    if (url === '__gpt5_animated__') {
+      layer.classList.add('gpt5-active');
+      prepareGradient(layer);
+    } else if (url === '__pure_black__') {
+      layer.classList.add('pure-black-active');
+    } else if (url === '__space__') {
+      layer.appendChild(makeSpaceBackground(preview));
+      layer.classList.add('space-active');
+    } else if (A.preferences.scenicBackgrounds[url]) {
+      const name = A.preferences.scenicBackgrounds[url];
+      const scene = document.createElement('div');
+      scene.className = `scenic-bg scenic-${name}`;
+      const parts = name === 'deep-ocean' ? ['base']
+        : name === 'northern-lights' ? ['base', 'light', 'landscape'] : ['base', 'light'];
+      const layers = await Promise.all(parts.map(async part => {
+        const image = new Image();
+        image.src = chrome.runtime.getURL(`assets/themes/${name}-${part}.webp`);
+        await image.decode();
+        const paint = document.createElement('div');
+        paint.className = `scenic-${part}`;
+        paint.style.backgroundImage = `url("${image.src}")`;
+        return paint;
+      }));
+      if (!isCurrent()) return true;
+      scene.append(...layers);
+      layer.appendChild(scene);
+      layer.classList.add('scenic-active');
+      if (name === 'northern-lights') A.northernLights?.attach(scene, preview);
+      if (name === 'deep-ocean') A.deepOcean?.attach(scene, preview);
+    } else return false;
+    return true;
+  }
+
+  function createThemePreview(url) {
+    const frame = document.createElement('aurora-background');
+    frame.className = 'aurora-theme-preview';
+    frame.setAttribute('aria-hidden', 'true');
+    const layer = createLayer('preview', true);
+    BackgroundManager.cleanLayer(layer);
+    layer.classList.add('active');
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    frame.append(layer, overlay);
+    frame.prepare = async () => {
+      if (!await populatePreset(layer, url, true)) {
+        const image = layer.querySelector('img');
+        image.style.display = 'block';
+        // Only thumbnails request a smaller responsive source. Website sources stay untouched.
+        image.sizes = '160px';
+        if (!url) image.srcset = BackgroundManager.DEFAULT_SRCSET;
+        image.src = url || BackgroundManager.DEFAULT_SRC;
+      }
+    };
+    frame.refresh = () => prepareGradient(layer);
+    return frame;
+  }
+
+  // Pick readable glass and text colors from the selected image, independently
+  // of the website or operating system appearance. Unreadable cross-origin media
+  // falls back to the dark palette without changing the theme image itself.
+  let contrastRevision = 0;
+  function applyThemeContrast(layer, url, isCurrent) {
+    const revision = ++contrastRevision;
+    const root = document.documentElement;
+    const setLight = light => {
+      if (revision !== contrastRevision || !isEnabled() || !isCurrent()) return;
+      root.classList.toggle('cgpt-light-mode', light);
+      if (!A.site) {
+        root.classList.toggle('theme-light', light);
+        root.style.colorScheme = light ? 'light' : 'dark';
+      }
+      prepareGradient(layer);
+      if (!A.site) document.dispatchEvent(new Event('aurora-background-palette'));
+      A.embeddedGems?.sync?.();
+      A.chatGPTDataWidgets?.sync();
+      A.textFrost?.schedule?.();
+    };
+    const sample = source => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 32;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(source, 0, 0, 32, 32);
+        const pixels = ctx.getImageData(0, 0, 32, 32).data;
+        let luminance = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          luminance += 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+        }
+        setLight(luminance / (pixels.length / 4) > 150);
+      } catch (_) { setLight(false); }
+    };
+    if (['__space__', '__pure_black__', '__gpt5_animated__'].includes(url)) {
+      setLight(false);
+      return;
+    }
+    const scene = A.preferences.scenicBackgrounds[url];
+    const media = layer.querySelector('video[style*="block"], img[style*="block"]');
+    if (scene || (media?.tagName === 'IMG' && /^https?:/.test(media.currentSrc || media.src))) {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => sample(image);
+      image.onerror = () => setLight(false);
+      image.src = scene ? chrome.runtime.getURL(`assets/themes/${scene}-base.webp`) : (media.currentSrc || media.src);
+    } else if (media) sample(media);
+    else setLight(false);
+  }
+
   // BACKGROUND MANAGER - State Machine for Reliable Background Switching
   // ========================================================================
   const BackgroundManager = {
@@ -293,7 +403,8 @@
     cleanLayer(layer) {
       if (!layer) return;
       layer.classList.remove('active', 'gpt5-active', 'pure-black-active', 'space-active', 'scenic-active');
-      layer.querySelector('.scenic-bg')?.remove();
+      const scene = layer.querySelector('.scenic-bg');
+      if (scene) { A.northernLights?.detach(scene); A.deepOcean?.detach(scene); scene.remove(); }
       const sky = layer.querySelector('.space-bg');
       if (sky) {
         spaceObservers.get(sky)?.disconnect();
@@ -339,6 +450,7 @@
       const video = layer.querySelector('video');
       const source = layer.querySelector('source');
       const isVideo = this.isVideo(url);
+      layer.dataset.backgroundKind = isVideo ? 'motion' : A.preferences.backgroundKind(url);
       const media = isVideo ? video : image;
       const event = isVideo ? 'loadeddata' : 'load';
       const controller = new AbortController();
@@ -412,6 +524,7 @@
       container.classList.toggle('scenic-mode', !!A.preferences.scenicBackgrounds[url]);
       toLayer.classList.add('active');
       fromLayer.classList.remove('active');
+      applyThemeContrast(toLayer, url, () => toLayer.isConnected && toLayer.classList.contains('active'));
     },
 
     async switchTo(url, force = false) {
@@ -440,31 +553,8 @@
         this.loadingUrl = url;
         this.cleanLayer(inactiveLayer);
 
-        if (url === '__gpt5_animated__') {
-          inactiveLayer.classList.add('gpt5-active');
-          prepareGradient(inactiveLayer);
-        } else if (url === '__pure_black__') {
-          inactiveLayer.classList.add('pure-black-active');
-        } else if (url === '__space__') {
-          inactiveLayer.appendChild(makeSpaceBackground());
-          inactiveLayer.classList.add('space-active');
-        } else if (A.preferences.scenicBackgrounds[url]) {
-          const name = A.preferences.scenicBackgrounds[url];
-          const scene = document.createElement('div');
-          scene.className = `scenic-bg scenic-${name}`;
-          const layers = await Promise.all(['base', 'light'].map(async part => {
-            const image = new Image();
-            image.src = chrome.runtime.getURL(`assets/themes/${name}-${part}.webp`);
-            await image.decode();
-            const paint = document.createElement('div');
-            paint.className = `scenic-${part}`;
-            paint.style.backgroundImage = `url("${image.src}")`;
-            return paint;
-          }));
+        if (await populatePreset(inactiveLayer, url, false, () => generation === this.generation)) {
           if (generation !== this.generation) return;
-          scene.append(...layers);
-          inactiveLayer.appendChild(scene);
-          inactiveLayer.classList.add('scenic-active');
         } else if (url === '__local__') {
           if (chrome?.runtime?.id && chrome?.storage?.local) {
             const localKey = A.getSettings().customBgDataKey || LOCAL_BG_KEY;
@@ -497,6 +587,7 @@
         this.currentUrl = url;
         this.loadingUrl = null;
         this.state = 'idle';
+        if (!A.site) document.dispatchEvent(new Event('aurora-background-ready'));
 
       } catch (err) {
         if (generation !== this.generation) return;
@@ -519,17 +610,18 @@
     BackgroundManager.update(force);
   }
 
-  function applyCustomStyles() {
+  function applyCustomStyles(preview) {
     if (!isEnabled()) return;
     const bgNode = document.getElementById(ID);
     if (!bgNode) return;
 
-    const s = A.getSettings?.() || {};
-    const blurPx = `${s.backgroundBlur ?? '60'}px`;
-    const scaling = s.backgroundScaling || 'cover';
+    const s = { ...A.getSettings?.(), ...preview };
+    const blurPx = `${A.preferences.blurRadius(s.backgroundBlur)}px`;
+    const motionBlur = A.preferences.blurRadius(s.motionBackgroundBlur, 0);
 
     A.utils.setStyle(bgNode, '--cgpt-bg-blur-radius', blurPx);
-    A.utils.setStyle(bgNode, '--cgpt-object-fit', scaling);
+    A.utils.setStyle(bgNode, '--cgpt-motion-filter', motionBlur ? `blur(${motionBlur}px)` : 'none');
+    A.utils.setStyle(bgNode, '--cgpt-object-fit', s.backgroundScaling === 'contain' ? 'contain' : 'cover');
     prepareGradient(bgNode.querySelector('.media-layer.active'));
   }
 
@@ -554,10 +646,12 @@
 
   A.background = A.background || {};
   A.background.create = makeBgNode;
+  A.background.createThemePreview = createThemePreview;
   A.background.restoreApp = restoreApp;
   A.background.ensureAppOnTop = ensureAppOnTop;
   A.background.manager = BackgroundManager;
   A.background.gradientFrame = gradientFrame;
+  A.background.gradientTexture = gradientTexture;
   A.background.show = A.background.show || showBg;
   A.background.applyStyles = A.background.applyStyles || applyCustomStyles;
   A.background.update = A.background.update || updateBackgroundImage;
@@ -572,6 +666,8 @@
       gradientTextures.clear(); gradientBlobs = new WeakMap();
       for (const observer of spaceObservers.values()) observer.disconnect();
       spaceObservers.clear();
+      A.northernLights?.reset();
+      A.deepOcean?.reset();
       BackgroundManager.generation += 1;
       try {
         BackgroundManager.abort();

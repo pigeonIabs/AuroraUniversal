@@ -28,18 +28,16 @@ html:root.cgpt-ambient-on :is(#root .text-secondary, #root .text-tertiary, #root
   color: var(--theme-text-secondary) !important;
 }
 
-html:root.cgpt-ambient-on :is([class~="bg-surface"], [class~="bg-surface-secondary"], [class~="electron:bg-surface"], [class~="browser:bg-surface"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
-  background: transparent !important;
-}
-
 html:root.cgpt-ambient-on :is(
   #root, #web-mobile-root, [data-app-shell-main-surface],
+  main > [class~="bg-surface"]:not([class*="rounded"]),
+  [class~="bg-surface"].sticky:not([class*="rounded"]),
   [class*="MainContentClip-"], [class*="MainContentViewport-"],
   [class*="MainContentFrame-"], [class*="ComposerModeSurface-"],
   [data-app-shell-main-content-layout], [data-request-input-activity-root],
   [data-app-action-timeline-scroll], [data-thread-scroll-footer],
   [data-pip-obstacle="thread-footer"],
-  [data-composer-surface-variant]:not([data-composer-utility-bar-variant="home"]) [data-composer-body],
+  [data-composer-surface-variant][data-composer-utility-bar-variant]:not([data-composer-utility-bar-variant="home"]) [data-composer-body],
   [data-composer-input-layout], [data-rich-text-layout],
   [class~="bg-background-composer-action-bar"],
   [data-composer-markdown], #mobile-composer-prompt,
@@ -50,6 +48,18 @@ html:root.cgpt-ambient-on :is(
 ):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* The desktop navigation shell paints behind the main surface twice. */
+@layer aurora-scroll-edges {
+  html:root.cgpt-ambient-on [data-app-shell-frame],
+  html:root.cgpt-ambient-on [data-app-shell-workspace]::before {
+    background-color: transparent !important;
+  }
+
+  html:root.cgpt-ambient-on [data-app-shell-main-content-layout] [aria-hidden="true"][class*="--app-shell-content-fade,"] {
+    background-image: none !important;
+  }
 }
 
 /* Fades must reveal the wallpaper instead of painting a solid page over it. */
@@ -72,7 +82,7 @@ html:root.cgpt-ambient-on :is(
   background: var(--aurora-glass-fill) !important;
   background-image: none !important;
   border-color: var(--aurora-surface-edge, var(--aurora-glass-border)) !important;
-  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
   color: var(--theme-text-primary) !important;
@@ -91,13 +101,13 @@ html:root.cgpt-ambient-on :is(
   --aurora-glass-fill: var(--aurora-storage-danger-fill);
 }
 
-/* The Library header's native pseudo-element supplies all of its paint.
- * Keep its collapsing geometry and the tabs' native selected state intact. */
-html:root.cgpt-ambient-on [data-aurora-library-header="true"]::before {
+/* Library and Plugins paint their sticky headers on native pseudo-elements. */
+html:root.cgpt-ambient-on [data-aurora-library-header="true"]::before,
+html:root.cgpt-ambient-on [data-sticky="true"]:has(#plugins-store-page-search)::before {
   background: var(--aurora-glass-fill) !important;
   background-image: none !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: var(--aurora-glass-shadow) !important;
+  box-shadow: var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-glass-backdrop, none) !important;
   -webkit-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
   --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
@@ -133,23 +143,174 @@ html:root.cgpt-ambient-on [class*="showcaseEmptyState-"] {
   --darkreader-bg--profile-illustration-surface: var(--aurora-glass-fill) !important;
 }
 
-html:root.cgpt-ambient-on .app-shell-left-panel {
+html:root.cgpt-ambient-on .app-shell-left-panel:not(:where(
+  [data-app-shell-feature-navigation="true"] *, [data-slate-sidebar-peeking="true"]
+)) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: none !important;
+  box-shadow: inset -1px 0 0 var(--aurora-glass-border) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
-html:root.cgpt-ambient-on .app-shell-left-panel { box-shadow: inset -1px 0 0 var(--aurora-glass-border) !important; }
-/* Native composer CSS paints the thread root and the home page's inner body.
- * Supplying its material tokens follows that ownership, including rounded
- * single-line, multiline, attachment, and expanded states. */
+
+/* Virtualized turns scroll over an already-rendered wallpaper. Their glass
+ * uses ordinary translucent paint without a per-surface backdrop readback. */
+@layer aurora-transcript-material {
+  html:root.cgpt-ambient-on :is(
+    [data-user-message-bubble], .user-message-bubble-color, [data-aurora-surface="message"],
+    :where(
+      [data-virtualized-turn-content], [data-turn-id-container], [data-turn-id],
+      [data-testid^="conversation-turn-"], [data-chatgpt-search-unit-key], [data-message-author-role],
+      .thread-scroll-container [class*="transcriptContent-"]
+    ) :is(
+      [data-aurora-glass], [data-aurora-discovered-surface], [data-aurora-data-surface],
+      [data-aurora-surface], [data-aurora-code-block], [data-aurora-editor],
+      [data-testid="chatgpt-writing-block"], [data-markdown-copy="code-block"],
+      [data-markdown-copy="inline-code"], .markdown code, .prose code,
+      [data-markdown-copy="inline-code"], .markdown code, .prose code,
+      [class*="bg-token-main-surface-secondary"], [class*="backdrop-blur"]
+    ):not(:where(
+      [data-thread-scroll-footer], [data-composer-surface-variant], [data-radix-popper-content-wrapper],
+      [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"], :popover-open,
+      :is(
+        [data-thread-scroll-footer], [data-composer-surface-variant], [data-radix-popper-content-wrapper],
+        [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"], :popover-open
+      ) *
+    ))
+  ) {
+    &, &::before, &::after {
+      --aurora-backdrop-source: initial !important;
+      --aurora-text-backdrop: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
+  html:root.cgpt-ambient-on.cgpt-glass-user-messages [data-user-message-bubble] {
+    background: var(--aurora-glass-fill) !important;
+    border-color: var(--user-bubble-border) !important;
+    box-shadow: inset 0 0 0 1px var(--user-bubble-border), var(--aurora-cast-glass) !important;
+  }
+
+  /* Temporary chats already draw their own dashed message outline. */
+  html:root.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-temporary-chat] [data-user-message-bubble] {
+    box-shadow: var(--aurora-cast-glass) !important;
+  }
+
+  html:root.cgpt-ambient-on.cgpt-glass-user-messages:not(.cgpt-legacy-composer)
+    [data-message-author-role="user"] .user-message-bubble-color:not(:where(
+      [data-user-message-bubble], [data-user-message-bubble] *, :has([data-user-message-bubble])
+    )) {
+    background: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-glass-border) !important;
+    box-shadow: inset 0 0 0 1px var(--aurora-glass-border),
+      inset 0 0 2px 0 var(--aurora-glass-glow), var(--aurora-cast-glass) !important;
+  }
+}
+
+/* Navigation destinations share the paint utilities for the floating and
+ * docked sidebar. The rail itself is a transparent part of the wallpaper. */
+@layer aurora-glass-material {
+  html:root.cgpt-ambient-on :is(
+    [data-app-shell-feature-navigation="true"] .app-shell-left-panel,
+    [data-app-shell-feature-navigation="true"] nav[data-app-navigation-rail],
+    .app-shell-left-panel[data-slate-sidebar-peeking="true"]
+  ) {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    --aurora-backdrop-source: initial !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html:root.cgpt-ambient-on [data-app-shell-feature-navigation="true"]
+    nav[data-app-navigation-rail] > [aria-hidden="true"].border-e-hairline {
+    border-color: transparent !important;
+  }
+
+  html:root.cgpt-ambient-on :is(
+    [class~="bg-(--app-shell-sidebar-popover-background)"],
+    [class~="bg-(--app-shell-sidebar-docked-background)"]
+  ) {
+    /* The docking animation also reads the native paint tokens. */
+    --app-shell-sidebar-popover-background: var(--aurora-glass-fill) !important;
+    --app-shell-sidebar-docked-background: var(--aurora-glass-fill) !important;
+    --app-shell-sidebar-popover-border: var(--aurora-glass-border) !important;
+    --darkreader-bg--app-shell-sidebar-popover-background: var(--aurora-glass-fill) !important;
+    --darkreader-bg--app-shell-sidebar-docked-background: var(--aurora-glass-fill) !important;
+  }
+
+  html:root.cgpt-ambient-on :is(
+    [class~="bg-(--app-shell-sidebar-popover-background)"],
+    [class~="bg-(--app-shell-sidebar-docked-background)"],
+    [data-app-shell-feature-navigation="true"] #app-shell-sidebar > .absolute.inset-0.bg-surface,
+    .app-shell-left-panel[data-slate-sidebar-peeking="true"] [data-slate-sidebar-content],
+    [data-aurora-space] [data-slate-sidebar-content][class~="browser:bg-surface"]
+  ) {
+    background-color: var(--aurora-glass-fill) !important;
+    border-color: var(--aurora-glass-border) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  /* The docked browser pane can be nested inside a second painted nav shell. */
+  html:root.cgpt-ambient-on[data-aurora-space] :is(
+    [data-sidebar-navigation-root][class~="bg-(--app-shell-sidebar-docked-background)"],
+    [data-app-shell-feature-navigation="true"] #app-shell-sidebar > .absolute.inset-0.bg-surface
+  ):has([data-slate-sidebar-content][class~="browser:bg-surface"]) {
+    background: transparent !important;
+    border-color: transparent !important;
+    --aurora-backdrop-source: initial !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html:root.cgpt-ambient-on .app-shell-left-panel[data-slate-sidebar-peeking="true"] [data-slate-sidebar-content] {
+    box-shadow: inset 0 0 0 var(--hairline) var(--aurora-glass-border),
+      var(--aurora-cast-sidebar) !important;
+  }
+}
+
+/* Let native composer CSS apply these tokens to its painted surface in each
+ * layout, including older thread composers that paint on the root. */
 html:root.cgpt-ambient-on [data-composer-surface-variant] {
   --composer-layout-surface-background: var(--aurora-glass-fill) !important;
   --composer-layout-surface-backdrop-filter: var(--aurora-glass-backdrop, none) !important;
-  --composer-layout-surface-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow) !important;
+  --composer-layout-surface-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-cast-glass) !important;
   --darkreader-bg--composer-layout-surface-background: var(--aurora-glass-fill) !important;
+  --darkreader-bg--composer-layout-surface-fill: var(--darkreader-bg--composer-layout-surface-background) !important;
   --darkreader-bg--composer-layout-surface-shadow: var(--composer-layout-surface-shadow) !important;
 }
+
+/* The composer token can be consumed by its native inner surface. */
+html:root.cgpt-ambient-on [data-composer-surface-variant] :is([data-composer-body], [class*="ComposerLayoutBody-"]) {
+  --aurora-shadow-probe: true;
+}
+
+/* Space quick chat paints either the frame or its separate animated backplate.
+ * Leave the native backplate animation, ring width, and hit areas in place. */
+html:root.cgpt-ambient-on[data-aurora-space]
+  section[class*="floatingSurface-"]:has(> div > [data-floating-chat-surface]) {
+  &.bg-surface-elevated-secondary,
+  & > div > .pointer-events-none.absolute.bg-surface-elevated-secondary[class*="floatingSurface-"] {
+    background-color: var(--aurora-glass-fill) !important;
+    --tw-ring-color: var(--aurora-glass-border) !important;
+    --tw-shadow: var(--aurora-cast-glass) !important;
+    --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+    backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+    -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
+  }
+
+  &:is(.bg-surface-elevated-secondary, :has(> div > .pointer-events-none.absolute.bg-surface-elevated-secondary[class*="floatingSurface-"]))
+    [data-floating-chat-surface] [data-composer-surface-variant] {
+    --composer-layout-surface-background: transparent !important;
+    --composer-layout-surface-backdrop-filter: none !important;
+    --composer-layout-surface-shadow: none !important;
+    --darkreader-bg--composer-layout-surface-background: transparent !important;
+  }
+}
+
 /* Codex's Add, Plugins, Apps and conversation headings own a sticky fill.
  * Use the shared material while preserving native section sizing and scroll. */
 html:root.cgpt-ambient-on [data-composer-overlay-floating-ui] {
@@ -172,7 +333,7 @@ html:root.cgpt-ambient-on [role="group"]:has(> .bg-background-mode-toggle-track)
   --color-background-mode-toggle-track: color-mix(in srgb, var(--aurora-glass-fill) 55%, transparent) !important;
   --color-background-mode-toggle-selected: var(--aurora-glass-fill) !important;
   --color-border-mode-toggle-selected: var(--aurora-glass-border) !important;
-  --shadow-mode-toggle-selected: inset 0 0 0 1px var(--aurora-glass-border), inset 0 1px 2px var(--aurora-glass-glow), var(--aurora-glass-shadow) !important;
+  --shadow-mode-toggle-selected: inset 0 0 0 1px var(--aurora-glass-border), inset 0 1px 2px var(--aurora-glass-glow) !important;
   --darkreader-bg--color-background-mode-toggle-track: var(--color-background-mode-toggle-track) !important;
   --darkreader-bg--color-background-mode-toggle-selected: var(--aurora-glass-fill) !important;
   --darkreader-border--color-border-mode-toggle-selected: var(--aurora-glass-border) !important;
@@ -188,7 +349,7 @@ html:root.cgpt-ambient-on [role="group"]:has(> .bg-background-mode-toggle-track)
   background-color: var(--aurora-glass-fill) !important;
   background-image: none !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: var(--shadow-mode-toggle-selected) !important;
+  box-shadow: var(--shadow-mode-toggle-selected), var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important;
   --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
@@ -211,7 +372,7 @@ html:root.cgpt-ambient-on :is(
 ):has([data-testid="screen-threadFlyOut"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
   border-color: var(--aurora-glass-border) !important;
-  box-shadow: var(--aurora-glass-shadow) !important;
+  box-shadow: var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
@@ -223,7 +384,7 @@ html:root.cgpt-ambient-on [data-testid="screen-threadFlyOut"]:not(
   [data-side-pane-shell-rail] *, .bg-token-sidebar-surface-primary *
 ) > [slot="content"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: var(--aurora-glass-fill) !important;
-  box-shadow: var(--aurora-glass-shadow) !important;
+  box-shadow: var(--aurora-cast-glass) !important;
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
@@ -271,17 +432,6 @@ html:root.cgpt-ambient-on :is([data-testid="chatgpt-writing-block"], [data-auror
   background: transparent !important;
   backdrop-filter: none !important; --aurora-backdrop-source: initial !important;
   box-shadow: none !important;
-}
-
-html:root.cgpt-ambient-on.cgpt-glass-user-messages [data-user-message-bubble] {
-  background: var(--aurora-glass-fill) !important;
-  border-color: var(--user-bubble-border) !important;
-  box-shadow: inset 0 0 0 1px var(--user-bubble-border), var(--aurora-glass-shadow) !important;
-  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
-}
-/* Temporary chats already draw their own dashed message outline. */
-html:root.cgpt-ambient-on.cgpt-glass-user-messages[data-aurora-temporary-chat] [data-user-message-bubble] {
-  box-shadow: var(--aurora-glass-shadow) !important;
 }
 
 html:root.cgpt-ambient-on :is(button, [role="button"], [role="tab"]):focus-visible {
@@ -353,7 +503,7 @@ html:root.cgpt-ambient-on [class*="artwork-"]:has(> img[src*="/health-zero-state
   inset: 0;
   pointer-events: none;
   background: var(--aurora-glass-fill);
-  box-shadow: inset 0 0 0 1px var(--aurora-glass-border), var(--aurora-glass-shadow);
+  box-shadow: inset 0 0 0 1px var(--aurora-glass-border);
   backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)); --aurora-backdrop-source: var(--aurora-glass-backdrop, none);
   mask: url("assets/health-zero-state-records-surface.svg") center / 100% 100% no-repeat;
@@ -458,10 +608,11 @@ html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="glass"], [data-aurora-
   -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
 }
 html:root.cgpt-ambient-on [data-aurora-image-toolbar="glass"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
-  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), var(--aurora-glass-shadow) !important;
+  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), var(--aurora-cast-glass) !important;
 }
 html:root.cgpt-ambient-on [data-aurora-image-top-control="true"] {
-  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), 0 2px 8px rgba(0, 0, 0, 0.16) !important;
+  --aurora-control-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 0 0 1px var(--aurora-surface-edge, var(--aurora-glass-border)), inset 0 0 2px var(--aurora-glass-glow), var(--aurora-cast-control) !important;
 }
 html:root.cgpt-ambient-on :is([data-aurora-image-toolbar="clear"], [data-aurora-image-control-group="clear"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background: transparent !important;
@@ -488,11 +639,6 @@ html:root.cgpt-ambient-on :is([class~="group/settings"], [data-app-shell-main-su
 html:root.cgpt-ambient-on [class~="group/settings"] > div:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
   background-color: transparent !important;
 }
-html:root.cgpt-ambient-on [class~="group/settings"] [class~="border"][class~="border-default"]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) {
-  background-color: var(--aurora-glass-fill) !important;
-  border-color: var(--aurora-glass-border) !important;
-  backdrop-filter: var(--aurora-text-backdrop, var(--aurora-glass-backdrop, none)) !important; --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
-}
 /* Settings titles share the page backdrop. Only controls own a glass surface. */
 html:root.cgpt-ambient-on:has([class~="group/settings"]) [data-app-shell-titlebar]:not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
 html:root.cgpt-ambient-on [class~="group/settings"] :is(header, h1, h2, h3, [role="heading"]):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *),
@@ -511,6 +657,91 @@ html:root.cgpt-ambient-on [class~="group/settings"] header::after {
   content: none !important;
 }
 html:root.cgpt-ambient-on :is(#settings-search, input[role="combobox"]) { background: transparent !important; box-shadow: none !important; }
+
+@layer aurora-glass-material {
+  html:root.cgpt-ambient-on[data-aurora-chatgpt-settings] {
+    & [data-app-shell-main-surface] {
+      background: var(--aurora-glass-fill) !important;
+      --darkreader-inline-bgcolor: var(--aurora-glass-fill) !important;
+    }
+
+    /* The sidebar backplate covers the left panel even when that panel is glass. */
+    & #app-shell-sidebar > .absolute.inset-0.bg-surface:has([data-sidebar-navigation-root]),
+    & .app-shell-left-panel:is(.bg-surface, [class~="browser:bg-surface"]):has(
+      [data-sidebar-navigation-root]
+    ):not(:has(#app-shell-sidebar > .absolute.inset-0.bg-surface)) {
+      background: var(--aurora-glass-fill) !important;
+      border-color: var(--aurora-glass-border) !important;
+      --darkreader-inline-bgcolor: var(--aurora-glass-fill) !important;
+      --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+      backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+      -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+    }
+
+    & .app-shell-left-panel:has(
+      #app-shell-sidebar > .absolute.inset-0.bg-surface [data-sidebar-navigation-root]
+    ) {
+      background: transparent !important;
+      box-shadow: none !important;
+      --darkreader-inline-bgcolor: transparent !important;
+      --aurora-backdrop-source: initial !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* Shell backplates repeat the opaque page fill behind the settings content. */
+    & :is(
+      [data-app-shell-pane-frame], [data-app-shell-pane-content-viewport],
+      [data-app-shell-tab-panel-controller], [class*="app-shell-panel-background"],
+      [class~="electron:bg-surface"], .bg-surface, .bg-surface-primary, .bg-token-bg-primary
+    ):not([data-app-shell-main-surface], .app-shell-left-panel):has([class~="group/settings"]),
+    & [class*="WorkspaceContent-"]:has([class~="group/settings"])::before,
+    & [data-app-shell-main-titlebar] {
+      background: transparent !important;
+      --darkreader-inline-bgcolor: transparent !important;
+      --darkreader-inline-bgimage: none !important;
+    }
+
+    /* Settings groups share the page backdrop. Native controls and row
+     * dividers keep their own paint on the elements that already own it. */
+    & [class~="group/settings"] div.flex.flex-col:is(
+      [style*="var(--color-background-panel"],
+      [class~="group-data-[density=compact]/settings:ring-inset"],
+      [class~="group-data-[density=form]/settings:bg-transparent"],
+      [class~="bg-surface-secondary/92"],
+      [class~="bg-(--color-background-primary-soft-alpha)/50"],
+      [class~="dark:bg-primary-soft-alpha"]
+    ):not(:where(
+      [role="button"], [role="switch"], [role="checkbox"], [role="radio"], [contenteditable],
+      dialog, [role="dialog"], [role="menu"], [role="listbox"],
+      :is(dialog, [role="dialog"], [role="menu"], [role="listbox"]) *
+    )) {
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      --aurora-backdrop-source: initial !important;
+      --darkreader-inline-bgcolor: transparent !important;
+      --darkreader-inline-bgimage: none !important;
+    }
+
+    /* The search icon and input share the native painted search frame. */
+    & .bg-background-secondary-soft-alpha:has(> :is(input#settings-search, input[name="settings-search"])) {
+      background-color: var(--aurora-glass-fill) !important;
+      --darkreader-inline-bgcolor: var(--aurora-glass-fill) !important;
+      --aurora-backdrop-source: var(--aurora-glass-backdrop, none) !important;
+      backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+      -webkit-backdrop-filter: var(--aurora-text-backdrop, var(--aurora-backdrop-source)) !important;
+
+      & > :is(input#settings-search, input[name="settings-search"]) {
+        background: transparent !important;
+        --darkreader-inline-bgcolor: transparent !important;
+      }
+    }
+  }
+}
+
 /* The plugin search wrapper owns the glass. Its input reveals that surface. */
 html:root.cgpt-ambient-on input[placeholder="Search plugins" i] {
   background: transparent !important;
@@ -541,7 +772,7 @@ html:root.cgpt-ambient-on[data-aurora-zero-blur] :is(
   .aurora-switch-glider, .aurora-queue-panel, .aurora-queue-btn,
   .qs-select-options, #stage-slideover-sidebar
 ):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track))):not(:where([role="switch"],[role="checkbox"],[role="radio"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="tab"],[role="option"],[role="tablist"],[role="radiogroup"],[aria-checked],[aria-pressed],[aria-selected],[aria-current],input:is([type="checkbox" i], [type="radio" i], [type="range" i]),[data-state="checked"],[data-state="unchecked"],[data-state="on"],[data-state="off"],[data-state="active"],[data-state="inactive"],[data-model-picker-power-slider],[role="group"]:has(> .bg-background-mode-toggle-track)) *) { backdrop-filter: var(--aurora-text-backdrop, none) !important; -webkit-backdrop-filter: var(--aurora-text-backdrop, none) !important; }
-html:root.cgpt-ambient-on[data-aurora-zero-blur] #cgpt-ambient-bg :is(img, video) { filter: none !important; }
+/* Background image and motion blur use their own values in theme-background.css. */
 
 html:root.cgpt-ambient-on.cgpt-blur-chat-history :is(#app-shell-sidebar [data-thread-title], #app-shell-sidebar [data-marquee-text]) {
   filter: blur(5px) !important;

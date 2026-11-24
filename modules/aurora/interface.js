@@ -77,6 +77,7 @@
 
   function snapshot() {
     return { site: A.site.id, url: location.href, capabilities: capabilities(),
+      viewport: { width: window.innerWidth, height: window.innerHeight },
       models: [], currentModel: '', ...A.defaultModel?.snapshot?.() };
   }
 

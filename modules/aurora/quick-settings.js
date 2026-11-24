@@ -175,16 +175,17 @@
       createToggleRow('cinemaMode', 'labelCinemaMode'),
       createToggleRow('queueWhileGenerating', 'labelQueueWhileGenerating'),
       createSectionTitle('sectionAppearance'),
-      appearanceRow
+      appearanceRow,
+      ...(A.sites.supports(A.site, 'geminiBloom') ? [createToggleRow('geminiBloom', 'labelGeminiBloom')] : [])
     );
 
-    const qsToggles = ['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'blurChatHistory', 'blurAvatar', 'dataMaskingEnabled', 'cinemaMode', 'queueWhileGenerating'];
+    const qsToggles = ['focusMode', 'hideUpgradeButtons', 'hideRateLimitMessages', 'hideAIWarnings', 'blockAds', 'blurChatHistory', 'blurAvatar', 'dataMaskingEnabled', 'cinemaMode', 'queueWhileGenerating', 'geminiBloom'];
     qsToggles.forEach((key) => {
       const checkbox = document.getElementById(`qs-${key}`);
       if (!checkbox) return;
       checkbox.checked = !!settings[key];
       checkbox.addEventListener('change', () => {
-        A.preferences.save({ [key]: checkbox.checked });
+        A.preferences.save({ [key]: checkbox.checked }, A.site.id, undefined, key === 'geminiBloom' ? 'site' : 'auto');
       });
     });
 

@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const A = window.AuroraExt;
+  const confirmation = '[data-cds="ConfirmationDialog"]';
+  const headerPromotion = 'div.bg-neutral-30.pointer-events-auto:has(> span > a:is([href^="/upgrade?from=header_pill"], [href^="/upgrade/pro?from=header_pill"]))';
   Object.assign(A.site, {
     appRoot: '#root, #__next',
     isSupportedRoute: () => true,
@@ -16,6 +18,8 @@
     surfaceShells: {
       composer: '[data-cds="ChatComposer"] > .rounded-composer',
       message: '[class~="bg-[var(--cds-bg-user-message)]"], .bg-bg-user-message, .bg-user-message, [data-cds="UserMessage"]',
+      panel: confirmation,
+      promotion: headerPromotion,
     },
     workflow: {
       editor: '[data-testid="chat-input"][contenteditable="true"], [data-testid="chat-input"] [contenteditable="true"], .ProseMirror[contenteditable="true"]',
@@ -28,7 +32,8 @@
       modelLabel: '[data-testid="model-name"], .truncate',
     },
     selectors: {
-      panel: '.bg-surface-1:has(> form), .bg-surface-1.border-border-300, [class~="[direction:ltr]"].rounded-3xl',
+      panel: `${confirmation}, .bg-surface-1:has(> form), .bg-surface-1.border-border-300, [class~="[direction:ltr]"].rounded-3xl`,
+      promotion: headerPromotion,
       control: 'input.cds-input, form button, form [role="button"]',
       composer: '[data-cds="ChatComposer"] > .rounded-composer, :is([data-testid="chat-input"]:not([contenteditable]), [data-testid="composer"], [data-composer], fieldset:has([contenteditable="true"]), form:has(.ProseMirror)):not(:has([data-cds="ChatComposer"]))',
       editor: '.ProseMirror[contenteditable="true"], [contenteditable="true"][role="textbox"]',
@@ -44,7 +49,7 @@
       content: '[data-testid="conversation"], [data-testid="chat-messages"], main .mx-auto[class*="max-w-"]',
       code: 'pre, [data-testid="code-block"], .code-block',
       upgrade: '[data-testid="upgrade-button"], a[href="/upgrade"]',
-      upgradeContainer: '[data-testid="upgrade-banner"], [data-testid="upsell-banner"]',
+      upgradeContainer: `${headerPromotion}, [data-testid="upgrade-banner"], [data-testid="upsell-banner"]`,
       rateLimit: '[data-testid="usage-limit-banner"], [data-testid="rate-limit-banner"]',
       // Notice hosts contain transparent positioning wrappers around native
       // painted banners. Material ownership selects only the existing fill,

@@ -42,10 +42,10 @@
     "message": "Visibility"
   },
   "sectionBackground": {
-    "message": "Background"
+    "message": "Themes"
   },
   "labelPreset": {
-    "message": "Preset"
+    "message": "Theme"
   },
   "placeholderBgUrl": {
     "message": "Paste image or video URL"
@@ -118,6 +118,9 @@
   },
   "labelGlassStyle": {
     "message": "Glass style"
+  },
+  "labelGeminiBloom": {
+    "message": "Bloom"
   },
   "labelGlassUserMessages": {
     "message": "User message glass"
@@ -198,7 +201,7 @@
     "message": "Onyx Dark"
   },
   "bgPresetOptionDefault": {
-    "message": "Default Wallpaper"
+    "message": "GPT-5"
   },
   "bgPresetOptionSpace": {
     "message": "Space"
@@ -297,13 +300,13 @@
     "message": "Choose Your Look"
   },
   "welcomeDescriptionSetup": {
-    "message": "Select a background and style to personalize your experience. You can always change this later."
+    "message": "Select a theme and glass style to personalize your experience."
   },
   "welcomeLabelBgPreset": {
-    "message": "Background Preset"
+    "message": "Theme"
   },
   "welcomePresetDefault": {
-    "message": "Default"
+    "message": "GPT-5"
   },
   "welcomePresetAnimated": {
     "message": "Animated"
@@ -601,5 +604,8 @@
   },
   "bgPresetOptionEmber": {
     "message": "Ember"
+  },
+  "labelThemePreviewBlur": {
+    "message": "Preview blur"
   }
 }

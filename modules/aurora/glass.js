@@ -60,6 +60,7 @@
     '#octane-mobile-composer-actions-popover',
     '[class*="showcaseEmptyState-"]',
     '[class~="group/plugin"] > [class*="surface-"]',
+    '[class~="group/plugin"] [class~="bg-surface"]',
     'button.bg-composer-primary',
     'button.bg-primary-solid',
     'button.btn-primary',
@@ -105,6 +106,84 @@
   ];
 
   const GLASS_SELECTOR_FAST = GLASS_SELECTORS_FAST.join(',');
+
+  const DISCOVERED = 'data-aurora-discovered-surface';
+  const DATA_SURFACE = 'data-aurora-data-surface';
+  const DATA_ROUTE = /^\/(?:(?:(?:[a-z]{2}(?:-[a-z]{2,8})?|g)\/)?health|finances?)(?:\/|$)/i;
+  const IN_CHAT = '[data-message-author-role], [data-message-id]';
+  const CHROME = 'header, [role="banner"], [role="toolbar"], [data-app-shell-titlebar], [data-app-shell-header-obstacle], [data-testid="chat-header"]';
+  const ACTION = ':is(button, [role="button"], summary)';
+  const DISCOVERABLE = [
+    `:is(${CHROME}) ${ACTION}`,
+    `${ACTION}[aria-haspopup]:not([aria-haspopup="false"], [aria-haspopup=""])`,
+    '[role="alertdialog"], [role="dialog"], [role="menu"], [role="listbox"], [role="tooltip"]',
+    'dialog[open], :popover-open, [data-radix-popper-content-wrapper] > :first-child',
+  ].join(',');
+  const DISCOVERY_SCOPE = `${DISCOVERABLE}, [${DISCOVERED}]`;
+  const DISCOVERY_EXCLUDED = `${A.ownedUI}, [data-message-author-role], [data-message-id], [data-dil-message-id], .markdown, .prose, pre, code, [contenteditable], [data-aurora-offscreen], [data-composer-surface-variant]`;
+  const EXISTING_GLASS = `[data-aurora-glass], [data-aurora-code-block], [data-aurora-surface], [data-aurora-image-viewer], [data-aurora-image-toolbar], [data-aurora-image-top-control], [data-composer-surface-variant], [${DATA_SURFACE}], .app-shell-left-panel`;
+  A.glass.isDataRoute = () => DATA_ROUTE.test(location.pathname);
+
+  function tracksDiscoveryState(node) {
+    return node.hasAttribute(DISCOVERED) ||
+      (node.matches(`${CHROME}, ${DISCOVERABLE}`) && !node.closest(DISCOVERY_EXCLUDED));
+  }
+
+  function discoveryCandidates(root) {
+    if (root.closest?.(DISCOVERY_EXCLUDED)) return A.utils.matchingElements(root, `[${DISCOVERED}]`);
+    const candidates = A.utils.matchingElements(root, DISCOVERY_SCOPE);
+    const enclosing = root.parentElement?.closest(DISCOVERY_SCOPE);
+    if (enclosing) candidates.unshift(enclosing);
+    return candidates.filter(node => node.hasAttribute(DISCOVERED) ||
+      (!node.closest(DISCOVERY_EXCLUDED) && !node.matches('[data-aurora-plane]')));
+  }
+
+  function tagDiscovered(nodes) {
+    for (const node of nodes) {
+      // Explicit integrations win. Only the element with a real fill can own
+      // fallback glass, and a nested popup keeps its own fill without a filter.
+      if (node.matches(DISCOVERABLE) && !node.matches(`[data-aurora-plane], ${EXISTING_GLASS}`) &&
+          !node.closest(DISCOVERY_EXCLUDED) && A.material.hasSolidFill(node) && A.material.owner(node)) {
+        A.utils.setAttribute(node, DISCOVERED, 'true');
+      } else if (node.hasAttribute(DISCOVERED)) {
+        node.removeAttribute(DISCOVERED);
+        if (!node.matches(EXISTING_GLASS)) node.removeAttribute('data-aurora-surface-edge');
+      }
+    }
+  }
+
+  function refreshDiscovery(root) {
+    const nodes = discoveryCandidates(root);
+    A.material.prepare(nodes, true, nodes);
+    tagDiscovered(nodes);
+    A.textFrost?.refreshState?.(nodes);
+  }
+
+  // Native popovers can toggle without a mutation. A transient hover or focus
+  // fill measured during a DOM update must be released when the state ends.
+  const interactionSurfaces = new Set();
+  let discoveryFrame = 0;
+  function refreshAfterInteraction(event) {
+    if (!A.isActive()) return;
+    const node = event.type === 'toggle' ? event.target.closest?.('[popover], dialog') :
+      event.target.closest?.(`[${DISCOVERED}]${ACTION}`);
+    if (!node || node.contains(event.relatedTarget)) return;
+    interactionSurfaces.add(node);
+    if (discoveryFrame) return;
+    discoveryFrame = requestAnimationFrame(() => {
+      discoveryFrame = 0;
+      if (A.isActive()) {
+        const nodes = [...interactionSurfaces].filter(node => node.isConnected);
+        A.material.prepare(nodes, true, nodes);
+        tagDiscovered(nodes);
+        A.textFrost?.refreshState?.(nodes);
+      }
+      interactionSurfaces.clear();
+    });
+  }
+  for (const event of ['toggle', 'pointerout', 'focusout']) {
+    document.addEventListener(event, refreshAfterInteraction, { capture: true, passive: true });
+  }
 
   function tagPaintOwner(node, attribute = 'data-aurora-glass') {
     const owner = A.material.owner(node);
@@ -422,6 +501,52 @@
     }
   }
 
+  // The model fallback notice is rendered inside a conversation turn without
+  // a stable notice role. Follow its native text to the first painted ancestor.
+  function modelFallbackCandidates(root) {
+    const groups = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      if (!/advanced models are in high demand/i.test(text.nodeValue || '')) continue;
+      const parent = text.parentElement;
+      if (!parent || parent.closest(`${A.ownedUI}, .markdown, .prose, pre, code, [contenteditable]`)) continue;
+      const candidates = [];
+      for (let node = parent, depth = 0; node && depth < 6; node = node.parentElement, depth++) {
+        if (node.matches('article, main, body, [data-message-author-role]')) break;
+        const copy = (node.textContent || '').replace(/\s+/g, ' ').trim();
+        if (copy.length > 400) break;
+        if (/different model was used/i.test(copy)) candidates.push(node);
+      }
+      if (candidates.length) groups.push(candidates);
+    }
+    return groups;
+  }
+
+  function sectionSurfaceCandidates(root) {
+    // These sections share native card/control components but not a fixed
+    // utility or CSS-module name. Inspect their existing paint and edge rather
+    // than turning transparent layout containers into new glass panels.
+    const health = /^\/health(?:\/|$)/.test(location.pathname);
+    if (!health && !/^\/(?:study(?:-mode)?|learn|plugins|skills)(?:\/|$)/.test(location.pathname)) return [];
+    const selector = health ? 'a, button, span, input' : 'div, section, article, ul, li, a, button, span, input';
+    return A.utils.matchingElements(root, selector).filter(node =>
+      node.closest('main, [data-app-shell-focus-area="main"]') &&
+      !node.closest(`${A.ownedUI}, pre, code, [data-message-author-role], [data-message-id], [data-dil-message-id]`) &&
+      !node.matches('[data-app-shell-focus-area], [data-app-shell-main-surface]'));
+  }
+
+  function dataSurfaceCandidates(root, dataRoute) {
+    if (!dataRoute) return A.utils.matchingElements(root, `[${DATA_SURFACE}]`);
+    return A.utils.matchingElements(root, `div, section, article, table, ul, li, [${DATA_SURFACE}]`).filter(node =>
+      node.hasAttribute(DATA_SURFACE) || isDataSurface(node));
+  }
+
+  function isDataSurface(node) {
+    return node.closest('main, [data-app-shell-focus-area="main"]') &&
+      !node.closest(`${A.ownedUI}, ${IN_CHAT}, pre, code, [role="img"]`) &&
+      !node.matches('[data-aurora-plane], [data-app-shell-focus-area], [data-app-shell-main-surface], [role="tabpanel"]');
+  }
+
   function tag(root = document, initial = false) {
     if (!isEnabled()) return;
     const controls = A.upgrade.tagElements(root);
@@ -429,19 +554,48 @@
     const elements = new Set([...A.utils.matchingElements(root, GLASS_SELECTOR_FAST), ...hintOwners(root, initial)]);
     const code = codePaintCandidates(root);
     const workContext = workContextPanels(root, controls);
-    A.material.prepare([...elements, ...code.flat(), ...workContext.flatMap(({ panel, layers }) => [panel, ...layers])]);
+    const modelFallback = modelFallbackCandidates(root);
+    const editors = A.material.editorCandidates(root);
+    const sectionSurfaces = sectionSurfaceCandidates(root);
+    const dataRoute = A.glass.isDataRoute();
+    const dataSurfaces = dataSurfaceCandidates(root, dataRoute);
+    const discovered = discoveryCandidates(root);
+    A.material.prepare([...elements, ...editors.flat(), ...sectionSurfaces, ...dataSurfaces, ...code.flat(), ...modelFallback.flat(), ...workContext.flatMap(({ panel, layers }) => [panel, ...layers]), ...discovered], true, discovered);
     for (const el of elements) {
       tagPaintOwner(el);
     }
 
+    A.material.tagEditors(editors);
+    for (const node of sectionSurfaces) {
+      if (A.material.isPainted(node, true)) tagPaintOwner(node);
+    }
+    for (const node of dataSurfaces) {
+      if (dataRoute && isDataSurface(node) && !node.hasAttribute('data-aurora-glass') &&
+          A.material.hasSolidFill(node) && A.material.isPainted(node, true)) {
+        tagPaintOwner(node, DATA_SURFACE);
+      } else if (node.hasAttribute(DATA_SURFACE)) {
+        node.removeAttribute(DATA_SURFACE);
+        if (!node.matches(EXISTING_GLASS)) node.removeAttribute('data-aurora-surface-edge');
+      }
+    }
+
     tagCodeBlocks(root, code);
+    for (const candidates of modelFallback) {
+      for (const candidate of candidates) if (tagPaintOwner(candidate)) break;
+    }
     tagWorkContext(workContext);
     tagImageViewer(root, controls);
     tagLibraryHeader(root);
+    tagDiscovered(discovered);
   }
 
   function untag(root = document) {
     if (root === document || root?.contains?.(activeImageAction)) clearImageViewerTracking();
+    if (root === document) {
+      if (discoveryFrame) cancelAnimationFrame(discoveryFrame);
+      discoveryFrame = 0;
+      interactionSurfaces.clear();
+    }
     A.material.clear(root, [...A.material.attributes, 'data-aurora-image-viewer', 'data-aurora-image-control-group', 'data-aurora-work-context']);
   }
 
@@ -477,5 +631,7 @@
   A.glass.tagFast = tag;
   A.glass.tagAll = (root = document) => tag(root, true);
   A.glass.untag = A.glass.untag || untag;
+  A.glass.tracksDiscoveryState = tracksDiscoveryState;
+  A.glass.refreshDiscovery = refreshDiscovery;
 })();
 

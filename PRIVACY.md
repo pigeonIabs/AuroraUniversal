@@ -24,10 +24,13 @@ Custom background URLs load directly from the selected provider. The default Cha
 | `unlimitedStorage` | Uploaded images and videos within the 15 MB file limit |
 | Supported AI website hosts | Appearance and features on those websites |
 | Gemini's Opal gallery hosts | Appearance inside the embedded Labs gallery |
+| ChatGPT's widget sandbox host | Glass on embedded Health and Finances panels |
 
 Supported hosts are ChatGPT, Claude, Gemini, Grok, Qwen, Google AI Studio, DeepSeek, and Hugging Face. Hugging Face authentication, API, and account settings routes keep their native interface. Embedded Spaces use separate hosts.
 
 The Opal gallery bridge is limited to Gemini's embedded lite gallery. It passes appearance values, not conversation content.
+
+The ChatGPT widget bridge passes glass settings from the parent page into its embedded data panels. It does not transfer health or financial records.
 
 ## Contact
 

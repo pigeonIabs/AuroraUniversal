@@ -37,6 +37,7 @@
     },
     supports(site, setting, context = {}) {
       if (!site || site.capabilities?.[setting] === false || (site.id !== 'chatgpt' && chatgptOnly.has(setting))) return false;
+      if (setting === 'geminiBloom' && site.id !== 'gemini') return false;
       let path = context.path;
       if (context.url) {
         try { path = new URL(context.url).pathname; } catch { /* Use the site default. */ }
